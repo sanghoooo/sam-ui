@@ -1,6 +1,6 @@
 # sam-ui
 
-- This repo is the Claude Code marketplace `sam-ui`. It holds the SAM UI kit and the plugin `sam-ui-kit` that
+- This repo is the Claude Code marketplace `sam-ui`. It holds the SAM UI Kit and the plugin `sam-ui-kit` that
   installs it. The kit carries the air/TDS business logos.
 - The kit's source is `plugins/sam-ui-kit/skills/ui-kit/assets/` and nowhere else. `apps/hoo` reads it through the
   `@/components/*` and `@/lib/*` aliases and `@source`; never copy kit files into the app.

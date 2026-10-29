@@ -6,7 +6,7 @@
     {
       "name": "sam-ui-kit",
       "source": "./plugins/sam-ui-kit",
-      "description": "SAM UI kit: install a React + Tailwind CSS 4 dashboard kit into a project and build screens with it."
+      "description": "SAM UI Kit: install a React + Tailwind CSS 4 dashboard kit into a project and build screens with it."
     }
   ]
 }
