@@ -1,4 +1,4 @@
-// Scenario tests for plugins/sam-ui-kit/skills/ui-kit/scripts/kit.mjs (install, update, check) against fake
+// Scenario tests for plugins/sam-ui/skills/ui-kit/scripts/kit.mjs (install, update, check) against fake
 // kit versions and fake projects in a temp folder. Run with `pnpm test`.
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -8,12 +8,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const KIT = fileURLToPath(
-  new URL("../plugins/sam-ui-kit/skills/ui-kit/scripts/kit.mjs", import.meta.url),
+  new URL("../plugins/sam-ui/skills/ui-kit/scripts/kit.mjs", import.meta.url),
 );
 const root = fs.mkdtempSync(
   path.join(process.env.TMPDIR || os.tmpdir(), "kit-test-"),
 );
-// An empty Claude Code config folder: kit.mjs looks there for a newer installed sam-ui-kit.
+// An empty Claude Code config folder: kit.mjs looks there for a newer installed sam-ui.
 const config = path.join(root, "claude-config");
 fs.mkdirSync(config);
 let failures = 0;
@@ -35,7 +35,7 @@ function plugin(name, version, files) {
   fs.mkdirSync(path.join(dir, ".claude-plugin"), { recursive: true });
   fs.writeFileSync(
     path.join(dir, ".claude-plugin/plugin.json"),
-    JSON.stringify({ name: "sam-ui-kit", version }),
+    JSON.stringify({ name: "sam-ui", version }),
   );
   const skill = path.join(dir, "skills/ui-kit");
   fs.mkdirSync(path.join(skill, "scripts"), { recursive: true });
@@ -100,7 +100,7 @@ ok(m.files["components/ui/a.tsx"] === hash("a1"), "manifest hash of a");
 
 console.log("2. check right after install");
 r = run(v1, "check", p);
-ok(r.code === 0 && /match sam-ui-kit 0.1.0/.test(r.out), `check clean\n${r.out}`);
+ok(r.code === 0 && /match sam-ui 0.1.0/.test(r.out), `check clean\n${r.out}`);
 
 console.log("3. local edits are reported by check");
 fs.writeFileSync(`${p}/components/ui/b.tsx`, "b1-edited");
@@ -567,14 +567,14 @@ ok(
   `no install into a workspace root\n${r.out}`,
 );
 
-console.log("22. a newer sam-ui-kit installed in Claude Code");
+console.log("22. a newer sam-ui installed in Claude Code");
 fs.mkdirSync(`${config}/plugins`);
 fs.writeFileSync(
   `${config}/plugins/installed_plugins.json`,
   JSON.stringify({
     version: 2,
     plugins: {
-      "sam-ui-kit@sam-ui": [
+      "sam-ui@hoo-plugins": [
         {
           scope: "user",
           installPath: path.join(root, "kit-v2"),
@@ -588,7 +588,7 @@ const o = project("stale-session");
 r = run(v1, "install", o);
 ok(
   r.code === 1 &&
-    /Claude Code has sam-ui-kit 0.2.0 installed/.test(r.out) &&
+    /Claude Code has sam-ui 0.2.0 installed/.test(r.out) &&
     r.out.includes(path.join(root, "kit-v2/skills/ui-kit/scripts/kit.mjs")) &&
     !fs.existsSync(`${o}/sam-ui.json`),
   `stale script refused\n${r.out}`,
@@ -596,7 +596,7 @@ ok(
 r = run(v2, "install", o);
 ok(r.code === 0, `the newest version runs\n${r.out}`);
 r = run(v1, "check", o);
-ok(/Claude Code has sam-ui-kit 0.2.0 installed/.test(r.out), "check notes it too");
+ok(/Claude Code has sam-ui 0.2.0 installed/.test(r.out), "check notes it too");
 fs.rmSync(`${config}/plugins`, { recursive: true });
 
 console.log("23. a sam-ui.json with git conflict markers");
@@ -811,7 +811,7 @@ ok(
   `an edit on a CRLF base the kit did not change is local, not merge\n${r.out}`,
 );
 
-console.log("31. which installed sam-ui-kit counts for this project");
+console.log("31. which installed sam-ui counts for this project");
 fs.mkdirSync(`${config}/plugins`);
 const installed = (entry) =>
   fs.writeFileSync(
@@ -819,7 +819,7 @@ const installed = (entry) =>
     JSON.stringify({
       version: 2,
       plugins: {
-        "sam-ui-kit@sam-ui": [
+        "sam-ui@hoo-plugins": [
           {
             installPath: path.join(root, "kit-v2"),
             version: "0.2.0",
@@ -838,7 +838,7 @@ r = run(v1, "update", sc, "--keep", "components/ui/a.tsx");
 const lastLine = r.out.trim().split("\n").pop().trim();
 ok(
   r.code === 1 &&
-    /Claude Code has sam-ui-kit 0.2.0 installed/.test(r.out) &&
+    /Claude Code has sam-ui 0.2.0 installed/.test(r.out) &&
     lastLine ===
       `node ${path.join(root, "kit-v2/skills/ui-kit/scripts/kit.mjs")} update ${sc}`,
   `an ancestor folder's install counts; the command to run has no --keep\n${r.out}`,
@@ -846,26 +846,25 @@ ok(
 installed({ scope: "user", version: "0.0.1" });
 r = run(v1, "update", sc);
 ok(r.code === 0, `an older install does not refuse\n${r.out}`);
-// The plugin was sam-ui@sam-plugins up to 0.3.5; that name stopped there, so it never counts.
+// The plugin was sam-ui@sam-plugins up to 0.3.5 and sam-ui-kit@sam-ui in 0.4; those ids stopped there, so
+// they never count.
+const oldEntry = [
+  { scope: "user", installPath: path.join(root, "kit-v2"), version: "0.2.0" },
+];
 fs.writeFileSync(
   `${config}/plugins/installed_plugins.json`,
   JSON.stringify({
     version: 2,
     plugins: {
-      "sam-ui@sam-plugins": [
-        {
-          scope: "user",
-          installPath: path.join(root, "kit-v2"),
-          version: "0.2.0",
-        },
-      ],
+      "sam-ui@sam-plugins": oldEntry,
+      "sam-ui-kit@sam-ui": oldEntry,
     },
   }),
 );
 r = run(v1, "update", sc);
 ok(
   r.code === 0 && !/Claude Code has/.test(r.out),
-  `the old plugin name is not counted\n${r.out}`,
+  `the old plugin ids are not counted\n${r.out}`,
 );
 fs.rmSync(`${config}/plugins`, { recursive: true });
 

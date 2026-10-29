@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Releases the sam-ui-kit plugin: sets its version, validates the plugin and the marketplace, and builds
-# dist/sam-ui-<version>.zip for PCs that can't reach the repository.
+# Releases the sam-ui plugin: sets its version, validates it, and builds dist/sam-ui-<version>.zip for PCs
+# that can't reach GitHub.
 #
 #   pnpm release <version>     e.g. pnpm release 0.2.0
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 version="${1:?usage: pnpm release <version>, e.g. 0.2.0}"
-manifest=plugins/sam-ui-kit/.claude-plugin/plugin.json
+manifest=plugins/sam-ui/.claude-plugin/plugin.json
 
 node -e '
 const fs = require("fs");
@@ -18,27 +18,44 @@ const pattern = /"version": "[^"]*"/;
 if (!pattern.test(text)) throw new Error(`no "version" in ${file}`);
 fs.writeFileSync(file, text.replace(pattern, `"version": "${version}"`));
 ' "$manifest" "$version"
-echo "sam-ui-kit version: $version"
+echo "sam-ui version: $version"
+
+# The zip is a local hoo-plugins marketplace that lists only this plugin by a relative path, so it installs
+# as sam-ui@hoo-plugins like the online one.
+root=$(pwd)
+stage=$(mktemp -d)
+mkdir -p "$stage/hoo-plugins/.claude-plugin" dist
+cp -R plugins "$stage/hoo-plugins/"
+cat >"$stage/hoo-plugins/.claude-plugin/marketplace.json" <<'EOF'
+{
+  "name": "hoo-plugins",
+  "owner": { "name": "sanghoooo" },
+  "description": "sanghoooo's Claude Code plugins (offline copy with sam-ui).",
+  "plugins": [
+    {
+      "name": "sam-ui",
+      "source": "./plugins/sam-ui",
+      "description": "SAM UI Kit: install a React + Tailwind CSS 4 dashboard kit into a project and build screens with it."
+    }
+  ]
+}
+EOF
+cp docs/offline-install.md "$stage/hoo-plugins/README.md"
+find "$stage" -name .DS_Store -delete
 
 # claude is often only bundled with the VS Code extension, not on PATH.
 claude_bin=$(command -v claude ||
   ls -d "$HOME"/.vscode/extensions/anthropic.claude-code-*/resources/native-binary/claude 2>/dev/null | tail -1 ||
   true)
 if [[ -n "$claude_bin" ]]; then
-  "$claude_bin" plugin validate ./plugins/sam-ui-kit --strict
-  "$claude_bin" plugin validate .
+  "$claude_bin" plugin validate ./plugins/sam-ui --strict
+  "$claude_bin" plugin validate "$stage/hoo-plugins"
 else
   echo "claude CLI not found: plugin validate skipped" >&2
 fi
 
-root=$(pwd)
-stage=$(mktemp -d)
-mkdir -p "$stage/sam-ui" dist
-cp -R .claude-plugin plugins "$stage/sam-ui/"
-cp docs/offline-install.md "$stage/sam-ui/README.md"
-find "$stage" -name .DS_Store -delete
 rm -f "dist/sam-ui-$version.zip"
-(cd "$stage" && zip -qr "$root/dist/sam-ui-$version.zip" sam-ui)
+(cd "$stage" && zip -qr "$root/dist/sam-ui-$version.zip" hoo-plugins)
 rm -rf "$stage"
 
 echo "built dist/sam-ui-$version.zip"

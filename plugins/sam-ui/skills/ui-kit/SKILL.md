@@ -118,10 +118,10 @@ app shell (`components/layout/*`) and the font helper need the Next.js App Route
 A newer kit arrives with the plugin, so update the plugin first, then the project:
 
 1. **The plugin.** The user (or you, if allowed) updates it: in a session `/plugin marketplace update
-   sam-ui`, then `/reload-plugins`; in a terminal `claude plugin marketplace update sam-ui` and
-   `claude plugin update sam-ui-kit@sam-ui`, then a restart. The paths in this skill still point at the
+   hoo-plugins`, then `/reload-plugins`; in a terminal `claude plugin marketplace update hoo-plugins` and
+   `claude plugin update sam-ui@hoo-plugins`, then a restart. The paths in this skill still point at the
    version that was loaded, so invoke the skill again after the update. If you don't, kit.mjs refuses to
-   run while Claude Code has a newer sam-ui-kit than its own, and prints the newer script's command to run
+   run while Claude Code has a newer sam-ui than its own, and prints the newer script's command to run
    instead; decide any `--take`/`--keep` again from that script's output.
 2. **The project.** Run `node ${CLAUDE_SKILL_DIR}/scripts/kit.mjs update <src-root>`. Per file it reports:
    - `added` (new in the kit, or a missing kit file put back), `updated` (the project had not changed it),

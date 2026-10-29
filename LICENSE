@@ -24,10 +24,10 @@ SOFTWARE.
 
 The MIT License above covers this repository's code and documentation. It does not cover:
 
-- The air and T logos in plugins/sam-ui-kit/skills/ui-kit/assets/public/images/workspaces/. They are
+- The air and T logos in plugins/sam-ui/skills/ui-kit/assets/public/images/workspaces/. They are
   trademarks of their respective owners, included only to identify those services; no right to use
   them is granted.
-- The Pretendard font in plugins/sam-ui-kit/skills/ui-kit/assets/lib/fonts/, licensed under the SIL
+- The Pretendard font in plugins/sam-ui/skills/ui-kit/assets/lib/fonts/, licensed under the SIL
   Open Font License 1.1 (OFL.txt in the same folder).
 
 Other product and company names in this repository, such as air, T다이렉트샵, T world, SKT, KT 요고 and

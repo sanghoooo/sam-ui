@@ -14,14 +14,14 @@ import { AiInsightTitle } from "@/components/ui/ai-insight";
 import { Badge } from "@/components/ui/badge";
 import { buttonClass } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import plugin from "../../../plugins/sam-ui-kit/.claude-plugin/plugin.json";
+import plugin from "../../../plugins/sam-ui/.claude-plugin/plugin.json";
 import { CopyCommand } from "./_intro/copy-command";
 import { HeroPreview } from "./_intro/hero-preview";
 
 const REPO = "https://github.com/sanghoooo/sam-ui";
 const INSTALL = [
-  `/plugin marketplace add ${REPO}.git`,
-  "/plugin install sam-ui-kit@sam-ui",
+  "/plugin marketplace add https://github.com/sanghoooo/hoo-plugins.git",
+  "/plugin install sam-ui@hoo-plugins",
 ];
 
 const FEATURES = [
@@ -60,7 +60,7 @@ const FEATURES = [
 const STEPS = [
   {
     title: "플러그인 설치",
-    body: "Claude Code에서 마켓플레이스를 추가하고 sam-ui-kit을 설치합니다.",
+    body: "Claude Code에서 마켓플레이스 hoo-plugins를 추가하고 sam-ui를 설치합니다.",
     detail: <CopyCommand lines={INSTALL} />,
   },
   {
@@ -265,7 +265,7 @@ export default function IntroPage() {
                   </p>
                 ))}
                 <p className="mt-1 text-muted-foreground">
-                  sam-ui-kit 0.3.0 -&gt; {plugin.version}: 1 added, 1 updated, 0
+                  sam-ui 0.3.0 -&gt; {plugin.version}: 1 added, 1 updated, 0
                   removed.
                 </p>
               </div>

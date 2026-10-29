@@ -159,7 +159,11 @@ function compareVersions(a, b) {
   return 0;
 }
 
-// A sam-ui-kit newer than this copy that Claude Code has installed for this project (user scope, or project
+// The plugin's id in Claude Code. It was sam-ui@sam-plugins up to 0.3.5 and sam-ui-kit@sam-ui in 0.4; those
+// ids stopped there, so they never count.
+const PLUGIN_ID = "sam-ui@hoo-plugins";
+
+// A sam-ui newer than this copy that Claude Code has installed for this project (user scope, or project
 // scope for this folder or one above it). After a plugin update, a session can still hold the old
 // version's path.
 function newerInstalled() {
@@ -176,7 +180,7 @@ function newerInstalled() {
   };
   let newest = null;
   for (const [id, entries] of Object.entries(installed?.plugins ?? {})) {
-    if (!id.startsWith("sam-ui-kit@")) continue;
+    if (id !== PLUGIN_ID) continue;
     for (const entry of [entries].flat()) {
       if (!entry?.installPath || !fs.existsSync(entry.installPath)) continue;
       if (!coversProject(entry)) continue;
@@ -196,7 +200,7 @@ function refuseIfNewerInstalled() {
   const newer = newerInstalled();
   if (!newer) return;
   console.error(
-    `This is sam-ui-kit ${kitVersion} (${pluginRoot}), but Claude Code has sam-ui-kit ${newer.version} installed. Run that one, and decide any --take/--keep again from its output (the newer kit may change those files):\n  node ${newer.script} ${command} ${srcArg}`,
+    `This is sam-ui ${kitVersion} (${pluginRoot}), but Claude Code has sam-ui ${newer.version} installed. Run that one, and decide any --take/--keep again from its output (the newer kit may change those files):\n  node ${newer.script} ${command} ${srcArg}`,
   );
   process.exit(1);
 }
@@ -357,7 +361,7 @@ function install() {
   const existing = readManifest();
   if (existing) {
     console.error(
-      `Already installed (${MANIFEST}, sam-ui-kit ${existing.version}): run update. To install from scratch, delete ${MANIFEST} first.`,
+      `Already installed (${MANIFEST}, sam-ui ${existing.version}): run update. To install from scratch, delete ${MANIFEST} first.`,
     );
     process.exit(1);
   }
@@ -414,7 +418,7 @@ function install() {
   print("replaced", out.replaced, "  (by the kit's version)");
   print("kept", out.kept, "  (the project's version, a local change)");
   console.log(
-    `sam-ui-kit ${kitVersion} installed into ${projectRoot}: ${out.copied.length} copied, ${out.same.length} already identical, ${out.starter.length} starters, ${MANIFEST} written.`,
+    `sam-ui ${kitVersion} installed into ${projectRoot}: ${out.copied.length} copied, ${out.same.length} already identical, ${out.starter.length} starters, ${MANIFEST} written.`,
   );
 }
 
@@ -427,7 +431,7 @@ function update() {
     );
   if (compareVersions(manifest.version, kitVersion) > 0) {
     console.error(
-      `The project has sam-ui-kit ${manifest.version}, newer than this plugin's ${kitVersion}; an older kit would revert its files. Update the plugin first (in Claude Code: /plugin marketplace update sam-ui, then /reload-plugins), then run update with the new version's kit.mjs.`,
+      `The project has sam-ui ${manifest.version}, newer than this plugin's ${kitVersion}; an older kit would revert its files. Update the plugin first (in Claude Code: /plugin marketplace update hoo-plugins, then /reload-plugins), then run update with the new version's kit.mjs.`,
     );
     process.exit(1);
   }
@@ -575,7 +579,7 @@ function update() {
   );
   print("left", out.left, "  (dropped from the kit, but changed here)");
   console.log(
-    `sam-ui-kit ${manifest.version} -> ${kitVersion}: ${out.added.length} added, ${out.updated.length} updated, ${out.removed.length} removed.`,
+    `sam-ui ${manifest.version} -> ${kitVersion}: ${out.added.length} added, ${out.updated.length} updated, ${out.removed.length} removed.`,
   );
   if (out.compare.length)
     console.log(
@@ -645,25 +649,25 @@ function check() {
   print("missing", out.missing);
   if (order < 0)
     console.log(
-      `The project has sam-ui-kit ${manifest.version}; this plugin carries ${kitVersion}: run update to bring it in.`,
+      `The project has sam-ui ${manifest.version}; this plugin carries ${kitVersion}: run update to bring it in.`,
     );
   if (order > 0)
     console.log(
-      `The project has sam-ui-kit ${manifest.version}, newer than this plugin's ${kitVersion}: update the plugin before running update.`,
+      `The project has sam-ui ${manifest.version}, newer than this plugin's ${kitVersion}: update the plugin before running update.`,
     );
   const newer = newerInstalled();
   if (newer)
     console.log(
-      `Claude Code has sam-ui-kit ${newer.version} installed: ${newer.script}`,
+      `Claude Code has sam-ui ${newer.version} installed: ${newer.script}`,
     );
   const count = Object.values(out).reduce((sum, rels) => sum + rels.length, 0);
   if (count) {
     console.log(
-      `${count} kit file(s) differ from sam-ui-kit ${manifest.version}. Make kit changes in the sam-ui repository instead, or keep them as deliberate local changes.`,
+      `${count} kit file(s) differ from sam-ui ${manifest.version}. Make kit changes in the sam-ui repository instead, or keep them as deliberate local changes.`,
     );
     process.exit(1);
   }
-  console.log(`The project's kit files match sam-ui-kit ${manifest.version}.`);
+  console.log(`The project's kit files match sam-ui ${manifest.version}.`);
 }
 
 ({ install, update, check })[command]();

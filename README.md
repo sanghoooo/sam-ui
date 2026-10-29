@@ -1,19 +1,18 @@
 # sam-ui — SAM UI 킷
 
-SAM UI 킷과, 그 킷을 다른 프로젝트에 설치하고 쓰게 하는 Claude Code 플러그인 `sam-ui-kit`(마켓플레이스
-`sam-ui`)을 관리하는 저장소입니다.
+SAM UI 킷과, 그 킷을 다른 프로젝트에 설치하고 쓰게 하는 Claude Code 플러그인 `sam-ui`를 관리하는 저장소입니다.
+플러그인은 마켓플레이스 [hoo-plugins](https://github.com/sanghoooo/hoo-plugins)에 등록돼 있습니다.
 
 - **킷:** 사이드바 레이아웃(시작용 메뉴), 필터 툴바, SegmentedControl(움직이는 선택 표시), Tabs,
   MonthStepper, Select, Switch, StatePanel, AI Insight 로고, air · TDS · MVNO 로고와 브랜드 색, 라이트(기본) ·
   다크 토큰. React 19 + Tailwind CSS 4, 레이아웃은 Next.js App Router.
-- **플러그인:** 설치하면 `sam-ui-kit:ui-kit` 스킬이 생기고, 어떤 프로젝트에서든 "SAM UI 킷 설치해줘"라고 하면
+- **플러그인:** 설치하면 `sam-ui:ui-kit` 스킬이 생기고, 어떤 프로젝트에서든 "SAM UI 킷 설치해줘"라고 하면
   Claude가 킷을 복사 · 설정하고 이후 화면도 이 킷으로 만듭니다.
 
 ## 구성
 
 ```
-.claude-plugin/marketplace.json   마켓플레이스 sam-ui
-plugins/sam-ui-kit/               플러그인 sam-ui-kit
+plugins/sam-ui/                   플러그인 sam-ui
   .claude-plugin/plugin.json      이름 · 버전
   skills/ui-kit/
     SKILL.md                      설치 순서 · 화면 만드는 법 · 스타일 규칙
@@ -27,7 +26,7 @@ tests/kit.test.mjs                kit.mjs 시나리오 테스트 (pnpm test)
 docs/offline-install.md           zip에 들어가는 설치 안내
 ```
 
-킷 원본은 `plugins/sam-ui-kit/skills/ui-kit/assets/` 한 곳입니다. 사이트(`apps/hoo`)는 경로 별칭(`@/components/*`,
+킷 원본은 `plugins/sam-ui/skills/ui-kit/assets/` 한 곳입니다. 사이트(`apps/hoo`)는 경로 별칭(`@/components/*`,
 `@/lib/*`)과 `@source`로 그 파일을 직접 읽으므로 복사본이 없습니다.
 
 ## 개발
@@ -53,25 +52,30 @@ pnpm build
 pnpm release 0.2.0   # plugin.json version 변경 → plugin validate → dist/sam-ui-0.2.0.zip
 ```
 
-그다음 커밋하고 `v0.2.0` 태그와 함께 기본 브랜치에 머지합니다. 설치한 사람은 Claude Code에서
-`/plugin marketplace update sam-ui` 후 `/reload-plugins`로 받습니다(터미널에서는 `claude plugin marketplace
-update sam-ui`, `claude plugin update sam-ui-kit@sam-ui` 후 다시 시작). `version`을 올리지 않으면 설치된 쪽에
+그다음 커밋하고 `v0.2.0` 태그와 함께 기본 브랜치에 push합니다. hoo-plugins는 이 저장소 기본 브랜치의
+`plugins/sam-ui`를 가리키므로(`git-subdir`) 릴리스할 때 고치지 않습니다. 설치한 사람은 Claude Code에서
+`/plugin marketplace update hoo-plugins` 후 `/reload-plugins`로 받습니다(터미널에서는 `claude plugin marketplace
+update hoo-plugins`, `claude plugin update sam-ui@hoo-plugins` 후 다시 시작). `version`을 올리지 않으면 설치된 쪽에
 업데이트가 가지 않습니다.
 
 ## 설치 (사용하는 쪽)
 
-GitHub에 접근할 수 있으면:
+GitHub에 접근할 수 있으면 Claude Code에서:
 
 ```
-/plugin install sam-ui-kit --marketplace https://github.com/sanghoooo/sam-ui.git
+/plugin marketplace add https://github.com/sanghoooo/hoo-plugins.git
+/plugin install sam-ui@hoo-plugins
 ```
 
-또는 `/plugin marketplace add https://github.com/sanghoooo/sam-ui.git` 후 `/plugin install sam-ui-kit@sam-ui`.
 GitHub에 접근할 수 없는 PC는 `pnpm release`가 만든 zip을 풀어 로컬 경로로 추가합니다(`docs/offline-install.md`).
+
+0.4 이하의 이름(`sam-ui-kit@sam-ui`, `sam-ui@sam-plugins`)으로 설치했다면 먼저 `claude plugin marketplace remove
+sam-ui --scope user`(또는 `sam-plugins`)로 이전 마켓플레이스를 지우고 위 순서로 설치합니다. 프로젝트의 `sam-ui.json`은
+그대로 이어서 씁니다.
 
 ## 사용하는 프로젝트의 업데이트
 
-킷을 배포하면 각 프로젝트는 플러그인을 업데이트한 뒤(`/plugin marketplace update sam-ui`,
+킷을 배포하면 각 프로젝트는 플러그인을 업데이트한 뒤(`/plugin marketplace update hoo-plugins`,
 `/reload-plugins`) Claude에게 "SAM UI 킷 업데이트해줘"라고 합니다. 스킬이 `kit.mjs update`로
 처리합니다.
 
