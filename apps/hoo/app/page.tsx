@@ -18,9 +18,9 @@ import plugin from "../../../plugins/sam-ui-kit/.claude-plugin/plugin.json";
 import { CopyCommand } from "./_intro/copy-command";
 import { HeroPreview } from "./_intro/hero-preview";
 
-const REPO = "<저장소 주소>";
+const REPO = "https://github.com/sanghoooo/sam-ui";
 const INSTALL = [
-  `/plugin marketplace add ${REPO}`,
+  `/plugin marketplace add ${REPO}.git`,
   "/plugin install sam-ui-kit@sam-ui",
 ];
 
@@ -314,6 +314,9 @@ export default function IntroPage() {
             <Link className="hover:text-foreground" href="/palette">
               팔레트
             </Link>
+            <a className="hover:text-foreground" href={REPO}>
+              소스
+            </a>
           </nav>
         </div>
       </footer>

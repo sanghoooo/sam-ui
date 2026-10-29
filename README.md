@@ -60,14 +60,14 @@ update sam-ui`, `claude plugin update sam-ui-kit@sam-ui` 후 다시 시작). `ve
 
 ## 설치 (사용하는 쪽)
 
-이 저장소에 접근할 수 있으면(`<저장소 주소>`는 이 저장소의 git 주소):
+GitHub에 접근할 수 있으면:
 
 ```
-/plugin install sam-ui-kit --marketplace <저장소 주소>
+/plugin install sam-ui-kit --marketplace https://github.com/sanghoooo/sam-ui.git
 ```
 
-또는 `/plugin marketplace add <저장소 주소>` 후 `/plugin install sam-ui-kit@sam-ui`. 저장소에 접근할 수 없는
-PC는 `pnpm release`가 만든 zip을 풀어 로컬 경로로 추가합니다(`docs/offline-install.md`).
+또는 `/plugin marketplace add https://github.com/sanghoooo/sam-ui.git` 후 `/plugin install sam-ui-kit@sam-ui`.
+GitHub에 접근할 수 없는 PC는 `pnpm release`가 만든 zip을 풀어 로컬 경로로 추가합니다(`docs/offline-install.md`).
 
 ## 사용하는 프로젝트의 업데이트
 

@@ -1,0 +1,25 @@
+# sam-ui CI: lint, the kit script's tests, and a build of the site in apps/hoo (which compiles every kit
+# file) on pull requests and on main. plugin validate needs the claude CLI, so it runs in `pnpm release` locally.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build
