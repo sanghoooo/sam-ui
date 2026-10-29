@@ -20,7 +20,8 @@ SAM UI 킷(사이드바 레이아웃, 필터 툴바, 세그먼트 · 탭 · 월 
    Next.js App Router).
 
 0.4 이하의 이름(`sam-ui-kit@sam-ui`, `sam-ui@sam-plugins`)으로 설치했다면 먼저 `claude plugin marketplace remove
-sam-ui --scope user`(또는 `sam-plugins`)로 이전 마켓플레이스를 지우고 위 순서로 설치합니다.
+sam-ui`(또는 `sam-plugins`)로 이전 마켓플레이스와 그 플러그인을 지우고 위 순서로 설치합니다. 범위(`--scope`)는
+붙이지 않습니다.
 
 ## 업데이트
 

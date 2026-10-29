@@ -70,8 +70,8 @@ GitHub에 접근할 수 있으면 Claude Code에서:
 GitHub에 접근할 수 없는 PC는 `pnpm release`가 만든 zip을 풀어 로컬 경로로 추가합니다(`docs/offline-install.md`).
 
 0.4 이하의 이름(`sam-ui-kit@sam-ui`, `sam-ui@sam-plugins`)으로 설치했다면 먼저 `claude plugin marketplace remove
-sam-ui --scope user`(또는 `sam-plugins`)로 이전 마켓플레이스를 지우고 위 순서로 설치합니다. 프로젝트의 `sam-ui.json`은
-그대로 이어서 씁니다.
+sam-ui`(또는 `sam-plugins`)로 이전 마켓플레이스와 그 플러그인을 지우고 위 순서로 설치합니다. 범위(`--scope`)는 붙이지
+않습니다. 사용자 · 프로젝트 어느 쪽에 등록했든 함께 지웁니다. 프로젝트의 `sam-ui.json`은 그대로 이어서 씁니다.
 
 ## 사용하는 프로젝트의 업데이트
 
