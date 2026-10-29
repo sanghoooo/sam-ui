@@ -15,12 +15,15 @@ keyframes are in `styles/ui-kit.css` (`animate-sparkle-*`, `animate-title-glint-
 | `text` | the words | `AI Insight` |
 | `as` | `h2` for a section heading, `span` for inline use | `h2` |
 | `still` | no light; the stars and words show in the primary color at full strength | `false` |
-| `className` | on the wrapper; text size comes from here (13px by default) | |
+| `className` | on the wrapper; text size comes from here (13px by default), and the sparkle grows with it | |
 
 ```tsx
 <AiInsightTitle />                     {/* a panel heading */}
 <AiInsightTitle as="span" still />     {/* a static mark, e.g. in a list */}
+<AiInsightTitle as="span" className="text-[17px]" />  {/* a larger mark */}
 ```
+
+The sparkle is 17/13 of the words' size: 17px at 13px, 22px at 17px.
 
 The stars take the words' color: the text color around the title (set `text-*` on it or its parent), or
 the primary color with `still`. At rest the animated title shows its stars and words at 50%, so the light

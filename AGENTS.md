@@ -9,7 +9,7 @@
 - Kit files are copied into other projects, so their comments must not point at paths outside the kit.
 - When a component's API or behavior changes, update its file in `skills/ui-kit/references/` (and `SKILL.md` if
   setup or rules change), and show the change on `/palette` (`apps/hoo/app/palette/palette-demo.tsx`).
-  In `apps/hoo`, the intro at `/` and the header are in Korean; the palette is in English.
+  In `apps/hoo`, the intro at `/`, the header and the palette are in Korean.
 - Keep the kit working with Next.js Cache Components: the Sidebar stays in its `<Suspense>` boundary, and route
   templates use no `dynamicParams`/`dynamic`/`revalidate` segment config.
 - `skills/ui-kit/scripts/kit.mjs` installs, updates and checks the kit in projects through their `sam-ui.json` manifest (the version, and per file the hash of the kit version the project's copy is based on). It never overwrites a project's change without a per-file `--take` (or `update --force`), keeps an unmerged file on its old base so every update lists it, refuses to downgrade a project or to run while Claude Code has a newer `sam-ui@sam-plugins` installed, and hashes text with LF line endings. Keep `tests/kit.test.mjs` passing (`pnpm test`) and extend it when kit.mjs changes. The starter (`lib/nav.ts`) is copied once and then belongs to the project; update reports (`compare`) a starter the kit changed, and (`unused`) one the kit dropped, once, and never writes it.

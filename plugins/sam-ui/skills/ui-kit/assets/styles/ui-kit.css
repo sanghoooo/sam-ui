@@ -98,8 +98,8 @@
 /* ── AI Insight logo (components/ui/ai-insight.tsx) ── */
 
 /* The AI Insight title's light, every 1.75s: a slanted band sweeps the big star (sparkle-sweep), the small
-   star pops 2.2× while its lit copy fades in and out over 0.35s, 8.57–28.57%, peaking at 17.14% (0.3s), just
-   after the band's middle passes it at 14.29%. 14.29–42.86% (0.25–0.75s) the same
+   star pops 2× while its lit copy fades in and out over 0.35s, 14.29–34.29% (0.25–0.6s), peaking at 22.86%
+   (0.4s): it starts as the band's middle passes it, at 14.29%. 14.29–42.86% (0.25–0.75s) the same
    band crosses the words, as if the light carried on from the star.
    Every keyframe moves translate, scale or opacity only, which the compositor runs off the main thread, so
    the title keeps its pace while the page is busy. Reduced motion shows everything at rest. */
@@ -129,13 +129,13 @@
 }
 @keyframes sam-sparkle-pop {
   0%,
-  8.57% {
+  14.29% {
     scale: 1;
   }
-  17.14% {
-    scale: 2.2;
+  22.86% {
+    scale: 2;
   }
-  28.57%,
+  34.29%,
   100% {
     scale: 1;
   }
@@ -148,13 +148,13 @@
 }
 @keyframes sam-sparkle-flash {
   0%,
-  8.57% {
+  14.29% {
     opacity: 0;
   }
-  17.14% {
+  22.86% {
     opacity: 1;
   }
-  28.57%,
+  34.29%,
   100% {
     opacity: 0;
   }

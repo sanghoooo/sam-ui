@@ -3,3 +3,105 @@
 @import "../../../plugins/sam-ui/skills/ui-kit/assets/styles/ui-kit.css";
 /* The kit's components live outside this app, so Tailwind is told to scan them. */
 @source "../../../plugins/sam-ui/skills/ui-kit/assets";
+
+/* The header's name (site-header.tsx), every 5.1s: "Sales and Marketing 본부" for 2s, then the letters after
+   each initial fold away in 0.3s as their grid column goes from 1fr to 0fr, so each part narrows from its own
+   width, while "A" takes the place of "a" and "UI" of "본부"; "SAM UI" for 2.5s, then it all comes back in
+   0.3s. Leaving letters fade out early in the move and arriving ones fade in late. Without motion the name
+   rests folded. */
+@keyframes hoo-name-fold-out {
+  0%,
+  39.22% {
+    grid-template-columns: 1fr;
+    opacity: 1;
+  }
+  42.75% {
+    opacity: 0;
+  }
+  45.1%,
+  94.12% {
+    grid-template-columns: 0fr;
+    opacity: 0;
+  }
+  96.47% {
+    opacity: 0;
+  }
+  100% {
+    grid-template-columns: 1fr;
+    opacity: 1;
+  }
+}
+@keyframes hoo-name-fold-in {
+  0%,
+  39.22% {
+    grid-template-columns: 0fr;
+    opacity: 0;
+  }
+  41.57% {
+    opacity: 0;
+  }
+  45.1%,
+  94.12% {
+    grid-template-columns: 1fr;
+    opacity: 1;
+  }
+  97.65% {
+    opacity: 0;
+  }
+  100% {
+    grid-template-columns: 0fr;
+    opacity: 0;
+  }
+}
+@utility animate-name-fold-out {
+  grid-template-columns: 0fr;
+  opacity: 0;
+  animation: hoo-name-fold-out 5.1s cubic-bezier(0.65, 0, 0.35, 1) infinite both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+@utility animate-name-fold-in {
+  grid-template-columns: 1fr;
+  animation: hoo-name-fold-in 5.1s cubic-bezier(0.65, 0, 0.35, 1) infinite both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+/* The light on the folded name, 2.45–2.95s of the same 5.1s: a band 3em wide, slanted 14° like the AI Insight
+   light, slides from just left of "SAM UI" (about 3.3em) to just past it. It is a mask over a copy of the name
+   in white at 75%, black in dark mode, so only the letters light up. Once past, the band jumps back to wait
+   left of the letters, so the name unfolding into its old place doesn't light up. */
+@keyframes hoo-name-glint {
+  0%,
+  48.04% {
+    mask-position: -3em 0;
+  }
+  57.84% {
+    mask-position: 3.6em 0;
+    animation-timing-function: step-start;
+  }
+  100% {
+    mask-position: -3em 0;
+  }
+}
+@utility animate-name-glint {
+  color: rgb(255 255 255 / 0.75);
+  &:where(.dark *) {
+    color: rgb(0 0 0 / 0.75);
+  }
+  mask-image: linear-gradient(
+    104deg,
+    transparent 10%,
+    #000 45%,
+    #000 55%,
+    transparent 90%
+  );
+  mask-size: 3em 100%;
+  mask-repeat: no-repeat;
+  mask-position: -3em 0;
+  animation: hoo-name-glint 5.1s linear infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}

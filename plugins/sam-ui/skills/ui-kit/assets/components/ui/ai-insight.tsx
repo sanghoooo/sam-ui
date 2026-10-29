@@ -10,8 +10,8 @@ const SPARKLE_SMALL =
 
 /**
  * AI Insight's icon: every 1.75s a band of light, slanted like the italic title, sweeps left to right across
- * the big star, and the small star at the top right twinkles as the band reaches it, just before the same
- * light crosses the words. Both stars rest at 50%. Every moving part is an HTML layer animated by transform
+ * the big star, and the small star at the top right twinkles as the band reaches it, as the same light sets
+ * off across the words. Both stars rest at 50%. Every moving part is an HTML layer animated by transform
  * or opacity only, so it keeps its pace while the page is busy. Reduced motion shows the resting stars.
  * `still` drops the light and shows the stars at full strength. Alone, it needs an `ai-sparkle-glint`
  * holder for its light.
@@ -75,10 +75,11 @@ export function AiSparkle({
 
 /**
  * The AI Insight title: the sparkle and the words, in bold italic, as one unit 1px apart. The words rest at
- * 50% like the stars, and right after the small star lights, a band of light crosses them: a window over the
+ * 50% like the stars, and as the small star lights, a band of light crosses them: a window over the
  * words slides right while the lit copy inside it slides back by the same distance, so the words hold still
  * and only the band moves. Other words (`text`) glint alike; `as="span"` sets them as a status, not a
- * heading. The stars take the words' color: the text color around the title, or the primary color with
+ * heading. The sparkle is 17/13 of the words' size, 17px at the default 13px, so a larger text size grows
+ * both. The stars take the words' color: the text color around the title, or the primary color with
  * `still`, which drops the light and shows both at full strength.
  */
 export function AiInsightTitle({
@@ -100,9 +101,16 @@ export function AiInsightTitle({
         className,
       )}
     >
-      <AiSparkle className="size-[17px] shrink-0" still={still} />
+      <AiSparkle className="size-[calc(17em/13)] shrink-0" still={still} />
       <span className="relative inline-block">
-        <span className={cn("whitespace-nowrap", !still && "opacity-50")}>
+        {/* Opacity paints the words in a layer cut at their box, and the synthesized italic leans past its
+            right edge; the padding widens the layer and the margin gives the room back. */}
+        <span
+          className={cn(
+            "whitespace-nowrap",
+            !still && "-mr-[0.25em] pr-[0.25em] opacity-50",
+          )}
+        >
           {text}
         </span>
         {!still && (

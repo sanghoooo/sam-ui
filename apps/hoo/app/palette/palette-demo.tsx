@@ -19,36 +19,29 @@ import { cn } from "@/lib/utils";
 
 /** The color tokens in styles/ui-kit.css. Swatches follow the current theme. */
 const COLORS = [
-  { token: "background", use: "Page background" },
-  { token: "foreground", use: "Body text" },
-  { token: "card", use: "Cards, header" },
-  { token: "sidebar", use: "Sidebar" },
-  { token: "raised", use: "Chosen segment or tab" },
-  { token: "muted", use: "Tracks, hovers" },
-  { token: "muted-foreground", use: "Labels, secondary text" },
-  { token: "subtle-foreground", use: "Disabled text" },
-  { token: "border", use: "Borders" },
-  { token: "input", use: "Input borders" },
-  { token: "primary", use: "Accent" },
-  { token: "primary-foreground", use: "Text on accent" },
-  { token: "ring", use: "Focus ring" },
+  { token: "background", use: "페이지 배경" },
+  { token: "foreground", use: "본문 글자" },
+  { token: "card", use: "카드, 헤더" },
+  { token: "sidebar", use: "사이드바" },
+  { token: "raised", use: "선택한 세그먼트나 탭" },
+  { token: "muted", use: "트랙, 호버" },
+  { token: "muted-foreground", use: "레이블, 보조 글자" },
+  { token: "subtle-foreground", use: "비활성 글자" },
+  { token: "border", use: "테두리" },
+  { token: "input", use: "입력 테두리" },
+  { token: "primary", use: "강조" },
+  { token: "primary-foreground", use: "강조 위 글자" },
+  { token: "ring", use: "포커스 링" },
 ];
 
 /** The carriers' sub-brand colors (MVNO host networks), beside the workspaces'. */
 const CARRIERS = [
   { token: "brand-skt", use: "SKT · T world" },
-  { token: "brand-kt", use: "KT · Yogo" },
-  { token: "brand-lgu", use: "LG U+ · nerget" },
+  { token: "brand-kt", use: "KT · 요고" },
+  { token: "brand-lgu", use: "LG U+ · 너겟" },
 ];
 
-/** The workspaces' full names, in English. */
-const WORKSPACE_NAMES = {
-  air: "air · unlocked phones, direct",
-  tds: "T Direct Shop",
-  mvno: "MVNOs on SKT's network",
-} as const;
-
-const TYPE_SAMPLE = "The quick brown fox jumps over the lazy dog 0123";
+const TYPE_SAMPLE = "다람쥐 헌 쳇바퀴에 타고파 0123";
 
 /** Glyph rows for the font specimen. */
 const GLYPHS = [
@@ -71,17 +64,17 @@ const WEIGHT_RANGE = { max: 920, min: 45 };
 const TYPE_SCALE = [
   {
     className: "text-[22px] font-bold tracking-tight",
-    use: "Page title 22px",
+    use: "페이지 제목 22px",
   },
-  { className: "text-[15px] font-bold", use: "Section title 15px" },
-  { className: "text-[14px] font-semibold", use: "Menu group 14px" },
-  { className: "text-[14px]", use: "Body 14px" },
-  { className: "text-[13px]", use: "Controls 13px" },
+  { className: "text-[15px] font-bold", use: "섹션 제목 15px" },
+  { className: "text-[14px] font-semibold", use: "메뉴 그룹 14px" },
+  { className: "text-[14px]", use: "본문 14px" },
+  { className: "text-[13px]", use: "컨트롤 13px" },
   {
     className: "text-[12px] font-medium text-muted-foreground",
-    use: "Labels 12px",
+    use: "레이블 12px",
   },
-  { className: "text-[10px] text-muted-foreground", use: "Captions 10px" },
+  { className: "text-[10px] text-muted-foreground", use: "캡션 10px" },
 ];
 
 const BUTTON_VARIANTS: ButtonVariant[] = [
@@ -93,10 +86,10 @@ const BUTTON_VARIANTS: ButtonVariant[] = [
 
 const SECTIONS = [
   { id: "insight", title: "AI Insight" },
-  { id: "workspace", title: "Workspace logos · colors" },
-  { id: "colors", title: "Colors" },
-  { id: "font", title: "Font" },
-  { id: "type", title: "Type" },
+  { id: "workspace", title: "워크스페이스 로고 · 색" },
+  { id: "colors", title: "색" },
+  { id: "font", title: "글꼴" },
+  { id: "type", title: "글자 크기" },
   { id: "button", title: "Button" },
   { id: "badge", title: "Badge" },
   { id: "select", title: "Select · Field" },
@@ -132,7 +125,7 @@ export function PaletteDemo() {
 
   return (
     <div className="space-y-4">
-      <nav aria-label="Palette contents" className="flex flex-wrap gap-1.5">
+      <nav aria-label="팔레트 목차" className="flex flex-wrap gap-1.5">
         {SECTIONS.map((section) => (
           <a
             className="rounded-full border border-border bg-card px-3 py-1 text-[12px] text-muted-foreground transition-colors hover:text-foreground"
@@ -145,27 +138,31 @@ export function PaletteDemo() {
       </nav>
 
       <Section
-        description="@/components/ui/ai-insight. The AI Insight logo: every 1.75s a light sweeps the big star, the small star twinkles, then the light crosses the words. It holds still with reduced motion."
+        description="@/components/ui/ai-insight. AI Insight 로고입니다. 1.75초마다 빛이 큰 별을 훑고 작은 별이 반짝인 뒤, 같은 빛이 글자를 지나갑니다. 움직임 줄이기 설정에서는 멈춰 있습니다."
         id="insight"
       >
         <div className="flex flex-wrap items-center gap-x-10 gap-y-3 text-[12px] text-muted-foreground">
           <span className="flex items-center gap-2">
-            <AiInsightTitle as="span" /> Title
+            <AiInsightTitle as="span" /> 제목
           </span>
           <span className="flex items-center gap-2">
-            <AiInsightTitle as="span" still /> Still (still)
+            <AiInsightTitle as="span" still /> 정지 (still)
+          </span>
+          <span className="flex items-center gap-2">
+            <AiInsightTitle as="span" className="text-[17px]" />
+            크기 조절 (text-[17px])
           </span>
           <span className="flex items-center gap-2">
             <span className="ai-sparkle-glint inline-flex">
               <AiSparkle className="size-6" />
             </span>
-            Icon (AiSparkle)
+            아이콘 (AiSparkle)
           </span>
         </div>
       </Section>
 
       <Section
-        description="@/components/layout/workspace-logo. Each workspace's mark and brand color. air and TDS load an SVG per theme (prefixed with NEXT_PUBLIC_BASE_PATH under a basePath) and MVNO draws a base-station icon. Use the colors as bg-brand-air, and soft fills at /14."
+        description="@/components/layout/workspace-logo. 워크스페이스마다의 마크와 브랜드 색입니다. air와 TDS는 테마마다 SVG를 불러오고(basePath 아래에서는 앞에 NEXT_PUBLIC_BASE_PATH를 붙입니다), MVNO는 기지국 아이콘을 그립니다. 색은 bg-brand-air처럼 쓰고, 옅은 채움은 /14로 씁니다."
         id="workspace"
       >
         <ul className="grid gap-3 lg:grid-cols-3">
@@ -174,8 +171,8 @@ export function PaletteDemo() {
           ))}
         </ul>
         <p className="mt-5 text-[12px] font-medium text-muted-foreground">
-          Carrier (host network) colors · TDS shares SKT&apos;s, and dark mode
-          lifts them for contrast
+          통신사(망 제공사) 색 · TDS는 SKT의 색을 함께 쓰고, 다크 모드에서는
+          대비를 위해 밝아집니다
         </p>
         <ul className="mt-2 grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3">
           {CARRIERS.map(({ token, use }) => (
@@ -185,7 +182,7 @@ export function PaletteDemo() {
       </Section>
 
       <Section
-        description="The tokens in styles/ui-kit.css. Turn on the dark mode switch at the top right to see their dark values."
+        description="styles/ui-kit.css의 토큰입니다. 오른쪽 위의 다크 모드 스위치를 켜면 다크 값을 볼 수 있습니다."
         id="colors"
       >
         <ul className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3">
@@ -196,7 +193,7 @@ export function PaletteDemo() {
       </Section>
 
       <Section
-        description="@/lib/fonts. Pretendard 1.3.9, a variable font with weights 45 to 920 under the SIL Open Font License (lib/fonts/OFL.txt). next/font/local loads it as --font-pretendard, which the tokens' --font-sans reads."
+        description="@/lib/fonts. Pretendard 1.3.9는 굵기 45~920의 가변 글꼴로, SIL Open Font License(lib/fonts/OFL.txt)를 따릅니다. next/font/local이 --font-pretendard로 불러오고, 토큰의 --font-sans가 이를 읽습니다."
         id="font"
       >
         <div className="grid gap-6 lg:grid-cols-[3fr_2fr]">
@@ -228,7 +225,7 @@ export function PaletteDemo() {
               ))}
             </ul>
             <label className="mt-5 block text-[12px] font-medium text-muted-foreground">
-              Variable weight: <span className="font-mono">{weight}</span>
+              가변 굵기: <span className="font-mono">{weight}</span>
               <input
                 className="mt-2 block w-full accent-primary"
                 max={WEIGHT_RANGE.max}
@@ -249,7 +246,7 @@ export function PaletteDemo() {
       </Section>
 
       <Section
-        description="Pretendard. Titles wrap instead of being cut short."
+        description="Pretendard. 제목은 잘리지 않고 줄을 바꿉니다."
         id="type"
       >
         <ul className="space-y-2">
@@ -265,7 +262,7 @@ export function PaletteDemo() {
       </Section>
 
       <Section
-        description="@/components/ui/button. variant (outline · primary · ghost · text) and size (sm · md · icon · icon-sm). Links take buttonClass()."
+        description="@/components/ui/button. variant(outline · primary · ghost · text)와 size(sm · md · icon · icon-sm)를 고릅니다. 링크에는 buttonClass()를 씁니다."
         id="button"
       >
         <div className="space-y-3">
@@ -275,11 +272,11 @@ export function PaletteDemo() {
                 {variant}
               </span>
               <Button size="sm" variant={variant}>
-                Small
+                작게
               </Button>
-              <Button variant={variant}>Default</Button>
+              <Button variant={variant}>기본</Button>
               <Button disabled variant={variant}>
-                Disabled
+                비활성
               </Button>
             </div>
           ))}
@@ -287,24 +284,24 @@ export function PaletteDemo() {
             <span className="w-16 font-mono text-[12px] text-muted-foreground">
               icon
             </span>
-            <Button aria-label="Back" size="icon">
+            <Button aria-label="뒤로" size="icon">
               <ChevronLeft />
             </Button>
             <Button
-              aria-label="Previous month"
+              aria-label="이전 달"
               className="rounded-full"
               size="icon-sm"
             >
               <ChevronLeft />
             </Button>
             <Button
-              aria-label="Next month"
+              aria-label="다음 달"
               className="rounded-full"
               size="icon-sm"
             >
               <ChevronRight />
             </Button>
-            <ManualButton label="Manual" />
+            <ManualButton />
           </div>
         </div>
       </Section>
@@ -313,55 +310,55 @@ export function PaletteDemo() {
         <div className="flex flex-wrap items-center gap-2">
           <Badge>NEW</Badge>
           <Badge>TBD</Badge>
-          <Badge>Sample</Badge>
+          <Badge>샘플</Badge>
         </div>
       </Section>
 
       <Section
-        description="@/components/ui/select, @/components/ui/field. An empty choice (None) shows in gray."
+        description="@/components/ui/select, @/components/ui/field. 빈 선택(없음)은 회색으로 보입니다."
         id="select"
       >
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-          <Field htmlFor="palette-select-empty" label="Empty">
+          <Field htmlFor="palette-select-empty" label="빈 값">
             <Select className="w-40" defaultValue="" id="palette-select-empty">
-              <option value="">None</option>
+              <option value="">없음</option>
               <option value="app">APP</option>
             </Select>
           </Field>
-          <Field htmlFor="palette-select-value" label="Chosen">
+          <Field htmlFor="palette-select-value" label="선택됨">
             <Select
               className="w-40"
               defaultValue="app"
               id="palette-select-value"
             >
-              <option value="">None</option>
+              <option value="">없음</option>
               <option value="app">APP</option>
             </Select>
           </Field>
-          <Field htmlFor="palette-select-disabled" label="Disabled">
+          <Field htmlFor="palette-select-disabled" label="비활성">
             <Select
               className="w-40"
               defaultValue=""
               disabled
               id="palette-select-disabled"
             >
-              <option value="">None</option>
+              <option value="">없음</option>
             </Select>
           </Field>
         </div>
       </Section>
 
       <Section
-        description="@/components/ui/segmented-control. soft marks the choice with a white pill, solid with the accent color. Arrow keys move the choice."
+        description="@/components/ui/segmented-control. soft는 선택한 항목을 흰 알약으로, solid는 강조 색으로 표시합니다. 화살표 키로 선택을 옮깁니다."
         id="segmented"
       >
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
           <Field label="soft">
             <SegmentedControl
-              label="Business"
+              label="사업"
               onValueChange={setBusiness}
               options={[
-                { label: "All", value: "all" },
+                { label: "전체", value: "all" },
                 { label: "AIR", value: "air" },
                 { label: "TDS", value: "tds" },
                 { label: "MVNO", value: "mvno" },
@@ -371,25 +368,25 @@ export function PaletteDemo() {
           </Field>
           <Field label="solid">
             <SegmentedControl
-              label="Compare with"
+              label="비교 기준"
               onValueChange={setBasis}
               options={[
-                { label: "Last month", value: "mom" },
-                { label: "Last year", value: "yoy" },
-                { label: "Target", value: "target" },
+                { label: "전월", value: "mom" },
+                { label: "전년", value: "yoy" },
+                { label: "목표", value: "target" },
               ]}
               value={basis}
               variant="solid"
             />
           </Field>
-          <Field label="with a disabled option">
+          <Field label="비활성 옵션 포함">
             <SegmentedControl
-              label="Compare by"
+              label="비교 단위"
               onValueChange={setUnit}
               options={[
-                { disabled: true, label: "Person", value: "person" },
-                { label: "Team", value: "team" },
-                { label: "Org", value: "org" },
+                { disabled: true, label: "개인", value: "person" },
+                { label: "팀", value: "team" },
+                { label: "조직", value: "org" },
               ]}
               value={unit}
               variant="solid"
@@ -399,18 +396,18 @@ export function PaletteDemo() {
       </Section>
 
       <Section
-        description="@/components/ui/tabs. The left and right arrow keys move between tabs, skipping disabled ones."
+        description="@/components/ui/tabs. 왼쪽 · 오른쪽 화살표 키로 탭을 옮기고, 비활성 탭은 건너뜁니다."
         id="tabs"
       >
         <Tabs
           items={[
-            { label: "Overview", value: "overview" },
-            { label: "Revenue", value: "revenue" },
-            { label: "Cost", value: "cost" },
-            { disabled: true, label: "Profit", value: "profit" },
-            { disabled: true, label: "Forecast", value: "forecast" },
+            { label: "개요", value: "overview" },
+            { label: "매출", value: "revenue" },
+            { label: "비용", value: "cost" },
+            { disabled: true, label: "이익", value: "profit" },
+            { disabled: true, label: "전망", value: "forecast" },
           ]}
-          label="View"
+          label="보기"
           onValueChange={setTab}
           panelId="palette-tab-panel"
           value={tab}
@@ -421,16 +418,15 @@ export function PaletteDemo() {
           id="palette-tab-panel"
           role="tabpanel"
         >
-          Selected tab: <span className="font-mono">{tab}</span>
+          선택한 탭: <span className="font-mono">{tab}</span>
         </div>
       </Section>
 
       <Section
-        description="@/components/ui/month-stepper. The previous and next buttons turn off at the first and last month (here 2026-08 to 2026-10)."
+        description="@/components/ui/month-stepper. 이전 · 다음 버튼은 첫 달과 마지막 달에서 꺼집니다(여기서는 2026-08~2026-10)."
         id="month"
       >
         <MonthStepper
-          label="Month"
           max="2026-10"
           min="2026-08"
           onValueChange={setMonth}
@@ -442,44 +438,43 @@ export function PaletteDemo() {
         <div className="flex flex-wrap items-center gap-6 text-[13px]">
           <label className="flex items-center gap-2">
             <Switch checked={on} onCheckedChange={setOn} />
-            On
+            켜짐
           </label>
           <label className="flex items-center gap-2">
             <Switch checked={off} onCheckedChange={setOff} />
-            Off
+            꺼짐
           </label>
           <label className="flex items-center gap-2 text-muted-foreground">
             <Switch checked disabled />
-            Disabled (on)
+            비활성 (켜짐)
           </label>
           <label className="flex items-center gap-2 text-muted-foreground">
             <Switch checked={false} disabled />
-            Disabled (off)
+            비활성 (꺼짐)
           </label>
         </div>
       </Section>
 
       <Section
-        description="@/components/ui/card. Toolbar holds a row of filters; StatePanel stands in while loading or when empty."
+        description="@/components/ui/card. Toolbar는 필터를 한 줄로 담고, StatePanel은 불러오는 중이거나 비어 있을 때 대신 보입니다."
         id="card"
       >
         <div className="space-y-3">
           <Toolbar>
             <MonthStepper
-              label="Month"
               max="2026-10"
               min="2025-01"
               onValueChange={setToolbarMonth}
               value={toolbarMonth}
             />
-            <Field label="Channel">
+            <Field label="채널">
               <SegmentedControl
-                label="Channel"
+                label="채널"
                 onValueChange={setChannel}
                 options={[
-                  { label: "All", value: "all" },
-                  { label: "Retail", value: "retail" },
-                  { label: "Wholesale", value: "wholesale" },
+                  { label: "전체", value: "all" },
+                  { label: "소매", value: "retail" },
+                  { label: "도매", value: "wholesale" },
                 ]}
                 value={channel}
               />
@@ -487,18 +482,18 @@ export function PaletteDemo() {
             <Field
               className="min-w-48 flex-1"
               htmlFor="palette-owner"
-              label="Owner"
+              label="담당자"
             >
               <Select className="w-full" defaultValue="" id="palette-owner">
-                <option value="">None</option>
+                <option value="">없음</option>
               </Select>
             </Field>
-            <Button variant="text">Reset</Button>
+            <Button variant="text">초기화</Button>
           </Toolbar>
-          <StatePanel>Loading…</StatePanel>
-          <StatePanel>No data to show.</StatePanel>
+          <StatePanel>불러오는 중…</StatePanel>
+          <StatePanel>표시할 데이터가 없습니다.</StatePanel>
           <Card className="p-5 text-[13px]">
-            Card: a plain surface with a border and rounded corners
+            Card: 테두리와 둥근 모서리를 가진 기본 면
           </Card>
         </div>
       </Section>
@@ -548,37 +543,37 @@ function WorkspaceCard({
       <p className="break-keep text-[14px] font-semibold">
         {workspace.name}
         <span className="ml-2 text-[12px] font-normal text-muted-foreground">
-          {WORKSPACE_NAMES[workspace.id]}
+          {workspace.full}
         </span>
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         <span className="flex items-center gap-2 rounded-lg border border-[#e3e7ec] bg-white py-1.5 pr-3 pl-1.5">
           <WorkspaceLogo id={workspace.id} theme="light" />
-          <span className="text-[11px] text-[#6b7684]">Light</span>
+          <span className="text-[11px] text-[#6b7684]">라이트</span>
         </span>
         <span className="flex items-center gap-2 rounded-lg border border-[#252b34] bg-[#12151b] py-1.5 pr-3 pl-1.5">
           <WorkspaceLogo id={workspace.id} theme="dark" />
-          <span className="text-[11px] text-[#9aa3af]">Dark</span>
+          <span className="text-[11px] text-[#9aa3af]">다크</span>
         </span>
       </div>
       <div className="mt-3 flex items-center gap-3">
         <span
           className="h-10 w-14 shrink-0 rounded-lg"
           style={{ background: workspace.color }}
-          title="Solid"
+          title="단색"
         />
         <span
           className="h-10 w-14 shrink-0 rounded-lg"
           style={{
             background: `color-mix(in oklab, ${workspace.color} 14%, transparent)`,
           }}
-          title="Soft fill /14"
+          title="옅은 채움 /14"
         />
         <span className="min-w-0 text-[11px] leading-snug">
           <span className="block font-mono">brand-{workspace.id}</span>
           <span className="block font-mono text-muted-foreground">{value}</span>
           <span className="block text-muted-foreground">
-            Solid · soft fill /14
+            단색 · 옅은 채움 /14
           </span>
         </span>
       </div>
