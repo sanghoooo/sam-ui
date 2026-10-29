@@ -6,6 +6,7 @@ import {
   ShieldCheck,
   Sparkles,
   SunMoon,
+  User,
 } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -15,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonClass } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import plugin from "../../../plugins/sam-ui/.claude-plugin/plugin.json";
+import { CopyButton } from "./_intro/copy-command";
 import { HeroPreview } from "./_intro/hero-preview";
 import { InstallGuide } from "./_intro/install-guide";
 
@@ -62,15 +64,13 @@ const STEPS = [
   {
     title: "킷 설치 요청",
     body: "프로젝트에서 요청하면 Claude가 컴포넌트를 복사하고 토큰과 앱 셸을 연결한 뒤, 모든 파일을 sam-ui.json에 기록합니다.",
-    detail: <Prompt>SAM UI 킷 설치해줘</Prompt>,
+    detail: <Prompt text="SAM UI 킷 설치해줘" />,
   },
   {
     title: "화면 설명",
     body: "Claude가 킷의 컴포넌트로 라이트 · 다크 모두에 맞는 화면을 만듭니다.",
     detail: (
-      <Prompt>
-        기준월 필터, 사업 선택, 주문 · 매출 탭이 있는 현황 페이지 만들어줘
-      </Prompt>
+      <Prompt text="기준월 필터, 사업 선택, 주문 · 매출 탭이 있는 현황 페이지 만들어줘" />
     ),
   },
 ];
@@ -349,11 +349,26 @@ function Section({
   );
 }
 
-/** A request to Claude, as a chat bubble. */
-function Prompt({ children }: { children: ReactNode }) {
+/**
+ * A request to Claude, as a chat bubble from the person beside it, with a button that copies it. The bubble's
+ * tail leaves its square bottom-left corner and curls out to a rounded tip by the person.
+ */
+function Prompt({ text }: { text: string }) {
   return (
-    <p className="w-fit max-w-full break-keep rounded-2xl rounded-bl-sm bg-muted px-4 py-3 text-[13px]">
-      “{children}”
-    </p>
+    <div className="flex items-end gap-1">
+      <User aria-hidden className="mb-1 size-5 shrink-0 text-muted-foreground" />
+      <div className="relative ml-2.5 flex w-fit max-w-full min-w-0 items-center gap-1 rounded-2xl rounded-bl-none bg-muted py-1.5 pr-1.5 pl-4 text-[13px]">
+        <svg
+          aria-hidden
+          className="absolute bottom-0 -left-[11px] h-4 w-3 text-muted"
+          fill="currentColor"
+          viewBox="0 0 12 16"
+        >
+          <path d="M12 0C12 7 8.5 12 2.6 14.6C1.2 15.2 1.5 16 3 16H12Z" />
+        </svg>
+        <p className="break-keep py-1.5">“{text}”</p>
+        <CopyButton className="shrink-0" label="요청 복사" text={text} />
+      </div>
+    </div>
   );
 }

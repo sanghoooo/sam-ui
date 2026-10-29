@@ -72,7 +72,7 @@ export function Terminal({ lines }: { lines: string[] }) {
         <span className="size-2.5 rounded-full bg-[#28c840]" />
         <span className="ml-2 font-mono text-[11px] text-white/45">claude</span>
         <button
-          aria-label={copied ? "Copied" : "Copy the commands"}
+          aria-label={copied ? "복사됨" : "명령 복사"}
           className="ml-auto flex size-7 items-center justify-center rounded-md text-white/55 transition-colors hover:bg-white/10 hover:text-white [&_svg]:size-3.5"
           onClick={copy}
           type="button"
