@@ -48,9 +48,11 @@ Requirements: React 19, Tailwind CSS 4 and an `@/*` path alias. The components w
 app shell (`components/layout/*`) and the font helper need the Next.js App Router.
 
 1. **Copy the files.** Run `node ${CLAUDE_SKILL_DIR}/scripts/kit.mjs install <src-root>`; the images go to
-   the project root's `public/`. If any file already exists with other content, it writes nothing, lists
-   those as `differs` and exits 1. Decide each with the user, then run install again with `--take <path>`
-   (the kit's version replaces the project's) or `--keep <path>` (the project's stays, as a local change).
+   the project root's `public/`. An app with a `basePath` also sets `NEXT_PUBLIC_BASE_PATH` to it, or the
+   workspace logos miss their images (`${CLAUDE_SKILL_DIR}/references/layout.md`). If any file already
+   exists with other content, it writes nothing, lists those as `differs` and exits 1. Decide each with the
+   user, then run install again with `--take <path>` (the kit's version replaces the project's) or
+   `--keep <path>` (the project's stays, as a local change).
    A differing `lib/utils.ts` that already exports `cn` (shadcn's does) is a `--keep`. Differing components
    mean the project already has a kit with the same file names (shadcn has button, badge, card, select,
    switch, tabs …): stop and ask the user, because the two kits can't share those files. An existing

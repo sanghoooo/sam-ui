@@ -21,6 +21,7 @@ plugins/sam-ui/                   플러그인 sam-ui
     scripts/kit.mjs               프로젝트에 설치 · 업데이트 · 점검 (sam-ui.json에 버전과 파일 해시 기록)
     templates/placeholder-page.tsx 메뉴 링크용 "준비 중" 페이지
 apps/hoo/                         Next.js 사이트: 킷 소개(/)와 UI 요소를 모두 보여 주는 팔레트(/palette)
+.github/workflows/                ci.yml(lint · test · build), pages.yml(사이트를 GitHub Pages에 배포)
 scripts/release.sh                버전 올리기 · 검사 · 오프라인 설치용 zip
 tests/kit.test.mjs                kit.mjs 시나리오 테스트 (pnpm test)
 docs/offline-install.md           zip에 들어가는 설치 안내
@@ -57,6 +58,10 @@ pnpm release 0.2.0   # plugin.json version 변경 → plugin validate → dist/s
 `/plugin marketplace update sam-plugins` 후 `/reload-plugins`로 받습니다(터미널에서는 `claude plugin marketplace
 update sam-plugins`, `claude plugin update sam-ui@sam-plugins` 후 다시 시작). `version`을 올리지 않으면 설치된 쪽에
 업데이트가 가지 않습니다.
+
+사이트(`apps/hoo`)는 main에 push할 때마다 `.github/workflows/pages.yml`이 정적 파일로 export해
+https://sanghoooo.github.io/sam-ui/ 에 배포합니다(저장소 Settings → Pages의 Source가 GitHub Actions여야 합니다).
+정적 파일이므로 사이트에는 서버가 필요한 기능(server action, `cookies()`, route handler 등)을 쓰지 않습니다.
 
 ## 설치 (사용하는 쪽)
 

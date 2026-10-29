@@ -165,7 +165,7 @@ export function PaletteDemo() {
       </Section>
 
       <Section
-        description="@/components/layout/workspace-logo. Each workspace's mark and brand color. air and TDS load an SVG per theme and MVNO draws a base-station icon. Use the colors as bg-brand-air, and soft fills at /14."
+        description="@/components/layout/workspace-logo. Each workspace's mark and brand color. air and TDS load an SVG per theme (prefixed with NEXT_PUBLIC_BASE_PATH under a basePath) and MVNO draws a base-station icon. Use the colors as bg-brand-air, and soft fills at /14."
         id="workspace"
       >
         <ul className="grid gap-3 lg:grid-cols-3">

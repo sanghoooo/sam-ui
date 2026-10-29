@@ -14,5 +14,8 @@
   templates use no `dynamicParams`/`dynamic`/`revalidate` segment config.
 - `skills/ui-kit/scripts/kit.mjs` installs, updates and checks the kit in projects through their `sam-ui.json` manifest (the version, and per file the hash of the kit version the project's copy is based on). It never overwrites a project's change without a per-file `--take` (or `update --force`), keeps an unmerged file on its old base so every update lists it, refuses to downgrade a project or to run while Claude Code has a newer `sam-ui@sam-plugins` installed, and hashes text with LF line endings. Keep `tests/kit.test.mjs` passing (`pnpm test`) and extend it when kit.mjs changes. The starter (`lib/nav.ts`) is copied once and then belongs to the project; update reports (`compare`) a starter the kit changed, and (`unused`) one the kit dropped, once, and never writes it.
 - Use pnpm. Run `pnpm lint`, `pnpm test` and `pnpm build` after changes; `pnpm dev` serves http://localhost:3102.
+- `.github/workflows/pages.yml` publishes `apps/hoo` from main to GitHub Pages (https://sanghoooo.github.io/sam-ui/) as a
+  static export under `/sam-ui` (`PAGES=1`, `NEXT_PUBLIC_BASE_PATH`), so the site uses nothing that needs a server, and a
+  kit file that links to `public/` by a plain URL prefixes it with `NEXT_PUBLIC_BASE_PATH`.
 - Release with `pnpm release <version>`; a plugin change reaches installs only when the version goes up.
 - Consult the Next.js docs in `node_modules/next/dist/docs/` before changing Next.js APIs or configuration.

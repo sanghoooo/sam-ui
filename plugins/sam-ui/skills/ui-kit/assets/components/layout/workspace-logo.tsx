@@ -31,6 +31,10 @@ const MARK_SIZES: Record<WorkspaceId, string> = {
   tds: "size-4.25",
 };
 
+// The images live in public/, so an app under a basePath must prefix them: <img> doesn't get the basePath
+// the way next/link does. Such an app sets NEXT_PUBLIC_BASE_PATH to its basePath.
+const IMAGES = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/images/workspaces`;
+
 /**
  * A workspace's mark in a 32px box: air and TDS load a brand asset per theme
  * (/images/workspaces/{id}-{light,dark}.svg), MVNO draws a base-station glyph instead of a logo. By
@@ -68,7 +72,7 @@ export function WorkspaceLogo({
           alt=""
           className={cn(size, "object-contain")}
           height={32}
-          src={`/images/workspaces/${id}-${theme}.svg`}
+          src={`${IMAGES}/${id}-${theme}.svg`}
           width={32}
         />
       ) : (
@@ -78,14 +82,14 @@ export function WorkspaceLogo({
             alt=""
             className={cn(size, "object-contain dark:hidden")}
             height={32}
-            src={`/images/workspaces/${id}-light.svg`}
+            src={`${IMAGES}/${id}-light.svg`}
             width={32}
           />
           <img
             alt=""
             className={cn(size, "hidden object-contain dark:block")}
             height={32}
-            src={`/images/workspaces/${id}-dark.svg`}
+            src={`${IMAGES}/${id}-dark.svg`}
             width={32}
           />
         </>

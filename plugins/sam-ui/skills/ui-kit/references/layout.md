@@ -108,6 +108,15 @@ type NavHome = { label: ReactNode; href: string };
 draws lucide's `RadioTower`. The marks are sized so the set reads at one weight (air 24px, MVNO 18px, TDS
 17px).
 
+An app served under a `basePath` sets `NEXT_PUBLIC_BASE_PATH` to the same path, because a plain `<img>`
+doesn't get the basePath the way `next/link` does; the logos put it before `/images/…`. Reading the
+basePath from that variable keeps the two in step:
+
+```js
+// next.config.mjs, with NEXT_PUBLIC_BASE_PATH=/admin in .env
+export default { basePath: process.env.NEXT_PUBLIC_BASE_PATH };
+```
+
 `WORKSPACES` lists `{ id, name, full, color }`: air ("air · 자급제 다이렉트"), TDS ("T다이렉트샵") and
 MVNO ("SKT망 알뜰폰"). `color` is the brand color as a CSS variable (`var(--brand-air)` …), ready for
 inline styles and chart props.
