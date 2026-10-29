@@ -193,7 +193,7 @@ export function PaletteDemo() {
       </Section>
 
       <Section
-        description="@/lib/fonts. Pretendard 1.3.9는 굵기 45~920의 가변 글꼴로, SIL Open Font License(lib/fonts/OFL.txt)를 따릅니다. next/font/local이 --font-pretendard로 불러오고, 토큰의 --font-sans가 이를 읽습니다."
+        description="styles/ui-kit.css. Pretendard 1.3.9는 굵기 45~920의 가변 글꼴로, SIL Open Font License를 따릅니다. ui-kit.css의 @font-face가 jsDelivr에서 불러오고, 토큰의 --font-sans가 --font-pretendard로 이를 읽습니다."
         id="font"
       >
         <div className="grid gap-6 lg:grid-cols-[3fr_2fr]">

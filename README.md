@@ -101,5 +101,5 @@ GitHub에 접근할 수 없는 PC는 `pnpm release`가 만든 zip을 풀어 로�
 ## 라이선스
 
 코드와 문서는 MIT 라이선스입니다(`LICENSE`). air · T 로고(`assets/public/images/workspaces/`)는 각 소유자의
-상표라 이 라이선스에 포함되지 않고, Pretendard 폰트는 SIL Open Font License 1.1(`assets/lib/fonts/OFL.txt`)을
-따릅니다.
+상표라 이 라이선스에 포함되지 않습니다. Pretendard 폰트는 킷에 들어 있지 않고 jsDelivr에서 받아 오며, SIL Open
+Font License 1.1을 따릅니다.

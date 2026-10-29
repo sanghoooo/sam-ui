@@ -5,10 +5,22 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Pretendard 1.3.9 variable (github.com/orioncactus/pretendard, SIL Open Font License), from jsDelivr, so no
+   font file ships with the kit. Without the network the stack falls back to the system font. */
+@font-face {
+  font-family: "Pretendard Variable";
+  font-style: normal;
+  font-weight: 45 920;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/woff2/PretendardVariable.woff2")
+    format("woff2");
+}
+
 /* Light is the default theme. The sidebar's 다크 모드 switch puts .dark on <html>, and the root
    layout's THEME_SCRIPT restores that choice before the first paint. */
 :root {
   color-scheme: light;
+  --font-pretendard: "Pretendard Variable";
   --background: #f4f6f9;
   --foreground: #191f28;
   --card: #ffffff;

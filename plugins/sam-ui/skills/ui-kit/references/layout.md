@@ -142,9 +142,12 @@ const dark = useSyncExternalStore(
 
 Most screens never need this, because the tokens switch on their own (tokens.md).
 
-## Font (`lib/fonts.ts`)
+## Font
 
-Pretendard (variable woff2, SIL Open Font License in `lib/fonts/OFL.txt`) through `next/font/local`, as the
-`--font-pretendard` variable that the tokens' `--font-sans` reads. Put `pretendard.variable` on `<html>`.
-Outside Next.js, load the woff2 with an `@font-face` named `Pretendard` and set `--font-pretendard:
-"Pretendard"`.
+Pretendard 1.3.9 (variable, SIL Open Font License) loads from jsDelivr through an `@font-face` in
+`styles/ui-kit.css`, which also sets `--font-pretendard: "Pretendard Variable"` for the tokens' `--font-sans`.
+Nothing goes in the root layout, and it works outside Next.js too. Without the network the stack falls back to
+the system font; to serve the file yourself, point the `@font-face` `src` at your copy.
+
+`lib/fonts.ts` only keeps `pretendard.variable`, now empty, for root layouts from before 0.5.6 that put it on
+`<html>`; drop that import and class when you next edit the layout.

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { ThemeScript } from "@/components/layout/theme-script";
-import { pretendard } from "@/lib/fonts";
 import "./globals.css";
 import { SiteHeader } from "./site-header";
 
@@ -13,7 +12,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     // THEME_SCRIPT may add .dark before hydration, so <html>'s class can differ from the server's.
-    <html className={pretendard.variable} lang="ko" suppressHydrationWarning>
+    <html lang="ko" suppressHydrationWarning>
       <head>
         <ThemeScript />
       </head>

@@ -43,7 +43,7 @@ workspace's series, swatch or bar, and its 14% tint for a soft fill: `bg-brand-a
 
 ## Type
 
-Pretendard, 14px body.
+Pretendard (from jsDelivr, through `ui-kit.css`), 14px body.
 
 | Use | Classes |
 |---|---|

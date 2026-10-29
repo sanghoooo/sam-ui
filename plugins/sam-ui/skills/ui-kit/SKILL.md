@@ -21,7 +21,7 @@ toolbar of segmented choices and selects, and pill tabs. Light is the default th
 
 The kit's files live in `${CLAUDE_SKILL_DIR}/assets`, mirroring where they go in a project:
 `components/ui/*` (the components), `components/layout/*` (the Next.js app shell and the workspace
-logos), `lib/*` (helpers, the sidebar menu, the Pretendard font), `styles/ui-kit.css` (the tokens,
+logos), `lib/*` (helpers, the sidebar menu), `styles/ui-kit.css` (the tokens,
 workspace brand colors included) and `public/images/*` (the air/TDS logos).
 
 All file work goes through one script, `${CLAUDE_SKILL_DIR}/scripts/kit.mjs` (Node, no dependencies):
@@ -71,14 +71,13 @@ app shell (`components/layout/*`) and the font helper need the Next.js App Route
      kit-only tokens (`--raised`, `--subtle-foreground`) and the animations stay.
    - Tailwind finds the kit's classes on its own when the files sit under the project root. In a monorepo,
      or with `source(…)` on the Tailwind import, add `@source` lines for `components/` and `lib/`.
-4. **Next.js root layout.** Add the font and the theme script, so a saved dark choice applies before the
-   first paint:
+4. **Next.js root layout.** Add the theme script, so a saved dark choice applies before the first paint
+   (the font comes with `ui-kit.css`):
 
    ```tsx
    import { ThemeScript } from "@/components/layout/theme-script";
-   import { pretendard } from "@/lib/fonts";
 
-   <html className={pretendard.variable} lang="ko" suppressHydrationWarning>
+   <html lang="ko" suppressHydrationWarning>
      <head>
        <ThemeScript />
      </head>
