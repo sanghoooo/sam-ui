@@ -6,5 +6,8 @@
   "author": {
     "name": "sanghoooo"
   },
+  "homepage": "https://sanghoooo.github.io/sam-ui/",
+  "repository": "https://github.com/sanghoooo/sam-ui",
+  "license": "MIT",
   "keywords": ["ui", "react", "tailwind", "nextjs", "dashboard"]
 }
