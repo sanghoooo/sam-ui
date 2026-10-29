@@ -41,7 +41,7 @@ const CARRIERS = [
   { token: "brand-lgu", use: "LG U+ · 너겟" },
 ];
 
-const TYPE_SAMPLE = "다람쥐 헌 쳇바퀴에 타고파 0123";
+const TYPE_SAMPLE = "다시 불 붙여 무지개빛의 불 0123";
 
 /** Glyph rows for the font specimen. */
 const GLYPHS = [
@@ -542,9 +542,12 @@ function WorkspaceCard({
     <li className="rounded-xl border border-border p-4">
       <p className="break-keep text-[14px] font-semibold">
         {workspace.name}
-        <span className="ml-2 text-[12px] font-normal text-muted-foreground">
-          {workspace.full}
-        </span>
+        {/* air's full name is its short one, so it isn't said twice. */}
+        {workspace.full !== workspace.name && (
+          <span className="ml-2 text-[12px] font-normal text-muted-foreground">
+            {workspace.full}
+          </span>
+        )}
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         <span className="flex items-center gap-2 rounded-lg border border-[#e3e7ec] bg-white py-1.5 pr-3 pl-1.5">
@@ -591,7 +594,11 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <Card className="scroll-mt-20 p-5" id={id}>
+    // A linked section stops 8px below the header (its height from site-header.tsx), so nothing above shows.
+    <Card
+      className="scroll-mt-[calc(var(--header-height,57px)+0.5rem)] p-5"
+      id={id}
+    >
       <h2 className="break-keep text-[15px] font-bold">{titleOf(id)}</h2>
       {description && (
         <p className="mt-1 break-keep text-[12px] text-muted-foreground">

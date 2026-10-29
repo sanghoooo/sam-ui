@@ -105,3 +105,15 @@
     animation: none;
   }
 }
+/* The intro terminal's cursor (_intro/terminal.tsx): on for half a second, off for half. */
+@keyframes hoo-caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+@utility animate-caret-blink {
+  animation: hoo-caret-blink 1s step-end infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}

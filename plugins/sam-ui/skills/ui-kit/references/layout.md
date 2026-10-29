@@ -117,7 +117,7 @@ basePath from that variable keeps the two in step:
 export default { basePath: process.env.NEXT_PUBLIC_BASE_PATH };
 ```
 
-`WORKSPACES` lists `{ id, name, full, color }`: air ("air · 자급제 다이렉트"), TDS ("T다이렉트샵") and
+`WORKSPACES` lists `{ id, name, full, color }`: air ("air"), TDS ("T다이렉트샵") and
 MVNO ("SKT망 알뜰폰"). `color` is the brand color as a CSS variable (`var(--brand-air)` …), ready for
 inline styles and chart props.
 

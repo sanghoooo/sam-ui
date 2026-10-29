@@ -15,14 +15,10 @@ import { Badge } from "@/components/ui/badge";
 import { buttonClass } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import plugin from "../../../plugins/sam-ui/.claude-plugin/plugin.json";
-import { CopyCommand } from "./_intro/copy-command";
 import { HeroPreview } from "./_intro/hero-preview";
+import { InstallGuide } from "./_intro/install-guide";
 
 const REPO = "https://github.com/sanghoooo/sam-ui";
-const INSTALL = [
-  "/plugin marketplace add https://github.com/sanghoooo/sam-plugins.git",
-  "/plugin install sam-ui@sam-plugins",
-];
 
 const FEATURES = [
   {
@@ -60,8 +56,8 @@ const FEATURES = [
 const STEPS = [
   {
     title: "플러그인 설치",
-    body: "Claude Code에서 마켓플레이스 sam-plugins를 추가하고 sam-ui를 설치합니다.",
-    detail: <CopyCommand lines={INSTALL} />,
+    body: "마켓플레이스 sam-plugins를 추가하고 sam-ui를 설치합니다. Claude Code나 Claude 앱 중 편한 한 곳에서만 하면 됩니다.",
+    detail: <InstallGuide />,
   },
   {
     title: "킷 설치 요청",
@@ -145,6 +141,31 @@ export default function IntroPage() {
         </section>
 
         <Section
+          eyebrow="사용 방법"
+          id="get-started"
+          title="빈 프로젝트에서 완성된 화면까지, 세 번의 요청"
+        >
+          <ol className="space-y-4">
+            {STEPS.map(({ title, body, detail }, i) => (
+              <li key={title}>
+                <Card className="flex gap-4 p-6">
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-[13px] font-bold text-primary-foreground">
+                    {i + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="mt-0.5 text-[15px] font-bold">{title}</h3>
+                    <p className="mt-1.5 break-keep text-[13px] leading-relaxed text-muted-foreground">
+                      {body}
+                    </p>
+                    <div className="mt-5">{detail}</div>
+                  </div>
+                </Card>
+              </li>
+            ))}
+          </ol>
+        </Section>
+
+        <Section
           eyebrow="구성"
           id="features"
           title="대시보드 화면에 필요한 것만 담았습니다"
@@ -190,29 +211,6 @@ export default function IntroPage() {
               ))}
             </ul>
           </Card>
-        </Section>
-
-        <Section
-          eyebrow="사용 방법"
-          id="get-started"
-          title="빈 프로젝트에서 완성된 화면까지, 세 번의 요청"
-        >
-          <ol className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            {STEPS.map(({ title, body, detail }, i) => (
-              <li key={title}>
-                <Card className="flex h-full flex-col p-6">
-                  <span className="flex size-7 items-center justify-center rounded-full bg-primary text-[13px] font-bold text-primary-foreground">
-                    {i + 1}
-                  </span>
-                  <h3 className="mt-4 text-[15px] font-bold">{title}</h3>
-                  <p className="mt-1.5 break-keep text-[13px] leading-relaxed text-muted-foreground">
-                    {body}
-                  </p>
-                  <div className="mt-auto pt-5">{detail}</div>
-                </Card>
-              </li>
-            ))}
-          </ol>
         </Section>
 
         <Section
@@ -354,7 +352,7 @@ function Section({
 /** A request to Claude, as a chat bubble. */
 function Prompt({ children }: { children: ReactNode }) {
   return (
-    <p className="break-keep rounded-2xl rounded-bl-sm bg-muted px-4 py-3 text-[13px]">
+    <p className="w-fit max-w-full break-keep rounded-2xl rounded-bl-sm bg-muted px-4 py-3 text-[13px]">
       “{children}”
     </p>
   );

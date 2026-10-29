@@ -6,12 +6,7 @@ import { cn } from "@/lib/utils";
  * etc., soft fills at /14).
  */
 export const WORKSPACES = [
-  {
-    id: "air",
-    name: "air",
-    full: "air · 자급제 다이렉트",
-    color: "var(--brand-air)",
-  },
+  { id: "air", name: "air", full: "air", color: "var(--brand-air)" },
   { id: "tds", name: "TDS", full: "T다이렉트샵", color: "var(--brand-tds)" },
   {
     id: "mvno",

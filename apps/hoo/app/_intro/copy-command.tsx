@@ -4,10 +4,9 @@ import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
-/** Commands in a code box with a copy button. */
-export function CopyCommand({ lines }: { lines: string[] }) {
+/** Copies text to the clipboard; `copied` stays true for 1.6s after. */
+export function useCopy(text: string) {
   const [copied, setCopied] = useState(false);
-  const text = lines.join("\n");
 
   async function copy() {
     try {
@@ -18,6 +17,14 @@ export function CopyCommand({ lines }: { lines: string[] }) {
       // The clipboard is blocked: the commands stay selectable.
     }
   }
+
+  return { copied, copy };
+}
+
+/** Commands in a code box with a copy button. */
+export function CopyCommand({ lines }: { lines: string[] }) {
+  const text = lines.join("\n");
+  const { copied, copy } = useCopy(text);
 
   return (
     <div className="flex items-start rounded-lg border border-border bg-muted">

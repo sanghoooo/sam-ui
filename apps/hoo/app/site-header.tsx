@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { buttonClass } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -12,32 +12,70 @@ const LINKS = [
   { href: "/palette", label: "팔레트" },
 ];
 
-/** The site's header, pinned to the top: its name, the two pages and the dark mode switch. */
+/**
+ * The site's header, pinned to the top: its name, the two pages and the dark mode switch. It keeps its height
+ * in --header-height, which changes when it wraps on a narrow screen, so linked sections can stop just below.
+ */
 export function SiteHeader() {
   const pathname = usePathname();
+  const ref = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const header = ref.current;
+    if (!header) return;
+    const observer = new ResizeObserver(() => {
+      document.documentElement.style.setProperty(
+        "--header-height",
+        `${header.offsetHeight}px`,
+      );
+    });
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
   return (
-    <header className="sticky top-0 z-30 border-b border-border/60 bg-background/55 backdrop-blur-xl backdrop-saturate-150">
+    <header
+      className="sticky top-0 z-30 border-b border-border/60 bg-background/55 backdrop-blur-xl backdrop-saturate-150"
+      ref={ref}
+    >
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-2.5 lg:px-6">
-        <nav aria-label="페이지" className="flex items-center gap-1">
-          <Link aria-label="SAM UI" className="mr-3 flex" href="/">
+        <nav aria-label="페이지" className="flex items-center gap-2">
+          <Link aria-label="SAM UI" className="mr-5 flex" href="/">
             <SiteName />
           </Link>
           {LINKS.map(({ href, label }) => (
             <Link
               aria-current={pathname === href ? "page" : undefined}
-              className={cn(
-                buttonClass({ size: "sm", variant: "ghost" }),
-                pathname === href &&
-                  "bg-raised text-foreground ring-1 ring-border",
-              )}
+              className={buttonClass({
+                className: cn(
+                  "h-9 px-3 text-[14px] font-normal hover:bg-foreground/6 hover:ring-0",
+                  pathname === href && "text-foreground",
+                ),
+                variant: "ghost",
+              })}
               href={href}
               key={href}
             >
-              {label}
+              {/* Bold when current; the bold copy, unseen, holds the width so the links never shift. */}
+              <span className="inline-grid justify-items-center">
+                <span
+                  aria-hidden
+                  className="invisible font-bold [grid-area:1/1]"
+                >
+                  {label}
+                </span>
+                <span
+                  className={cn(
+                    "[grid-area:1/1]",
+                    pathname === href && "font-bold",
+                  )}
+                >
+                  {label}
+                </span>
+              </span>
             </Link>
           ))}
         </nav>
-        <div className="whitespace-nowrap">
+        {/* The hover fill is see-through, so it sits as softly on the intro's blue wash as on gray. */}
+        <div className="whitespace-nowrap [&>label:hover]:bg-foreground/6">
           <ThemeToggle />
         </div>
       </div>
