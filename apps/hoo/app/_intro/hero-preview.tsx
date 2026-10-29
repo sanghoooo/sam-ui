@@ -158,7 +158,7 @@ export function HeroPreview() {
                 <button
                   aria-pressed={business === workspace.id}
                   className={cn(
-                    "flex w-full items-center gap-2 rounded-lg px-1.5 py-1 text-left text-[13px] transition-colors hover:bg-muted",
+                    "flex w-full cursor-pointer items-center gap-2 rounded-lg px-1.5 py-1 text-left text-[13px] transition-colors hover:bg-muted",
                     business === workspace.id && "bg-muted font-semibold",
                   )}
                   onClick={() => setBusiness(workspace.id)}

@@ -1,16 +1,16 @@
-import type { StaticImageData } from "next/image";
 import type { ReactNode } from "react";
 import { CopyCommand } from "./copy-command";
+import { ScreenSwiper, type Slide } from "./screen-swiper";
 import addPlugins from "./shots/claude-app-1-add-plugins.webp";
-import add from "./shots/claude-app-2-add.webp";
-import added from "./shots/claude-app-3-added.webp";
-import uiKit from "./shots/claude-app-4-ui-kit.webp";
+import search from "./shots/claude-app-2-search.webp";
+import add from "./shots/claude-app-3-add.webp";
+import added from "./shots/claude-app-4-added.webp";
 import { Terminal } from "./terminal";
 
 const MARKETPLACE = "https://github.com/sanghoooo/sam-plugins.git";
 
 /** The Claude app's screens, in order. */
-const SHOTS: { image: StaticImageData; alt: string; caption: ReactNode }[] = [
+const SHOTS: Slide[] = [
   {
     image: addPlugins,
     alt: "입력창 옆 + 메뉴에서 Add plugins를 고른 화면",
@@ -21,27 +21,27 @@ const SHOTS: { image: StaticImageData; alt: string; caption: ReactNode }[] = [
     ),
   },
   {
-    image: add,
-    alt: "설정의 Plugins에서 SAM UI를 연 화면, 오른쪽에 Add 버튼",
+    image: search,
+    alt: "설정의 Plugins에서 sam-ui를 검색해 SAM UI가 보이는 화면",
     caption: (
       <>
-        <Key>SAM UI</Key>를 찾아 <Key>Add</Key>
+        Plugins에서 <Key>sam-ui</Key> 검색
+      </>
+    ),
+  },
+  {
+    image: add,
+    alt: "SAM UI를 연 화면, 오른쪽에 Add 버튼",
+    caption: (
+      <>
+        <Key>SAM UI</Key>를 열어 <Key>Add</Key>
       </>
     ),
   },
   {
     image: added,
-    alt: "SAM UI가 추가되어 오른쪽 스위치가 켜진 화면",
+    alt: "SAM UI가 추가되어 오른쪽 스위치가 켜지고 설치 완료 알림이 뜬 화면",
     caption: "스위치가 켜지면 설치 완료",
-  },
-  {
-    image: uiKit,
-    alt: "입력창에 /ui-kit을 입력한 화면",
-    caption: (
-      <>
-        입력창에 <Key>/ui-kit</Key>을 입력하거나 바로 요청
-      </>
-    ),
   },
 ];
 
@@ -66,31 +66,7 @@ export function InstallGuide() {
       </Way>
       <Or />
       <Way title="Claude 앱에서">
-        <ol className="grid grid-cols-2 gap-x-3 gap-y-4 lg:grid-cols-4">
-          {SHOTS.map(({ image, alt, caption }, i) => (
-            <li key={image.src}>
-              <a
-                className="block overflow-hidden rounded-lg border border-border bg-muted transition-opacity hover:opacity-90"
-                href={image.src}
-                rel="noreferrer"
-                target="_blank"
-              >
-                <img
-                  alt={alt}
-                  className="h-auto w-full"
-                  height={image.height}
-                  loading="lazy"
-                  src={image.src}
-                  width={image.width}
-                />
-              </a>
-              <p className="mt-2 flex gap-1.5 break-keep text-[12px] leading-snug text-muted-foreground">
-                <span className="font-semibold text-foreground">{i + 1}</span>
-                <span>{caption}</span>
-              </p>
-            </li>
-          ))}
-        </ol>
+        <ScreenSwiper label="Claude 앱 설치 화면" slides={SHOTS} />
         <p className="mt-5 break-keep text-[12px] text-muted-foreground">
           목록에 SAM UI가 없으면 터미널에서 마켓플레이스를 먼저 등록합니다.
         </p>

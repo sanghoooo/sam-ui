@@ -9,16 +9,20 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
+import type { StaticImageData } from "next/image";
 import type { ReactNode } from "react";
 import { WORKSPACES, WorkspaceLogo } from "@/components/layout/workspace-logo";
 import { AiInsightTitle } from "@/components/ui/ai-insight";
 import { Badge } from "@/components/ui/badge";
 import { buttonClass } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import plugin from "../../../plugins/sam-ui/.claude-plugin/plugin.json";
 import { CopyButton } from "./_intro/copy-command";
 import { HeroPreview } from "./_intro/hero-preview";
 import { InstallGuide } from "./_intro/install-guide";
+import kitInstalled from "./_intro/shots/kit-installed.webp";
+import screenBuilt from "./_intro/shots/screen-built.webp";
 
 const REPO = "https://github.com/sanghoooo/sam-ui";
 
@@ -63,8 +67,22 @@ const STEPS = [
   },
   {
     title: "킷 설치 요청",
-    body: "프로젝트에서 요청하면 Claude가 컴포넌트를 복사하고 토큰과 앱 셸을 연결한 뒤, 모든 파일을 sam-ui.json에 기록합니다.",
-    detail: <Prompt text="SAM UI 킷 설치해줘" />,
+    body: "프로젝트에서 “SAM UI 킷 설치해줘”라고 요청하거나 /sam-ui-kit을 실행하면 Claude가 컴포넌트를 복사하고 토큰과 앱 셸을 연결한 뒤, 모든 파일을 sam-ui.json에 기록합니다.",
+    detail: (
+      <div className="flex flex-wrap items-end gap-x-3 gap-y-2">
+        <Prompt text="SAM UI 킷 설치해줘" />
+        <span className="ml-2.5 pb-3 text-[12px] font-semibold text-muted-foreground">
+          또는
+        </span>
+        <Prompt command text="/sam-ui-kit" />
+      </div>
+    ),
+    result: {
+      image: kitInstalled,
+      alt: "킷을 설치한 직후의 화면: 시작 메뉴가 있는 사이드바와 '준비 중인 화면입니다' 안내가 있는 개요 페이지",
+      caption:
+        "설치 직후 화면: 시작 메뉴가 있는 사이드바와 아직 비어 있는 개요 페이지",
+    },
   },
   {
     title: "화면 설명",
@@ -72,6 +90,12 @@ const STEPS = [
     detail: (
       <Prompt text="기준월 필터, 사업 선택, 주문 · 매출 탭이 있는 현황 페이지 만들어줘" />
     ),
+    result: {
+      image: screenBuilt,
+      alt: "기준월과 사업 필터, 주문 · 매출 탭, 이번 달 · 최근 6개월 평균 카드, 사업별로 쌓은 월별 추이 막대가 있는 개요 화면",
+      caption:
+        "요청대로 만든 화면: 기준월 · 사업 필터, 주문 · 매출 탭, 이번 달 카드와 사업별 월별 추이",
+    },
   },
 ];
 
@@ -146,7 +170,7 @@ export default function IntroPage() {
           title="빈 프로젝트에서 완성된 화면까지, 세 번의 요청"
         >
           <ol className="space-y-4">
-            {STEPS.map(({ title, body, detail }, i) => (
+            {STEPS.map(({ title, body, detail, result }, i) => (
               <li key={title}>
                 <Card className="flex gap-4 p-6">
                   <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-[13px] font-bold text-primary-foreground">
@@ -158,6 +182,7 @@ export default function IntroPage() {
                       {body}
                     </p>
                     <div className="mt-5">{detail}</div>
+                    {result && <Result {...result} />}
                   </div>
                 </Card>
               </li>
@@ -349,14 +374,60 @@ function Section({
   );
 }
 
+/** What a step leaves behind, as a screenshot that opens full size, with a caption. */
+function Result({
+  image,
+  alt,
+  caption,
+}: {
+  image: StaticImageData;
+  alt: string;
+  caption: string;
+}) {
+  return (
+    <figure className="mt-5 max-w-3xl">
+      <a
+        className="block overflow-hidden rounded-xl border border-border transition-opacity hover:opacity-90"
+        href={image.src}
+        rel="noreferrer"
+        target="_blank"
+      >
+        <img
+          alt={alt}
+          className="h-auto w-full"
+          height={image.height}
+          loading="lazy"
+          src={image.src}
+          width={image.width}
+        />
+      </a>
+      <figcaption className="mt-2 break-keep text-[12px] text-muted-foreground">
+        {caption}
+      </figcaption>
+    </figure>
+  );
+}
+
 /**
  * A request to Claude, as a chat bubble from the person beside it, with a button that copies it. The bubble's
- * tail leaves its square bottom-left corner and curls out to a rounded tip by the person.
+ * tail leaves its square bottom-left corner and curls out to a rounded tip by the person. A `command` is a slash
+ * command: set in mono without quotes, and without the person, who is already beside the request it stands in for.
  */
-function Prompt({ text }: { text: string }) {
+function Prompt({
+  text,
+  command = false,
+}: {
+  text: string;
+  command?: boolean;
+}) {
   return (
     <div className="flex items-end gap-1">
-      <User aria-hidden className="mb-1 size-5 shrink-0 text-muted-foreground" />
+      {!command && (
+        <User
+          aria-hidden
+          className="mb-1 size-5 shrink-0 text-muted-foreground"
+        />
+      )}
       <div className="relative ml-2.5 flex w-fit max-w-full min-w-0 items-center gap-1 rounded-2xl rounded-bl-none bg-muted py-1.5 pr-1.5 pl-4 text-[13px]">
         <svg
           aria-hidden
@@ -364,10 +435,21 @@ function Prompt({ text }: { text: string }) {
           fill="currentColor"
           viewBox="0 0 12 16"
         >
-          <path d="M12 0C12 7 8.5 12 2.6 14.6C1.2 15.2 1.5 16 3 16H12Z" />
+          <path d="M12 0C12 6.5 9.4 11 5 13.4C2.4 14.8 2.6 16 5.2 16H12Z" />
         </svg>
-        <p className="break-keep py-1.5">“{text}”</p>
-        <CopyButton className="shrink-0" label="요청 복사" text={text} />
+        <p
+          className={cn(
+            "break-keep py-1.5",
+            command && "font-mono text-[12px]",
+          )}
+        >
+          {command ? text : `“${text}”`}
+        </p>
+        <CopyButton
+          className="shrink-0"
+          label={command ? "명령 복사" : "요청 복사"}
+          text={text}
+        />
       </div>
     </div>
   );
