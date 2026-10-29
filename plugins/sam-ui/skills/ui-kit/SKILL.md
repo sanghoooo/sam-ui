@@ -1,7 +1,7 @@
 ---
 name: ui-kit
 description: >-
-  Install and use the SAM UI Kit, a small React + Tailwind CSS 4 component set for dashboards:
+  Install and use SAM UI, a small React + Tailwind CSS 4 component set for dashboards:
   a white sidebar with collapsible groups, a gray page, white bordered cards, filter toolbars, segmented
   controls with a sliding pill, pill tabs, month steppers, switches, a light theme by default with an
   optional dark theme, and an animated AI Insight logo. It bundles the component sources, the tokens CSS,
@@ -13,7 +13,7 @@ description: >-
   menu, workspace logos or colors), even when they don't name a component.
 ---
 
-# SAM UI Kit
+# SAM UI
 
 A small kit of React components for dashboard screens: Tailwind CSS 4, `lucide-react` icons, no other UI
 library. The look is a white sidebar with collapsible groups, a gray page, white bordered cards, a filter

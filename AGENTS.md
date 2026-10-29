@@ -1,6 +1,6 @@
 # sam-ui
 
-- This repo holds the SAM UI Kit and the Claude Code plugin `sam-ui` that installs it. The marketplace
+- This repo holds SAM UI and the Claude Code plugin `sam-ui` that installs it. The marketplace
   `hoo-plugins` is its own repo (github.com/sanghoooo/hoo-plugins) and lists the plugin with a `git-subdir`
   source at `plugins/sam-ui` on the default branch, so a release here needs no change there. The kit carries the
   air/TDS business logos.

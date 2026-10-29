@@ -1,4 +1,4 @@
-/* SAM UI Kit tokens. Import it right after `@import "tailwindcss";` in the global stylesheet:
+/* SAM UI tokens. Import it right after `@import "tailwindcss";` in the global stylesheet:
      @import "tailwindcss";
      @import "../styles/ui-kit.css";
    This file is the kit's source of the tokens; the sam-ui site imports it as is. */

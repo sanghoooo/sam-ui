@@ -35,7 +35,7 @@ cat >"$stage/hoo-plugins/.claude-plugin/marketplace.json" <<'EOF'
     {
       "name": "sam-ui",
       "source": "./plugins/sam-ui",
-      "description": "SAM UI Kit: install a React + Tailwind CSS 4 dashboard kit into a project and build screens with it."
+      "description": "SAM UI: install a React + Tailwind CSS 4 dashboard kit into a project and build screens with it."
     }
   ]
 }

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// SAM UI Kit: copies the kit's files (../assets) into a project and keeps them up to date.
+// SAM UI: copies the kit's files (../assets) into a project and keeps them up to date.
 //
 //   node kit.mjs install <src-root> [--take <path>]... [--keep <path>]...
 //   node kit.mjs update  <src-root> [--take <path>]... [--keep <path>]... [--force]
