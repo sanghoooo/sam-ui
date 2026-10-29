@@ -1,7 +1,7 @@
 # sam-ui — SAM UI 킷
 
 SAM UI 킷과, 그 킷을 다른 프로젝트에 설치하고 쓰게 하는 Claude Code 플러그인 `sam-ui`를 관리하는 저장소입니다.
-플러그인은 마켓플레이스 [hoo-plugins](https://github.com/sanghoooo/hoo-plugins)에 등록돼 있습니다.
+플러그인은 마켓플레이스 [sam-plugins](https://github.com/sanghoooo/sam-plugins)에 등록돼 있습니다.
 
 - **킷:** 사이드바 레이아웃(시작용 메뉴), 필터 툴바, SegmentedControl(움직이는 선택 표시), Tabs,
   MonthStepper, Select, Switch, StatePanel, AI Insight 로고, air · TDS · MVNO 로고와 브랜드 색, 라이트(기본) ·
@@ -52,10 +52,10 @@ pnpm build
 pnpm release 0.2.0   # plugin.json version 변경 → plugin validate → dist/sam-ui-0.2.0.zip
 ```
 
-그다음 커밋하고 `v0.2.0` 태그와 함께 기본 브랜치에 push합니다. hoo-plugins는 이 저장소 기본 브랜치의
+그다음 커밋하고 `v0.2.0` 태그와 함께 기본 브랜치에 push합니다. sam-plugins는 이 저장소 기본 브랜치의
 `plugins/sam-ui`를 가리키므로(`git-subdir`) 릴리스할 때 고치지 않습니다. 설치한 사람은 Claude Code에서
-`/plugin marketplace update hoo-plugins` 후 `/reload-plugins`로 받습니다(터미널에서는 `claude plugin marketplace
-update hoo-plugins`, `claude plugin update sam-ui@hoo-plugins` 후 다시 시작). `version`을 올리지 않으면 설치된 쪽에
+`/plugin marketplace update sam-plugins` 후 `/reload-plugins`로 받습니다(터미널에서는 `claude plugin marketplace
+update sam-plugins`, `claude plugin update sam-ui@sam-plugins` 후 다시 시작). `version`을 올리지 않으면 설치된 쪽에
 업데이트가 가지 않습니다.
 
 ## 설치 (사용하는 쪽)
@@ -63,19 +63,20 @@ update hoo-plugins`, `claude plugin update sam-ui@hoo-plugins` 후 다시 시작
 GitHub에 접근할 수 있으면 Claude Code에서:
 
 ```
-/plugin marketplace add https://github.com/sanghoooo/hoo-plugins.git
-/plugin install sam-ui@hoo-plugins
+/plugin marketplace add https://github.com/sanghoooo/sam-plugins.git
+/plugin install sam-ui@sam-plugins
 ```
 
 GitHub에 접근할 수 없는 PC는 `pnpm release`가 만든 zip을 풀어 로컬 경로로 추가합니다(`docs/offline-install.md`).
 
-0.4 이하의 이름(`sam-ui-kit@sam-ui`, `sam-ui@sam-plugins`)으로 설치했다면 먼저 `claude plugin marketplace remove
-sam-ui`(또는 `sam-plugins`)로 이전 마켓플레이스와 그 플러그인을 지우고 위 순서로 설치합니다. 범위(`--scope`)는 붙이지
-않습니다. 사용자 · 프로젝트 어느 쪽에 등록했든 함께 지웁니다. 프로젝트의 `sam-ui.json`은 그대로 이어서 씁니다.
+이전 이름(0.3.5까지 `sam-ui@sam-plugins`, 0.4의 `sam-ui-kit@sam-ui`, 0.5.0 · 0.5.1의 `sam-ui@hoo-plugins`)으로
+설치했다면 먼저 `claude plugin marketplace remove hoo-plugins`(또는 `sam-ui`, `sam-plugins`)로 이전 마켓플레이스와 그
+플러그인을 지우고 위 순서로 설치합니다. 범위(`--scope`)는 붙이지 않습니다. 사용자 · 프로젝트 어느 쪽에 등록했든 함께
+지웁니다. 프로젝트의 `sam-ui.json`은 그대로 이어서 씁니다.
 
 ## 사용하는 프로젝트의 업데이트
 
-킷을 배포하면 각 프로젝트는 플러그인을 업데이트한 뒤(`/plugin marketplace update hoo-plugins`,
+킷을 배포하면 각 프로젝트는 플러그인을 업데이트한 뒤(`/plugin marketplace update sam-plugins`,
 `/reload-plugins`) Claude에게 "SAM UI 킷 업데이트해줘"라고 합니다. 스킬이 `kit.mjs update`로
 처리합니다.
 

@@ -20,15 +20,15 @@ fs.writeFileSync(file, text.replace(pattern, `"version": "${version}"`));
 ' "$manifest" "$version"
 echo "sam-ui version: $version"
 
-# The zip is a local hoo-plugins marketplace that lists only this plugin by a relative path, so it installs
-# as sam-ui@hoo-plugins like the online one.
+# The zip is a local sam-plugins marketplace that lists only this plugin by a relative path, so it installs
+# as sam-ui@sam-plugins like the online one.
 root=$(pwd)
 stage=$(mktemp -d)
-mkdir -p "$stage/hoo-plugins/.claude-plugin" dist
-cp -R plugins "$stage/hoo-plugins/"
-cat >"$stage/hoo-plugins/.claude-plugin/marketplace.json" <<'EOF'
+mkdir -p "$stage/sam-plugins/.claude-plugin" dist
+cp -R plugins "$stage/sam-plugins/"
+cat >"$stage/sam-plugins/.claude-plugin/marketplace.json" <<'EOF'
 {
-  "name": "hoo-plugins",
+  "name": "sam-plugins",
   "owner": { "name": "sanghoooo" },
   "description": "sanghoooo's Claude Code plugins (offline copy with sam-ui).",
   "plugins": [
@@ -40,7 +40,7 @@ cat >"$stage/hoo-plugins/.claude-plugin/marketplace.json" <<'EOF'
   ]
 }
 EOF
-cp docs/offline-install.md "$stage/hoo-plugins/README.md"
+cp docs/offline-install.md "$stage/sam-plugins/README.md"
 find "$stage" -name .DS_Store -delete
 
 # claude is often only bundled with the VS Code extension, not on PATH.
@@ -49,13 +49,13 @@ claude_bin=$(command -v claude ||
   true)
 if [[ -n "$claude_bin" ]]; then
   "$claude_bin" plugin validate ./plugins/sam-ui --strict
-  "$claude_bin" plugin validate "$stage/hoo-plugins"
+  "$claude_bin" plugin validate "$stage/sam-plugins"
 else
   echo "claude CLI not found: plugin validate skipped" >&2
 fi
 
 rm -f "dist/sam-ui-$version.zip"
-(cd "$stage" && zip -qr "$root/dist/sam-ui-$version.zip" hoo-plugins)
+(cd "$stage" && zip -qr "$root/dist/sam-ui-$version.zip" sam-plugins)
 rm -rf "$stage"
 
 echo "built dist/sam-ui-$version.zip"

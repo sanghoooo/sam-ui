@@ -20,8 +20,8 @@ import { HeroPreview } from "./_intro/hero-preview";
 
 const REPO = "https://github.com/sanghoooo/sam-ui";
 const INSTALL = [
-  "/plugin marketplace add https://github.com/sanghoooo/hoo-plugins.git",
-  "/plugin install sam-ui@hoo-plugins",
+  "/plugin marketplace add https://github.com/sanghoooo/sam-plugins.git",
+  "/plugin install sam-ui@sam-plugins",
 ];
 
 const FEATURES = [
@@ -60,7 +60,7 @@ const FEATURES = [
 const STEPS = [
   {
     title: "플러그인 설치",
-    body: "Claude Code에서 마켓플레이스 hoo-plugins를 추가하고 sam-ui를 설치합니다.",
+    body: "Claude Code에서 마켓플레이스 sam-plugins를 추가하고 sam-ui를 설치합니다.",
     detail: <CopyCommand lines={INSTALL} />,
   },
   {

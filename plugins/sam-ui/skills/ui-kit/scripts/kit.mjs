@@ -159,9 +159,9 @@ function compareVersions(a, b) {
   return 0;
 }
 
-// The plugin's id in Claude Code. It was sam-ui@sam-plugins up to 0.3.5 and sam-ui-kit@sam-ui in 0.4; those
-// ids stopped there, so they never count.
-const PLUGIN_ID = "sam-ui@hoo-plugins";
+// The plugin's id in Claude Code. It was sam-ui-kit@sam-ui in 0.4 and sam-ui@hoo-plugins in 0.5.0 and 0.5.1;
+// those ids stopped there, so they never count. Up to 0.3.5 it was this one, older than any kit reading it.
+const PLUGIN_ID = "sam-ui@sam-plugins";
 
 // A sam-ui newer than this copy that Claude Code has installed for this project (user scope, or project
 // scope for this folder or one above it). After a plugin update, a session can still hold the old
@@ -431,7 +431,7 @@ function update() {
     );
   if (compareVersions(manifest.version, kitVersion) > 0) {
     console.error(
-      `The project has sam-ui ${manifest.version}, newer than this plugin's ${kitVersion}; an older kit would revert its files. Update the plugin first (in Claude Code: /plugin marketplace update hoo-plugins, then /reload-plugins), then run update with the new version's kit.mjs.`,
+      `The project has sam-ui ${manifest.version}, newer than this plugin's ${kitVersion}; an older kit would revert its files. Update the plugin first (in Claude Code: /plugin marketplace update sam-plugins, then /reload-plugins), then run update with the new version's kit.mjs.`,
     );
     process.exit(1);
   }

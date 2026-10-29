@@ -574,7 +574,7 @@ fs.writeFileSync(
   JSON.stringify({
     version: 2,
     plugins: {
-      "sam-ui@hoo-plugins": [
+      "sam-ui@sam-plugins": [
         {
           scope: "user",
           installPath: path.join(root, "kit-v2"),
@@ -819,7 +819,7 @@ const installed = (entry) =>
     JSON.stringify({
       version: 2,
       plugins: {
-        "sam-ui@hoo-plugins": [
+        "sam-ui@sam-plugins": [
           {
             installPath: path.join(root, "kit-v2"),
             version: "0.2.0",
@@ -846,8 +846,8 @@ ok(
 installed({ scope: "user", version: "0.0.1" });
 r = run(v1, "update", sc);
 ok(r.code === 0, `an older install does not refuse\n${r.out}`);
-// The plugin was sam-ui@sam-plugins up to 0.3.5 and sam-ui-kit@sam-ui in 0.4; those ids stopped there, so
-// they never count.
+// The plugin was sam-ui-kit@sam-ui in 0.4 and sam-ui@hoo-plugins in 0.5.0 and 0.5.1; those ids stopped
+// there, so they never count.
 const oldEntry = [
   { scope: "user", installPath: path.join(root, "kit-v2"), version: "0.2.0" },
 ];
@@ -856,8 +856,8 @@ fs.writeFileSync(
   JSON.stringify({
     version: 2,
     plugins: {
-      "sam-ui@sam-plugins": oldEntry,
       "sam-ui-kit@sam-ui": oldEntry,
+      "sam-ui@hoo-plugins": oldEntry,
     },
   }),
 );
