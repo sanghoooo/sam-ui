@@ -1,5 +1,5 @@
 {
-  "name": "nn.web.sam.ui",
+  "name": "sam-ui",
   "private": true,
   "packageManager": "pnpm@10.33.4",
   "scripts": {

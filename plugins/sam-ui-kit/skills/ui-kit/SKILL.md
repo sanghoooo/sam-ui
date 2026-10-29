@@ -159,7 +159,7 @@ use `--take <path>`.
 `node ${CLAUDE_SKILL_DIR}/scripts/kit.mjs check <src-root>` lists kit files that differ from the installed
 version (`changed`, `missing`, and `merge`, `left` or `differs` files still waiting for a decision; exit 1
 when any do) and says when the plugin carries a newer or an older kit. Kit changes belong in the kit
-repository (nn.web.sam.ui), not in a project's copies: a local change has to be merged by hand on every
+repository (sam-ui), not in a project's copies: a local change has to be merged by hand on every
 update.
 
 ## Building screens

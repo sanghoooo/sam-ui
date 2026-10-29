@@ -1,4 +1,4 @@
-# nn.web.sam.ui — SAM UI 킷
+# sam-ui — SAM UI 킷
 
 SAM UI 킷과, 그 킷을 다른 프로젝트에 설치하고 쓰게 하는 Claude Code 플러그인 `sam-ui-kit`(마켓플레이스
 `sam-ui`)을 관리하는 저장소입니다.

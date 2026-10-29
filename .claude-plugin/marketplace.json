@@ -1,7 +1,7 @@
 {
   "name": "sam-ui",
   "owner": { "name": "sanghoooo" },
-  "description": "Claude Code plugins for SAM UI (nn.web.sam.ui).",
+  "description": "Claude Code plugins for SAM UI (sam-ui).",
   "plugins": [
     {
       "name": "sam-ui-kit",

@@ -659,7 +659,7 @@ function check() {
   const count = Object.values(out).reduce((sum, rels) => sum + rels.length, 0);
   if (count) {
     console.log(
-      `${count} kit file(s) differ from sam-ui-kit ${manifest.version}. Make kit changes in nn.web.sam.ui instead, or keep them as deliberate local changes.`,
+      `${count} kit file(s) differ from sam-ui-kit ${manifest.version}. Make kit changes in the sam-ui repository instead, or keep them as deliberate local changes.`,
     );
     process.exit(1);
   }

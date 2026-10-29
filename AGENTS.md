@@ -1,4 +1,4 @@
-# nn.web.sam.ui
+# sam-ui
 
 - This repo is the Claude Code marketplace `sam-ui`. It holds the SAM UI kit and the plugin `sam-ui-kit` that
   installs it. The kit carries the air/TDS business logos.

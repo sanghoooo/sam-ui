@@ -1,7 +1,7 @@
 /* SAM UI kit tokens. Import it right after `@import "tailwindcss";` in the global stylesheet:
      @import "tailwindcss";
      @import "../styles/ui-kit.css";
-   This file is the kit's source of the tokens; the nn.web.sam.ui site imports it as is. */
+   This file is the kit's source of the tokens; the sam-ui site imports it as is. */
 
 @custom-variant dark (&:where(.dark, .dark *));
 
