@@ -47,7 +47,7 @@ export default function Home() {
 |---|---|---|
 | `title` | 22px bold; wraps, never truncates | |
 | `actions` | right-aligned nodes: `ManualButton`, a primary `Button` … | |
-| `back` | show the ◀ back button (history back, or `/` when the page was opened directly). Pass `false` on pages reached from the menu | `true` |
+| `back` | show the ◀ back button (history back, or `/` when the page was opened directly). Set it to `false` on pages reached from the menu | `true` |
 
 `ManualButton({ href = "/manual", label = "매뉴얼" })` is an outline link button with a dark "?" disc.
 
@@ -65,7 +65,7 @@ type NavHome = { label: ReactNode; href: string };
 - `NAV_HOME`: the top of the sidebar and the menu's home (`href`). A text `label` is the section title
   over the groups, with a home icon linking to `href`. Any other React node, such as the project's brand
   (a logo, the product name, the unit), heads the sidebar above the menu with a bottom border, and the
-  whole header links to `href`. `lib/nav.ts` has no JSX, so pass a component through `createElement`:
+  whole header links to `href`. `lib/nav.ts` has no JSX, so make the element with `createElement`:
 
   ```ts
   import { createElement } from "react";

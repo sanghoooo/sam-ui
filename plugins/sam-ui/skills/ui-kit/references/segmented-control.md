@@ -12,7 +12,7 @@ choice in 0.2s; reduced motion moves it without the slide.
 |---|---|
 | `label` | the group's accessible name (a hidden `<legend>`); match the visible `Field` label |
 | `options` | `readonly { value, label, disabled? }[]` |
-| `value` / `onValueChange` | controlled value; always pass both |
+| `value` / `onValueChange` | controlled value; always set both |
 | `variant` | `soft` (default): the choice is a raised white pill · `solid`: the choice is filled with the primary color |
 | `className` | on the track |
 

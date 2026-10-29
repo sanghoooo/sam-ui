@@ -22,5 +22,5 @@ const [month, setMonth] = useState("2026-10");
 `addMonths("2026-10", -1)` returns `"2026-09"`. It is plain arithmetic, with no `Date` or locale, so the
 server and the browser always agree. Do month math with it rather than `new Date()`.
 
-Pass `min`/`max` from the data's real range; a fixed default month (not today's date) keeps server and
+Set `min`/`max` to the data's real range; a fixed default month (not today's date) keeps server and
 browser renders identical.

@@ -78,7 +78,7 @@ const projectRoot = [srcRoot, path.dirname(srcRoot)].find((dir) =>
 );
 if (!projectRoot) {
   console.error(
-    `No package.json in ${srcRoot} or its parent: pass the folder the project's "@/" alias points at.`,
+    `No package.json in ${srcRoot} or its parent: give the folder the project's "@/" alias points at.`,
   );
   process.exit(2);
 }
@@ -241,7 +241,7 @@ function isWorkspaceRoot(dir) {
 }
 
 // Where the kit is installed below a workspace root (up to two levels down, e.g. apps/web), as the
-// <src-root> to pass, relative to the current folder.
+// <src-root> to give, relative to the current folder.
 function installedBelow(dir, depth = 1) {
   const found = [];
   let entries = [];
@@ -270,8 +270,8 @@ function refuseWorkspaceRoot(what) {
   console.error(
     `${projectRoot} is a workspace root${what}. ${
       found.length
-        ? `The kit is installed in: ${found.join(", ")}. Pass that folder.`
-        : `Pass the app's folder (the one its "@/" alias points at), e.g. apps/web.`
+        ? `The kit is installed in: ${found.join(", ")}. Give that folder.`
+        : `Give the app's folder (the one its "@/" alias points at), e.g. apps/web.`
     }`,
   );
   process.exit(2);
@@ -288,7 +288,7 @@ function readManifest() {
   }
   if ((manifest.srcRoot ?? ".") !== srcRel) {
     console.error(
-      `${MANIFEST} says the kit lives in "${manifest.srcRoot}" of this project, not "${srcRel}": pass that folder.`,
+      `${MANIFEST} says the kit lives in "${manifest.srcRoot}" of this project, not "${srcRel}": give that folder.`,
     );
     process.exit(2);
   }

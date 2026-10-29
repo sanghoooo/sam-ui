@@ -214,7 +214,7 @@ or a `StatePanel` inside it while the content loads.
     <span aria-hidden className="text-[12px] font-medium text-muted-foreground">지표</span>
     <Tabs items={METRICS} label="지표" onValueChange={setMetric} panelId="metric-panel" value={metric} />
   </div>
-  <div aria-labelledby={`metric-panel-tab-${metric}`} id="metric-panel" role="tabpanel">
+  <div aria-labelledby={"metric-panel-tab-" + metric} id="metric-panel" role="tabpanel">
     <StatePanel>불러오는 중…</StatePanel>
   </div>
 </main>

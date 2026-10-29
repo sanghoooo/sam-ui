@@ -11,7 +11,7 @@ primary color.
 |---|---|
 | `checked` | required; the switch is always controlled |
 | `onCheckedChange` | `(checked: boolean) => void`, called with the new value |
-| `disabled`, `className`, other button props | passed through |
+| `disabled`, `className`, other button props | forwarded to the `<button>` |
 
 Give it a name. Either put it in a `<label>` with the text, so clicking the text toggles it too:
 
@@ -22,6 +22,6 @@ Give it a name. Either put it in a `<label>` with the text, so clicking the text
 </label>
 ```
 
-…or pass `aria-label` when there is no visible text.
+…or set `aria-label` when there is no visible text.
 
 The sidebar's 다크 모드 row (`components/layout/theme-toggle.tsx`) is the working example.

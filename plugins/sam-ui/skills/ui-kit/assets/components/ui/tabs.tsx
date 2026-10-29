@@ -14,7 +14,10 @@ type TabsProps<T extends string> = {
   items: readonly TabItem<T>[];
   value: T;
   onValueChange: (value: T) => void;
-  /** id of the tabpanel the tabs control. Each tab's id is `${panelId}-tab-${value}`. */
+  /**
+   * id of the tabpanel the tabs control. Each tab's id is the panel's id, then `tab` and the tab's value,
+   * joined by `-`.
+   */
   panelId: string;
   className?: string;
 };
@@ -63,7 +66,7 @@ export function Tabs<T extends string>({
                   : "cursor-pointer text-foreground/70 hover:text-foreground",
             )}
             disabled={item.disabled}
-            id={`${panelId}-tab-${item.value}`}
+            id={[panelId, "tab", item.value].join("-")}
             key={item.value}
             onClick={() => onValueChange(item.value)}
             onKeyDown={(event) => step(event, item.value)}

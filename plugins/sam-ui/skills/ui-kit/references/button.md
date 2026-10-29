@@ -4,7 +4,7 @@
 import { Button, buttonClass } from "@/components/ui/button";
 ```
 
-A `<button>` with the kit's variants and sizes. Its `type` defaults to `"button"` (pass `type="submit"`
+A `<button>` with the kit's variants and sizes. Its `type` defaults to `"button"` (set `type="submit"`
 inside a form), so it never submits a form by accident.
 
 | Prop | Values | Default |

@@ -13,7 +13,7 @@ left/right arrow keys select the previous/next enabled tab and move focus to it,
 | `label` | the tablist's accessible name |
 | `items` | `readonly { value, label, disabled? }[]` |
 | `value` / `onValueChange` | controlled selection |
-| `panelId` | id of the panel the tabs control; each tab's id is `` `${panelId}-tab-${value}` `` |
+| `panelId` | id of the panel the tabs control; each tab's id is the panel's id, then `tab` and the tab's value, joined by `-` |
 | `className` | on the tablist |
 
 You render the panel yourself, labelled by the selected tab:
@@ -30,7 +30,7 @@ const [metric, setMetric] = useState<(typeof METRICS)[number]["value"]>("visits"
   <span aria-hidden className="text-[12px] font-medium text-muted-foreground">지표</span>
   <Tabs items={METRICS} label="지표" onValueChange={setMetric} panelId="metric-panel" value={metric} />
 </div>
-<div aria-labelledby={`metric-panel-tab-${metric}`} id="metric-panel" role="tabpanel">
+<div aria-labelledby={"metric-panel-tab-" + metric} id="metric-panel" role="tabpanel">
   …
 </div>
 ```

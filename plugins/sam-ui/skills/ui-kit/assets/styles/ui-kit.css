@@ -111,7 +111,7 @@
 
 /* The AI Insight title's light, every 1.75s: a slanted band sweeps the big star (sparkle-sweep), the small
    star pops 2× while its lit copy fades in and out over 0.35s, 14.29–34.29% (0.25–0.6s), peaking at 22.86%
-   (0.4s): it starts as the band's middle passes it, at 14.29%. 14.29–42.86% (0.25–0.75s) the same
+   (0.4s): it starts as the band's middle crosses it, at 14.29%. 14.29–42.86% (0.25–0.75s) the same
    band crosses the words, as if the light carried on from the star.
    Every keyframe moves translate, scale or opacity only, which the compositor runs off the main thread, so
    the title keeps its pace while the page is busy. Reduced motion shows everything at rest. */
