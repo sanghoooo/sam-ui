@@ -1,7 +1,7 @@
 {
   "name": "sam-ui",
   "displayName": "SAM UI",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "description": "The SAM React + Tailwind CSS 4 dashboard kit (sidebar with a starter menu, filter toolbars, segmented controls, tabs, month stepper, switch, light/dark tokens, air/TDS/MVNO logos and brand colors, AI Insight logo) with a skill that installs it into a project and builds screens with it.",
   "author": {
     "name": "sanghoooo"
