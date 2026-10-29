@@ -44,7 +44,7 @@ pnpm build
 
 1. `assets/`의 파일을 고칩니다. 이 파일들은 다른 프로젝트로 복사되므로 주석에 이 저장소 밖의 경로를 쓰지 않습니다.
 2. 사용법이 바뀌면 `skills/ui-kit/references/`의 해당 문서와 `SKILL.md`를 함께 고칩니다.
-3. 새 컴포넌트나 변형은 팔레트(`apps/hoo/app/palette/palette-demo.tsx`)에 보이게 합니다. 소개 페이지와 사이트 머리는 한국어, 팔레트는 영어로 씁니다.
+3. 새 컴포넌트나 변형은 팔레트(`apps/hoo/app/palette/palette-demo.tsx`)에 보이게 합니다. 소개 페이지, 사이트 머리, 팔레트 모두 한국어로 씁니다.
 4. `pnpm lint`, `pnpm build`, 라이트 · 다크 화면 확인.
 
 ## 배포

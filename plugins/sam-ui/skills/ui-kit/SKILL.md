@@ -45,7 +45,7 @@ over it unless the user asks.
 ## Setting it up
 
 Requirements: React 19, Tailwind CSS 4 and an `@/*` path alias. The components work in any React app; the
-app shell (`components/layout/*`) and the font helper need the Next.js App Router.
+app shell (`components/layout/*`) needs the Next.js App Router.
 
 1. **Copy the files.** Run `node ${CLAUDE_SKILL_DIR}/scripts/kit.mjs install <src-root>`; the images go to
    the project root's `public/`. An app with a `basePath` also sets `NEXT_PUBLIC_BASE_PATH` to it, or the
