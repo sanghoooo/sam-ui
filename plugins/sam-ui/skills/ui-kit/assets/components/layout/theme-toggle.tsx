@@ -3,7 +3,7 @@
 import { Moon } from "lucide-react";
 import { useSyncExternalStore } from "react";
 import { Switch } from "@/components/ui/switch";
-import { subscribeToTheme, THEME_STORAGE_KEY } from "@/lib/theme";
+import { subscribeToTheme, THEME_STORAGE_ITEM } from "@/lib/theme";
 
 const isDark = () => document.documentElement.classList.contains("dark");
 // The server renders the light default; THEME_SCRIPT applies a saved dark choice before paint.
@@ -16,7 +16,7 @@ export function ThemeToggle({ label = "다크 모드" }: { label?: string }) {
   function setDark(next: boolean) {
     document.documentElement.classList.toggle("dark", next);
     try {
-      localStorage.setItem(THEME_STORAGE_KEY, next ? "dark" : "light");
+      localStorage.setItem(THEME_STORAGE_ITEM, next ? "dark" : "light");
     } catch {
       // Storage is blocked: the choice lasts until the page reloads.
     }

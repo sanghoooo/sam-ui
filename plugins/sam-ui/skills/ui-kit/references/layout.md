@@ -124,7 +124,7 @@ inline styles and chart props.
 ## Theme (`lib/theme.ts`, `components/layout/theme-toggle.tsx`, `components/layout/theme-script.tsx`)
 
 Light is the default. The sidebar's 다크 모드 switch puts `.dark` on `<html>` and stores
-`"dark"`/`"light"` in `localStorage["sam-ui-theme"]` (`THEME_STORAGE_KEY`). `<ThemeScript />` in the root
+`"dark"`/`"light"` in `localStorage["sam-ui-theme"]` (`THEME_STORAGE_ITEM`). `<ThemeScript />` in the root
 layout's `<head>` puts `THEME_SCRIPT` into the server HTML, which restores the choice before the first
 paint, so there is no flash of light. It renders nothing in the browser: a `<script>` React creates there
 never runs, and React warns about it.
