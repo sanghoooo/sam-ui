@@ -4,25 +4,26 @@ description: >-
   Install and use SAM UI, a small React + Tailwind CSS 4 component set for dashboards:
   a white sidebar with collapsible groups, a gray page, white bordered cards, filter toolbars, segmented
   controls with a sliding pill, pill tabs, month steppers, switches, a light theme by default with an
-  optional dark theme, and an animated AI Insight logo. It bundles the component sources, the tokens CSS,
-  a Next.js app shell with a starter menu, the air/TDS/MVNO workspace logos
-  and brand colors, and a script that installs, updates and checks the kit's files in a project. Use it
-  when someone wants this kit or this look in a project: setting it up ("SAM UI 킷 설치해줘", "UI 킷
-  설치해줘"), bringing in a newer kit ("SAM UI 킷 업데이트해줘"), or building screens with its components
-  once installed (filters, tabs, selects, segmented choices, loading or empty states, dark mode, the sidebar
-  menu, workspace logos or colors), even when they don't name a component.
+  optional dark theme, an animated AI Insight logo, and charts (trend, column, stacked area, combo, donut,
+  bar list, sparkline, scatter, flow, annotation lanes) with one tooltip, zoom and series colors. It
+  bundles the component sources, the tokens CSS, a Next.js app shell with a starter menu, the air/TDS/MVNO
+  workspace logos and brand colors, and a script that installs, updates and checks the kit's files in a
+  project. Use it when someone wants this kit or this look in a project: setting it up ("SAM UI 킷
+  설치해줘", "UI 킷 설치해줘"), bringing in a newer kit ("SAM UI 킷 업데이트해줘"), or building screens
+  with its components once installed (filters, tabs, selects, segmented choices, loading or empty states,
+  dark mode, the sidebar menu, workspace logos or colors, charts), even when they don't name a component.
 ---
 
 # SAM UI
 
 A small kit of React components for dashboard screens: Tailwind CSS 4, `lucide-react` icons, no other UI
-library. The look is a white sidebar with collapsible groups, a gray page, white bordered cards, a filter
+library; the charts use recharts. The look is a white sidebar with collapsible groups, a gray page, white bordered cards, a filter
 toolbar of segmented choices and selects, and pill tabs. Light is the default theme; dark is an option.
 
 The kit's files live in `${CLAUDE_SKILL_DIR}/assets`, mirroring where they go in a project:
-`components/ui/*` (the components), `components/layout/*` (the Next.js app shell and the workspace
-logos), `lib/*` (helpers, the sidebar menu), `styles/ui-kit.css` (the tokens,
-workspace brand colors included) and `public/images/*` (the air/TDS logos).
+`components/ui/*` (the components), `components/charts/*` (the charts), `components/layout/*` (the
+Next.js app shell and the workspace logos), `lib/*` (helpers, the sidebar menu), `styles/ui-kit.css` (the
+tokens, workspace brand colors and chart series colors included) and `public/images/*` (the air/TDS logos).
 
 All file work goes through one script, `${CLAUDE_SKILL_DIR}/scripts/kit.mjs` (Node, no dependencies):
 `install`, `update` and `check`, each given `<src-root>`, the folder the project's `@/` alias points at
@@ -58,7 +59,8 @@ app shell (`components/layout/*`) needs the Next.js App Router.
    switch, tabs …): stop and ask the user, because the two kits can't share those files. An existing
    `lib/nav.ts` stays (`kept`, as the project's starter) unless named with `--take`; the kit's sidebar
    imports it, so it must export what the kit's version does.
-2. **Install the dependencies** with the project's package manager: `lucide-react clsx tailwind-merge`.
+2. **Install the dependencies** with the project's package manager: `lucide-react clsx tailwind-merge
+   recharts` (recharts 3.7 or later; the charts use its 3.x APIs).
 3. **Import the tokens.** In the global stylesheet, right after `@import "tailwindcss";`, add
    `@import "<relative path>/styles/ui-kit.css";`.
    - Remove create-next-app's boilerplate from that stylesheet: its `--background`/`--foreground`
@@ -137,6 +139,10 @@ A newer kit arrives with the plugin, so update the plugin first, then the projec
 
    It refuses (exit 1, nothing changed) when the project's kit is newer than the plugin's: update the
    plugin. Under each `merge`, `differs` and `compare` line, `kit:` gives the kit's version of the file.
+
+   If the report lists `components/charts/*` under `added` (a project that installed 0.6 or earlier),
+   install `recharts` (3.7 or later) before the next build: the files are copied whether or not the project
+   draws charts, and Next type-checks them.
 3. **merge:** compare the project's file with the kit's version (`kit:`), bring the kit's change in
    and show the user, then record it with `update <src-root> --keep <path>`. If the user would rather drop
    the project's change, `--take <path>` takes the kit's version.
@@ -179,6 +185,17 @@ an example and the pitfalls.
 | ◀ 기준월 [YYYY-MM] ▶ | `MonthStepper`, `addMonths` | `${CLAUDE_SKILL_DIR}/references/month-stepper.md` |
 | An on/off setting | `Switch` | `${CLAUDE_SKILL_DIR}/references/switch.md` |
 | The AI Insight sparkle and title | `AiInsightTitle`, `AiSparkle` | `${CLAUDE_SKILL_DIR}/references/ai-insight.md` |
+| A daily/monthly trend: areas, lines or bars with forecasts, bands, targets, y markers, 오늘, zoom | `TrendChart` (`@/components/charts/trend-chart`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |
+| Column bars: monthly, grouped, signed stacks, hatched forecast, labels, target, outlier zoom | `ColumnChart`, `withSeparators`, `hasOutlier` (`@/components/charts/column-chart`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |
+| Stacked areas, also 100% | `StackedArea` (`@/components/charts/stacked-area`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |
+| Bars and lines on two axes, a share line in % | `ComboChart` (`@/components/charts/combo-chart`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |
+| A share ring with a figure in the hole, a composition pie | `Donut` (`@/components/charts/donut`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |
+| A ranked list of label · bar · value | `BarList` (`@/components/charts/bar-list`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |
+| A sparkline beside a KPI | `Sparkline` (`@/components/charts/sparkline`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |
+| Points by two values, bubble size for a third | `ScatterPlot` (`@/components/charts/scatter-plot`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |
+| Flows between columns (Sankey), two or more stages | `Pathway`, `StagedPathway` (`@/components/charts/pathway`, `staged-pathway`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |
+| Annotation lanes under a trend chart | `ChartLanes` (`@/components/charts/chart-lanes`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |
+| Chart frame, tooltip, legend, series colors, number/date formats (server-safe), zoom slider or brush, pitfalls | `ChartBox`, `ChartTip`, `ChartLegend`, `formatNumber`, `useChartZoom`, `ChartZoomControl`, `ChartBrush` (`@/components/charts/chart-parts`, `chart-format`, `chart-zoom`, `chart-zoom-control`, `chart-brush`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |
 | Page shell, header, menu, theme switch, air/TDS/MVNO logos | `components/layout/*`, `lib/nav.ts` | `${CLAUDE_SKILL_DIR}/references/layout.md` |
 | Colors, workspace brand colors, type sizes, dark mode | `styles/ui-kit.css` | `${CLAUDE_SKILL_DIR}/references/tokens.md` |
 

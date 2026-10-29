@@ -45,6 +45,13 @@
   --brand-mvno: #4e5968;
   --brand-kt: #00cbb3;
   --brand-lgu: #ff2e98;
+  /* Chart series colors (components/charts/*): blue, emerald, amber, violet, rose. A series without a color
+     takes them by position (seriesColor); dark lifts each hue one step so series read on dark cards. */
+  --chart-1: #3b82f6;
+  --chart-2: #10b981;
+  --chart-3: #f59e0b;
+  --chart-4: #8b5cf6;
+  --chart-5: #f43f5e;
 }
 
 .dark {
@@ -67,6 +74,11 @@
      same way, so dark shows it a step lighter. */
   --brand-skt: #5456fe;
   --brand-mvno: #8b95a1;
+  --chart-1: #60a5fa;
+  --chart-2: #34d399;
+  --chart-3: #fbbf24;
+  --chart-4: #a78bfa;
+  --chart-5: #fb7185;
 }
 
 @theme inline {
@@ -89,6 +101,11 @@
   --color-brand-skt: var(--brand-skt);
   --color-brand-kt: var(--brand-kt);
   --color-brand-lgu: var(--brand-lgu);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
   --font-sans: var(--font-pretendard), ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -211,5 +228,108 @@
   animation: sam-title-glint-text 1.75s linear infinite;
   @media (prefers-reduced-motion: reduce) {
     animation: none;
+  }
+}
+
+/* ── Charts (components/charts/*) ── */
+
+/* recharts 3 makes the chart wrapper and its SVG focusable: pointer interaction must not outline the whole chart,
+   while keyboard focus stays visible. */
+.recharts-wrapper:focus:not(:focus-visible),
+.recharts-surface:focus:not(:focus-visible) {
+  outline: none;
+}
+.recharts-wrapper:focus-visible,
+.recharts-surface:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* A period switch's zoom (useZoomFlip in components/charts/chart-zoom.ts): while it runs, clones in an overlay stand
+   in for the plot layers. The x labels, the reference labels and anything marked data-zoom-fade (the lanes) hide at
+   once and fade back in with the new view; the y labels only when the y range changes (data-zooming="y"). */
+[data-zooming]
+  .recharts-surface
+  :is(
+    .recharts-area,
+    .recharts-line,
+    .recharts-bar,
+    .recharts-reference-area,
+    .recharts-reference-line
+  ) {
+  visibility: hidden;
+}
+.recharts-surface
+  :is(
+    .recharts-xAxis-tick-labels,
+    .recharts-yAxis-tick-labels,
+    .recharts-label
+  ),
+[data-zoom-fade] {
+  transition: opacity 200ms ease-out;
+}
+[data-zooming]
+  .recharts-surface
+  :is(.recharts-xAxis-tick-labels, .recharts-label),
+[data-zooming="y"] .recharts-surface .recharts-yAxis-tick-labels,
+[data-zooming] [data-zoom-fade] {
+  opacity: 0;
+  transition: none;
+}
+
+/* The zoom control's range inputs (components/charts/chart-zoom-control.tsx): appearance only. The native track is
+   hidden (the control draws its own track and indicator under two stacked inputs) and the thumbs are primary, ringed
+   in the surface they sit on (--chart-surface, else the card) so the ring reads as a gap rather than an outline, as a
+   checked radio's dot is. Which input receives the pointer is the control's choice (z-index), not pointer-events on a
+   pseudo-element, which Firefox ignores. WebKit aligns the thumb's top with the track's, so the thumb is pushed down
+   to the 24px track's middle; Firefox centres it by itself. */
+@utility chart-range {
+  appearance: none;
+  background: transparent;
+  margin: 0;
+  &::-webkit-slider-runnable-track {
+    height: 24px;
+    background: transparent;
+  }
+  &::-moz-range-track {
+    height: 24px;
+    background: transparent;
+  }
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    margin-top: 5px;
+    border-radius: 9999px;
+    background: var(--primary);
+    border: 2px solid var(--chart-surface, var(--card));
+    cursor: pointer;
+    transition: box-shadow 150ms;
+  }
+  &::-moz-range-thumb {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    box-sizing: border-box;
+    border-radius: 9999px;
+    background: var(--primary);
+    border: 2px solid var(--chart-surface, var(--card));
+    cursor: pointer;
+    transition: box-shadow 150ms;
+  }
+  &:hover::-webkit-slider-thumb {
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--primary) 15%, transparent);
+  }
+  &:hover::-moz-range-thumb {
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--primary) 15%, transparent);
+  }
+  &:focus-visible {
+    outline: none;
+  }
+  &:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--ring) 50%, transparent);
+  }
+  &:focus-visible::-moz-range-thumb {
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--ring) 50%, transparent);
   }
 }

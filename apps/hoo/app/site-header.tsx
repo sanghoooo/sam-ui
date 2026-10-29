@@ -10,10 +10,11 @@ import { cn } from "@/lib/utils";
 const LINKS = [
   { href: "/", label: "소개" },
   { href: "/palette", label: "팔레트" },
+  { href: "/charts", label: "차트" },
 ];
 
 /**
- * The site's header, pinned to the top: its name, the two pages and the dark mode switch. It keeps its height
+ * The site's header, pinned to the top: its name, the pages and the dark mode switch. It keeps its height
  * in --header-height, which changes when it wraps on a narrow screen, so linked sections can stop just below.
  */
 export function SiteHeader() {
