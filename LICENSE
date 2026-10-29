@@ -19,3 +19,16 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+The MIT License above covers this repository's code and documentation. It does not cover:
+
+- The air and T logos in plugins/sam-ui-kit/skills/ui-kit/assets/public/images/workspaces/. They are
+  trademarks of their respective owners, included only to identify those services; no right to use
+  them is granted.
+- The Pretendard font in plugins/sam-ui-kit/skills/ui-kit/assets/lib/fonts/, licensed under the SIL
+  Open Font License 1.1 (OFL.txt in the same folder).
+
+Other product and company names in this repository, such as air, T다이렉트샵, T world, SKT, KT 요고 and
+LG U+ nerget, are trademarks of their respective owners and are used only to identify them.

@@ -1,0 +1,26 @@
+# nn.web.sam.ui CI: lint, the kit script's tests, and a build of the site in apps/hoo (which compiles every kit
+# file) on merge requests and on the default branch. plugin validate needs the claude CLI, so it runs in `pnpm release` locally.
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+
+check:
+  image: node:jod-alpine
+  variables:
+    NEXT_TELEMETRY_DISABLED: "1"
+  cache:
+    key:
+      files:
+        - pnpm-lock.yaml
+    paths:
+      - .pnpm-store
+  before_script:
+    - corepack enable
+    - pnpm config set store-dir .pnpm-store
+  script:
+    - pnpm install --frozen-lockfile
+    - pnpm lint
+    - pnpm test
+    - pnpm build

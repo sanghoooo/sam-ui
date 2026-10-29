@@ -1,0 +1,18 @@
+{
+  "name": "nn.web.sam.ui",
+  "private": true,
+  "packageManager": "pnpm@10.33.4",
+  "scripts": {
+    "dev": "pnpm --filter hoo dev --hostname localhost --port 3102",
+    "build": "pnpm --filter hoo build",
+    "start": "pnpm --filter hoo start --hostname localhost --port 3102",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "check": "biome check .",
+    "release": "bash scripts/release.sh",
+    "test": "node tests/kit.test.mjs"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.13"
+  }
+}

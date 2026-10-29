@@ -1,0 +1,203 @@
+/* SAM UI kit tokens. Import it right after `@import "tailwindcss";` in the global stylesheet:
+     @import "tailwindcss";
+     @import "../styles/ui-kit.css";
+   This file is the kit's source of the tokens; the nn.web.sam.ui site imports it as is. */
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Light is the default theme. The sidebar's 다크 모드 switch puts .dark on <html>, and the root
+   layout's THEME_SCRIPT restores that choice before the first paint. */
+:root {
+  color-scheme: light;
+  --background: #f4f6f9;
+  --foreground: #191f28;
+  --card: #ffffff;
+  --sidebar: #ffffff;
+  /* The chosen segment or tab: a pill raised off its gray track. */
+  --raised: #ffffff;
+  --muted: #f0f2f5;
+  --muted-foreground: #6b7684;
+  --subtle-foreground: #a7afba;
+  --border: #e3e7ec;
+  --input: #d9dee6;
+  --primary: #1f2a44;
+  --primary-foreground: #ffffff;
+  --ring: #4c6ef5;
+  /* Workspace brand colors: air's logo highlight; TDS shares SKT T world's indigo; MVNO is a deep
+     gray.
+     Then the carriers' sub-brands, SKT T world, KT 요고 and LG U+ nerget. Soft fills take them at 14%
+     (bg-brand-air/14). */
+  --brand-air: #005fff;
+  --brand-skt: #3617ce;
+  --brand-tds: var(--brand-skt);
+  --brand-mvno: #4e5968;
+  --brand-kt: #00cbb3;
+  --brand-lgu: #ff2e98;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #0e1116;
+  --foreground: #e6e9ee;
+  --card: #161a21;
+  --sidebar: #12151b;
+  --raised: #2a303a;
+  --muted: #1e232b;
+  --muted-foreground: #9aa3af;
+  --subtle-foreground: #5d6672;
+  --border: #252b34;
+  --input: #323945;
+  --primary: #e6e9ee;
+  --primary-foreground: #12151b;
+  --ring: #7c93ff;
+  /* T world indigo is about 1.8:1 on dark cards, so dark lifts it to a lighter tint of the same hue
+     (about 3.5:1). TDS follows. MVNO's deep gray would sink into dark cards the
+     same way, so dark shows it a step lighter. */
+  --brand-skt: #5456fe;
+  --brand-mvno: #8b95a1;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-sidebar: var(--sidebar);
+  --color-raised: var(--raised);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-subtle-foreground: var(--subtle-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-ring: var(--ring);
+  --color-brand-air: var(--brand-air);
+  --color-brand-tds: var(--brand-tds);
+  --color-brand-mvno: var(--brand-mvno);
+  --color-brand-skt: var(--brand-skt);
+  --color-brand-kt: var(--brand-kt);
+  --color-brand-lgu: var(--brand-lgu);
+  --font-sans: var(--font-pretendard), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* ── AI Insight logo (components/ui/ai-insight.tsx) ── */
+
+/* The AI Insight title's light, every 1.75s: a slanted band sweeps the big star (sparkle-sweep), the small
+   star pops 2.2× while its lit copy fades in and out over 0.35s, 8.57–28.57%, peaking at 17.14% (0.3s), just
+   after the band's middle passes it at 14.29%. 14.29–42.86% (0.25–0.75s) the same
+   band crosses the words, as if the light carried on from the star.
+   Every keyframe moves translate, scale or opacity only, which the compositor runs off the main thread, so
+   the title keeps its pace while the page is busy. Reduced motion shows everything at rest. */
+@utility ai-sparkle-glint {
+  --ai-glint: var(--foreground);
+  &:where(.dark *) {
+    --ai-glint: #fff;
+  }
+}
+/* The band element is 3× the icon and centred on it; its light is about 11 of the icon's 24 units wide. In
+   its own width, ±22.01% puts the whole band just left of the big star's left tip at the start and just
+   right of its right tip at the end; its middle crosses the small star 69% of the way, at 14.29%. */
+@keyframes sam-sparkle-sweep {
+  0% {
+    translate: -22.01% 0;
+  }
+  20.76%,
+  100% {
+    translate: 22.01% 0;
+  }
+}
+@utility animate-sparkle-sweep {
+  animation: sam-sparkle-sweep 1.75s linear infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+@keyframes sam-sparkle-pop {
+  0%,
+  8.57% {
+    scale: 1;
+  }
+  17.14% {
+    scale: 2.2;
+  }
+  28.57%,
+  100% {
+    scale: 1;
+  }
+}
+@utility animate-sparkle-pop {
+  animation: sam-sparkle-pop 1.75s ease-out infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+@keyframes sam-sparkle-flash {
+  0%,
+  8.57% {
+    opacity: 0;
+  }
+  17.14% {
+    opacity: 1;
+  }
+  28.57%,
+  100% {
+    opacity: 0;
+  }
+}
+@utility animate-sparkle-flash {
+  opacity: 0;
+  animation: sam-sparkle-flash 1.75s ease-out infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+/* The words' window is 3/5 of their width: from just left of them (−100% of its width) to just past them
+   (166.667%), while the lit copy inside moves back by the same distance in its own width (60% → −100%), so
+   the words stay put and only the band moves. */
+@keyframes sam-title-glint-window {
+  0%,
+  14.29% {
+    translate: -100% 0;
+  }
+  42.86%,
+  100% {
+    translate: 166.667% 0;
+  }
+}
+@keyframes sam-title-glint-text {
+  0%,
+  14.29% {
+    translate: 60% 0;
+  }
+  42.86%,
+  100% {
+    translate: -100% 0;
+  }
+}
+@utility animate-title-glint-window {
+  animation: sam-title-glint-window 1.75s linear infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+@utility animate-title-glint-text {
+  animation: sam-title-glint-text 1.75s linear infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}

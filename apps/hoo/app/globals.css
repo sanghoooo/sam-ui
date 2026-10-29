@@ -1,0 +1,5 @@
+@import "tailwindcss";
+/* The kit's tokens, straight from its source in the plugin. */
+@import "../../../plugins/sam-ui-kit/skills/ui-kit/assets/styles/ui-kit.css";
+/* The kit's components live outside this app, so Tailwind is told to scan them. */
+@source "../../../plugins/sam-ui-kit/skills/ui-kit/assets";
