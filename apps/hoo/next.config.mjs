@@ -2,7 +2,7 @@ import { fileURLToPath } from "node:url";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // The kit's sources sit outside this app (plugins/sam-ui/skills/ui-kit/assets); rooting Turbopack and
+  // The kit's sources sit outside this app (plugins/sam-ui/skills/sam-ui-kit/assets); rooting Turbopack and
   // tracing at the repo root lets it compile them.
   outputFileTracingRoot: fileURLToPath(new URL("../..", import.meta.url)),
   // GitHub Pages (.github/workflows/pages.yml) serves the site as static files under the repository's path,

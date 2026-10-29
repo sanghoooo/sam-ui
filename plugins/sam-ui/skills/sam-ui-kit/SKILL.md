@@ -1,5 +1,5 @@
 ---
-name: ui-kit
+name: sam-ui-kit
 description: >-
   Install and use SAM UI, a small React + Tailwind CSS 4 component set for dashboards:
   a white sidebar with collapsible groups, a gray page, white bordered cards, filter toolbars, segmented
@@ -97,7 +97,7 @@ app shell (`components/layout/*`) needs the Next.js App Router.
    `<Switch checked={resolvedTheme === "dark"} onCheckedChange={(on) => setTheme(on ? "dark" : "light")} />`.
 5. **App shell (optional).** Wrap the pages in `AppShell` from a route-group layout
    (`app/(main)/layout.tsx`; see `${CLAUDE_SKILL_DIR}/references/layout.md`). Its menu is a starter
-   (`lib/nav.ts`: 대시보드 with 현황 › 개요, and 문의 · 피드백 · UI 팔레트 at the bottom). Ask what the
+   (`lib/nav.ts`: 대시보드 with 현황 › 개요, and only the 다크 모드 switch at the bottom). Ask what the
    project's menu should be and put it in `lib/nav.ts`. A brand (logo, product name) goes in
    `NAV_HOME.label` as a React node, `createElement(Brand)`: it then heads the sidebar and links home.
    A group's `icon` (a lucide icon or a `WorkspaceLogo`) goes before its label the same way

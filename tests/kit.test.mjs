@@ -1,4 +1,4 @@
-// Scenario tests for plugins/sam-ui/skills/ui-kit/scripts/kit.mjs (install, update, check) against fake
+// Scenario tests for plugins/sam-ui/skills/sam-ui-kit/scripts/kit.mjs (install, update, check) against fake
 // kit versions and fake projects in a temp folder. Run with `pnpm test`.
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -8,7 +8,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const KIT = fileURLToPath(
-  new URL("../plugins/sam-ui/skills/ui-kit/scripts/kit.mjs", import.meta.url),
+  new URL(
+    "../plugins/sam-ui/skills/sam-ui-kit/scripts/kit.mjs",
+    import.meta.url,
+  ),
 );
 const root = fs.mkdtempSync(
   path.join(process.env.TMPDIR || os.tmpdir(), "kit-test-"),
@@ -30,22 +33,22 @@ const read = (f) => (fs.existsSync(f) ? fs.readFileSync(f, "utf8") : null);
 const hash = (s) => createHash("sha256").update(s).digest("hex");
 const manifestOf = (dir) => JSON.parse(read(`${dir}/sam-ui.json`));
 
-function plugin(name, version, files) {
+function plugin(name, version, files, { skill = "sam-ui-kit" } = {}) {
   const dir = path.join(root, name);
   fs.mkdirSync(path.join(dir, ".claude-plugin"), { recursive: true });
   fs.writeFileSync(
     path.join(dir, ".claude-plugin/plugin.json"),
     JSON.stringify({ name: "sam-ui", version }),
   );
-  const skill = path.join(dir, "skills/ui-kit");
-  fs.mkdirSync(path.join(skill, "scripts"), { recursive: true });
-  fs.copyFileSync(KIT, path.join(skill, "scripts/kit.mjs"));
+  const skillDir = path.join(dir, "skills", skill);
+  fs.mkdirSync(path.join(skillDir, "scripts"), { recursive: true });
+  fs.copyFileSync(KIT, path.join(skillDir, "scripts/kit.mjs"));
   for (const [rel, content] of Object.entries(files)) {
-    const f = path.join(skill, "assets", rel);
+    const f = path.join(skillDir, "assets", rel);
     fs.mkdirSync(path.dirname(f), { recursive: true });
     fs.writeFileSync(f, content);
   }
-  return path.join(skill, "scripts/kit.mjs");
+  return path.join(skillDir, "scripts/kit.mjs");
 }
 
 function project(name, { src = false } = {}) {
@@ -589,7 +592,9 @@ r = run(v1, "install", o);
 ok(
   r.code === 1 &&
     /Claude Code has sam-ui 0.2.0 installed/.test(r.out) &&
-    r.out.includes(path.join(root, "kit-v2/skills/ui-kit/scripts/kit.mjs")) &&
+    r.out.includes(
+      path.join(root, "kit-v2/skills/sam-ui-kit/scripts/kit.mjs"),
+    ) &&
     !fs.existsSync(`${o}/sam-ui.json`),
   `stale script refused\n${r.out}`,
 );
@@ -597,6 +602,28 @@ r = run(v2, "install", o);
 ok(r.code === 0, `the newest version runs\n${r.out}`);
 r = run(v1, "check", o);
 ok(/Claude Code has sam-ui 0.2.0 installed/.test(r.out), "check notes it too");
+// A newer install from before the skill's folder was renamed keeps its script in skills/ui-kit.
+plugin("kit-legacy", "0.3.0", {}, { skill: "ui-kit" });
+fs.writeFileSync(
+  `${config}/plugins/installed_plugins.json`,
+  JSON.stringify({
+    version: 2,
+    plugins: {
+      "sam-ui@sam-plugins": [
+        {
+          scope: "user",
+          installPath: path.join(root, "kit-legacy"),
+          version: "0.3.0",
+        },
+      ],
+    },
+  }),
+);
+r = run(v1, "check", o);
+ok(
+  r.out.includes(path.join(root, "kit-legacy/skills/ui-kit/scripts/kit.mjs")),
+  `an install with the old skill folder is pointed at its script\n${r.out}`,
+);
 fs.rmSync(`${config}/plugins`, { recursive: true });
 
 console.log("23. a sam-ui.json with git conflict markers");
@@ -840,7 +867,7 @@ ok(
   r.code === 1 &&
     /Claude Code has sam-ui 0.2.0 installed/.test(r.out) &&
     lastLine ===
-      `node ${path.join(root, "kit-v2/skills/ui-kit/scripts/kit.mjs")} update ${sc}`,
+      `node ${path.join(root, "kit-v2/skills/sam-ui-kit/scripts/kit.mjs")} update ${sc}`,
   `an ancestor folder's install counts; the command to run has no --keep\n${r.out}`,
 );
 installed({ scope: "user", version: "0.0.1" });

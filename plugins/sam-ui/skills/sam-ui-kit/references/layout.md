@@ -54,7 +54,7 @@ export default function Home() {
 ## Menu (`lib/nav.ts`, `components/layout/sidebar.tsx`)
 
 `lib/nav.ts` ships with a starter menu to replace with the project's: the section title 대시보드 (home
-`/overview`), one group 현황 with 개요, and 문의, 피드백 and UI 팔레트 at the bottom.
+`/overview`) and one group 현황 with 개요; the bottom holds only the 다크 모드 switch.
 
 ```ts
 type NavLink = { label: string; href: string; badge?: string };
@@ -89,7 +89,7 @@ type NavHome = { label: ReactNode; href: string };
   { label: "데이터", icon: createElement(Database), items: [/* … */] },
   ```
 - `NAV_FOOTER`: icon links at the bottom (`{ label, href, icon }`, lucide icons), above the 다크 모드
-  switch.
+  switch; empty in the starter.
 - `PAGES` lists every linked page with its header title, and `BUILT_PAGES` those with their own route
   folder. The optional placeholder (`templates/placeholder-page.tsx` copied to
   `app/(main)/[...slug]/page.tsx`) serves every other page in `PAGES` with "준비 중인 화면입니다", so the

@@ -1,5 +1,4 @@
 import type { LucideIcon } from "lucide-react";
-import { ClipboardList, MessageSquareText, Palette } from "lucide-react";
 import type { ReactNode } from "react";
 
 export type NavLink = { label: string; href: string; badge?: string };
@@ -34,11 +33,11 @@ export const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-export const NAV_FOOTER: FooterLink[] = [
-  { label: "문의", href: "/support", icon: MessageSquareText },
-  { label: "피드백", href: "/feedback", icon: ClipboardList },
-  { label: "UI 팔레트", href: "/palette", icon: Palette },
-];
+/**
+ * Icon links at the bottom of the sidebar, above the 다크 모드 switch; none to start with. Each is a lucide
+ * icon and a link: `{ label: "문의", href: "/support", icon: MessageSquareText }`.
+ */
+export const NAV_FOOTER: FooterLink[] = [];
 
 /**
  * Pages with their own route folder. Every other page in PAGES is a placeholder ([...slug]); add a

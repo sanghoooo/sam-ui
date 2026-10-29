@@ -15,7 +15,7 @@ SAM UI 킷(사이드바 레이아웃, 필터 툴바, 세그먼트 · 탭 · 월 
    ```
 
    터미널에서는 `claude plugin marketplace add ~/sam-plugins` 후 `claude plugin install sam-ui@sam-plugins`.
-3. 쓸 프로젝트를 새 세션으로 열고 "SAM UI 킷 설치해줘"라고 하면 `sam-ui:ui-kit` 스킬이 킷을 복사 ·
+3. 쓸 프로젝트를 새 세션으로 열고 "SAM UI 킷 설치해줘"라고 하면 `sam-ui:sam-ui-kit` 스킬이 킷을 복사 ·
    설정하고, 이후 화면도 이 킷으로 만듭니다. 요구 사항: React 19, Tailwind CSS 4, `@/*` 경로 별칭(레이아웃은
    Next.js App Router).
 

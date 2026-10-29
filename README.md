@@ -6,7 +6,7 @@ SAM UI 킷과, 그 킷을 다른 프로젝트에 설치하고 쓰게 하는 Clau
 - **킷:** 사이드바 레이아웃(시작용 메뉴), 필터 툴바, SegmentedControl(움직이는 선택 표시), Tabs,
   MonthStepper, Select, Switch, StatePanel, AI Insight 로고, air · TDS · MVNO 로고와 브랜드 색, 라이트(기본) ·
   다크 토큰. React 19 + Tailwind CSS 4, 레이아웃은 Next.js App Router.
-- **플러그인:** 설치하면 `sam-ui:ui-kit` 스킬이 생기고, 어떤 프로젝트에서든 "SAM UI 킷 설치해줘"라고 하면
+- **플러그인:** 설치하면 `sam-ui:sam-ui-kit` 스킬이 생기고, 어떤 프로젝트에서든 "SAM UI 킷 설치해줘"라고 하면
   Claude가 킷을 복사 · 설정하고 이후 화면도 이 킷으로 만듭니다.
 
 ## 구성
@@ -14,7 +14,7 @@ SAM UI 킷과, 그 킷을 다른 프로젝트에 설치하고 쓰게 하는 Clau
 ```
 plugins/sam-ui/                   플러그인 sam-ui
   .claude-plugin/plugin.json      이름 · 버전
-  skills/ui-kit/
+  skills/sam-ui-kit/
     SKILL.md                      설치 순서 · 화면 만드는 법 · 스타일 규칙
     references/                   컴포넌트별 사용법, 토큰, 레이아웃
     assets/                       킷 원본 (components, lib, styles/ui-kit.css, public/images)
@@ -27,7 +27,7 @@ tests/kit.test.mjs                kit.mjs 시나리오 테스트 (pnpm test)
 docs/offline-install.md           zip에 들어가는 설치 안내
 ```
 
-킷 원본은 `plugins/sam-ui/skills/ui-kit/assets/` 한 곳입니다. 사이트(`apps/hoo`)는 경로 별칭(`@/components/*`,
+킷 원본은 `plugins/sam-ui/skills/sam-ui-kit/assets/` 한 곳입니다. 사이트(`apps/hoo`)는 경로 별칭(`@/components/*`,
 `@/lib/*`)과 `@source`로 그 파일을 직접 읽으므로 복사본이 없습니다.
 
 ## 개발
@@ -43,7 +43,7 @@ pnpm build
 킷을 고칠 때:
 
 1. `assets/`의 파일을 고칩니다. 이 파일들은 다른 프로젝트로 복사되므로 주석에 이 저장소 밖의 경로를 쓰지 않습니다.
-2. 사용법이 바뀌면 `skills/ui-kit/references/`의 해당 문서와 `SKILL.md`를 함께 고칩니다.
+2. 사용법이 바뀌면 `skills/sam-ui-kit/references/`의 해당 문서와 `SKILL.md`를 함께 고칩니다.
 3. 새 컴포넌트나 변형은 팔레트(`apps/hoo/app/palette/palette-demo.tsx`)에 보이게 합니다. 소개 페이지, 사이트 머리, 팔레트 모두 한국어로 씁니다.
 4. `pnpm lint`, `pnpm build`, 라이트 · 다크 화면 확인.
 

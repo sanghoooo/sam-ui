@@ -188,12 +188,15 @@ function newerInstalled() {
         newest = entry;
     }
   }
-  return (
-    newest && {
-      version: newest.version,
-      script: path.join(newest.installPath, "skills/ui-kit/scripts/kit.mjs"),
-    }
+  if (!newest) return null;
+  // The skill's folder is sam-ui-kit; it was ui-kit before, so an install from then has its script there.
+  const scripts = ["sam-ui-kit", "ui-kit"].map((skill) =>
+    path.join(newest.installPath, "skills", skill, "scripts/kit.mjs"),
   );
+  return {
+    version: newest.version,
+    script: scripts.find((file) => fs.existsSync(file)) ?? scripts[0],
+  };
 }
 
 function refuseIfNewerInstalled() {

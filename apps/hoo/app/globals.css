@@ -1,8 +1,8 @@
 @import "tailwindcss";
 /* The kit's tokens, straight from its source in the plugin. */
-@import "../../../plugins/sam-ui/skills/ui-kit/assets/styles/ui-kit.css";
+@import "../../../plugins/sam-ui/skills/sam-ui-kit/assets/styles/ui-kit.css";
 /* The kit's components live outside this app, so Tailwind is told to scan them. */
-@source "../../../plugins/sam-ui/skills/ui-kit/assets";
+@source "../../../plugins/sam-ui/skills/sam-ui-kit/assets";
 
 /* The header's name (site-header.tsx), every 5.1s: "Sales and Marketing 본부" for 2s, then the letters after
    each initial fold away in 0.3s as their grid column goes from 1fr to 0fr, so each part narrows from its own
