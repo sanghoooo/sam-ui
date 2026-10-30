@@ -953,6 +953,20 @@ r = run(v1, "update", cx);
 ok(r.code === 0, `the same version in Codex does not refuse\n${r.out}`);
 fs.rmSync(`${codexHome}/plugins`, { recursive: true });
 
+console.log("34. the Codex manifest carries the Claude manifest's version");
+const manifestVersion = (dir) =>
+  JSON.parse(
+    read(
+      fileURLToPath(
+        new URL(`../plugins/sam-ui/${dir}/plugin.json`, import.meta.url),
+      ),
+    ),
+  ).version;
+ok(
+  manifestVersion(".codex-plugin") === manifestVersion(".claude-plugin"),
+  `.codex-plugin ${manifestVersion(".codex-plugin")} vs .claude-plugin ${manifestVersion(".claude-plugin")}: pnpm release sets both`,
+);
+
 fs.rmSync(root, { recursive: true, force: true });
 console.log(`\n${passes} passed, ${failures} failed`);
 process.exit(failures ? 1 : 0);

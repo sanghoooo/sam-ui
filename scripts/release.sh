@@ -7,9 +7,11 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 version="${1:?usage: pnpm release <version>, e.g. 0.2.0}"
-manifest=plugins/sam-ui/.claude-plugin/plugin.json
+# Claude Code reads the first, Codex the second (it prefers .codex-plugin), so both carry the version.
+manifests=(plugins/sam-ui/.claude-plugin/plugin.json plugins/sam-ui/.codex-plugin/plugin.json)
 
-node -e '
+for manifest in "${manifests[@]}"; do
+  node -e '
 const fs = require("fs");
 const [file, version] = process.argv.slice(1);
 // Replace only the version, so the file keeps the formatting Biome gives it.
@@ -18,6 +20,7 @@ const pattern = /"version": "[^"]*"/;
 if (!pattern.test(text)) throw new Error(`no "version" in ${file}`);
 fs.writeFileSync(file, text.replace(pattern, `"version": "${version}"`));
 ' "$manifest" "$version"
+done
 echo "sam-ui version: $version"
 
 # The zip is a local sam-plugins marketplace that lists only this plugin by a relative path, so it installs

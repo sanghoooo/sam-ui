@@ -15,6 +15,7 @@ SAM UI 킷과, 그 킷을 다른 프로젝트에 설치하고 쓰게 하는 Clau
 ```
 plugins/sam-ui/                   플러그인 sam-ui
   .claude-plugin/plugin.json      이름 · 버전
+  .codex-plugin/plugin.json       Codex용 이름 · 버전 · 표시 이름(Codex는 이쪽을 먼저 읽음)
   skills/sam-ui-kit/
     SKILL.md                      설치 순서 · 화면 만드는 법 · 스타일 규칙
     references/                   컴포넌트별 사용법, 토큰, 레이아웃
@@ -51,7 +52,7 @@ pnpm build
 ## 배포
 
 ```sh
-pnpm release 0.2.0   # plugin.json version 변경 → plugin validate → dist/sam-ui-0.2.0.zip
+pnpm release 0.2.0   # 두 plugin.json의 version 변경 → plugin validate → dist/sam-ui-0.2.0.zip
 ```
 
 그다음 커밋하고 `v0.2.0` 태그와 함께 기본 브랜치에 push합니다. sam-plugins는 이 저장소 기본 브랜치의
