@@ -2,16 +2,16 @@
 name: sam-ui-kit
 description: >-
   Install and use SAM UI, a small React + Tailwind CSS 4 component set for dashboards:
-  a white sidebar with collapsible groups, a gray page, white bordered cards, filter toolbars, segmented
-  controls with a sliding pill, pill tabs, month steppers, switches, a light theme by default with an
-  optional dark theme, an animated AI Insight logo, and charts (trend, column, stacked area, combo, donut,
-  bar list, sparkline, scatter, flow, annotation lanes) with one tooltip, zoom and series colors. It
-  bundles the component sources, the tokens CSS, a Next.js app shell with a starter menu, the air/TDS/MVNO
-  workspace logos and brand colors, and a script that installs, updates and checks the kit's files in a
-  project. Use it when someone wants this kit or this look in a project: setting it up ("SAM UI 킷
-  설치해줘", "UI 킷 설치해줘"), bringing in a newer kit ("SAM UI 킷 업데이트해줘"), or building screens
-  with its components once installed (filters, tabs, selects, segmented choices, loading or empty states,
-  dark mode, the sidebar menu, workspace logos or colors, charts), even when they don't name a component.
+  a white sidebar with collapsible groups, a gray page, white bordered cards, filter toolbars,
+  sliding-pill segmented controls, pill tabs, month steppers, switches, light and dark themes, an
+  animated AI Insight logo, and charts (trend, column, stacked area, combo, ring, pie, treemap,
+  bar list, sparkline, scatter, flow, lanes). It bundles the sources, the tokens CSS, a Next.js app
+  shell with a starter menu, the air/TDS/MVNO logos and brand colors, and a script that installs,
+  updates and checks the kit in a project. Use it when someone wants this kit or this look in a
+  project: setting it up ("SAM UI 킷 설치해줘", "UI 킷 설치해줘"), bringing in a newer kit
+  ("SAM UI 킷 업데이트해줘"), or building screens with its components once installed (filters, tabs,
+  selects, segmented choices, loading or empty states, dark mode, the sidebar menu, workspace logos
+  or colors, charts), even when they don't name a component.
 ---
 
 # SAM UI
