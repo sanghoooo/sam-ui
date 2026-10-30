@@ -21,8 +21,9 @@ library; the charts use recharts. The look is a white sidebar with collapsible g
 toolbar of segmented choices and selects, and pill tabs. Light is the default theme; dark is an option.
 
 `${CLAUDE_SKILL_DIR}` in this file is this skill's folder, the one holding this SKILL.md. Claude Code fills
-it in; where it is still written out (in Codex), put that folder's absolute path in its place. Run kit.mjs by
-that absolute path: it runs from the project, where a path relative to the skill does not resolve.
+it in; where it is still written out (in Codex or Gemini CLI), put that folder's absolute path in its place.
+Run kit.mjs by that absolute path: it runs from the project, where a path relative to the skill does not
+resolve.
 
 The kit's files live in `${CLAUDE_SKILL_DIR}/assets`, mirroring where they go in a project:
 `components/ui/*` (the components), `components/charts/*` (the charts), `components/layout/*` (the
@@ -128,11 +129,13 @@ A newer kit arrives with the plugin, so update the plugin first, then the projec
    marketplace update sam-plugins`, then `/reload-plugins`; in a terminal `claude plugin marketplace update
    sam-plugins` and `claude plugin update sam-ui@sam-plugins`, then a restart. In Codex: `codex plugin add
    sam-ui@sam-plugins` in a terminal, which fetches the newest release and replaces the installed one, then a
-   new session. The paths in this skill still point at the version that was loaded, so invoke the skill again
-   after the update. If you don't, kit.mjs refuses to run while Claude Code or Codex has a newer sam-ui than
-   its own, and prints the newer script's command to run instead; decide any `--take`/`--keep` again from
-   that script's output. Codex removes the old version's folder, so there an old path fails with "Cannot
-   find module" instead: read the skill again from its new folder.
+   new session. In Gemini CLI: `gemini skills install https://github.com/sanghoooo/sam-ui.git --path
+   plugins/sam-ui/skills/sam-ui-kit` in a terminal, then `/skills reload` (or a new session). The paths in
+   this skill still point at the version that was loaded, so invoke the skill again after the update. If you
+   don't, kit.mjs refuses to run while Claude Code, Codex or Gemini CLI has a newer sam-ui than its own, and
+   prints the newer script's command to run instead; decide any `--take`/`--keep` again from that script's
+   output. Codex removes the old version's folder, so there an old path fails with "Cannot find module"
+   instead: read the skill again from its new folder.
 2. **The project.** Run `node ${CLAUDE_SKILL_DIR}/scripts/kit.mjs update <src-root>`. Per file it reports:
    - `added` (new in the kit, or a missing kit file put back), `updated` (the project had not changed it),
      `removed` (dropped from the kit, unchanged here);

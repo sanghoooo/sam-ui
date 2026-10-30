@@ -6,7 +6,7 @@ import { SiteHeader } from "./site-header";
 export const metadata: Metadata = {
   title: { default: "SAM UI", template: "%s | SAM UI" },
   description:
-    "SAM UI는 대시보드를 위한 React · Tailwind CSS 4 킷입니다. Claude Code / Codex 플러그인이 설치하고 최신으로 유지합니다.",
+    "SAM UI는 대시보드를 위한 React · Tailwind CSS 4 킷입니다. Claude Code / Codex / Gemini CLI 플러그인이 설치하고 최신으로 유지합니다.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

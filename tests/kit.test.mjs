@@ -16,11 +16,14 @@ const KIT = fileURLToPath(
 const root = fs.mkdtempSync(
   path.join(process.env.TMPDIR || os.tmpdir(), "kit-test-"),
 );
-// An empty Claude Code config folder and Codex home: kit.mjs looks there for a newer installed sam-ui.
+// An empty Claude Code config folder, Codex home and Gemini CLI home: kit.mjs looks there for a newer
+// installed sam-ui.
 const config = path.join(root, "claude-config");
 fs.mkdirSync(config);
 const codexHome = path.join(root, "codex-home");
 fs.mkdirSync(codexHome);
+const geminiHome = path.join(root, "gemini-home");
+fs.mkdirSync(geminiHome);
 let failures = 0;
 let passes = 0;
 
@@ -64,7 +67,12 @@ function project(name, { src = false } = {}) {
 function run(kit, ...args) {
   const r = spawnSync(process.execPath, [kit, ...args], {
     encoding: "utf8",
-    env: { ...process.env, CLAUDE_CONFIG_DIR: config, CODEX_HOME: codexHome },
+    env: {
+      ...process.env,
+      CLAUDE_CONFIG_DIR: config,
+      CODEX_HOME: codexHome,
+      GEMINI_CLI_HOME: geminiHome,
+    },
   });
   return { code: r.status, out: `${r.stdout}${r.stderr}` };
 }
@@ -953,19 +961,66 @@ r = run(v1, "update", cx);
 ok(r.code === 0, `the same version in Codex does not refuse\n${r.out}`);
 fs.rmSync(`${codexHome}/plugins`, { recursive: true });
 
-console.log("34. the Codex manifest carries the Claude manifest's version");
-const manifestVersion = (dir) =>
-  JSON.parse(
-    read(
-      fileURLToPath(
-        new URL(`../plugins/sam-ui/${dir}/plugin.json`, import.meta.url),
-      ),
-    ),
-  ).version;
-ok(
-  manifestVersion(".codex-plugin") === manifestVersion(".claude-plugin"),
-  `.codex-plugin ${manifestVersion(".codex-plugin")} vs .claude-plugin ${manifestVersion(".claude-plugin")}: pnpm release sets both`,
+console.log(
+  "34. the Codex and Gemini manifests and kit.mjs carry the Claude manifest's version",
 );
+const manifestVersion = (rel) =>
+  JSON.parse(
+    read(fileURLToPath(new URL(`../plugins/sam-ui/${rel}`, import.meta.url))),
+  ).version;
+const claudeVer = manifestVersion(".claude-plugin/plugin.json");
+const codexVer = manifestVersion(".codex-plugin/plugin.json");
+const geminiVer = manifestVersion("gemini-extension.json");
+const scriptVer = read(KIT).match(/^const VERSION = "([^"]+)";/m)?.[1];
+ok(
+  codexVer === claudeVer && geminiVer === claudeVer && scriptVer === claudeVer,
+  `.codex-plugin ${codexVer}, gemini-extension.json ${geminiVer}, kit.mjs ${scriptVer} vs .claude-plugin ${claudeVer}: pnpm release sets all`,
+);
+
+console.log("35. a newer sam-ui installed in Gemini CLI (skill or extension)");
+const gm = project("gemini");
+run(v1, "install", gm);
+// `gemini skills install --path plugins/sam-ui/skills/sam-ui-kit` copies only the skill folder, with no
+// .claude-plugin/plugin.json above it; kit.mjs uses its own VERSION constant.
+const geminiSkill = `${geminiHome}/.gemini/skills/sam-ui-kit`;
+fs.cpSync(path.join(root, "kit-v2/skills/sam-ui-kit"), geminiSkill, {
+  recursive: true,
+});
+fs.writeFileSync(
+  `${geminiSkill}/scripts/kit.mjs`,
+  read(`${geminiSkill}/scripts/kit.mjs`).replace(
+    /^const VERSION = "[^"]*";/m,
+    'const VERSION = "0.2.0";',
+  ),
+);
+r = run(v1, "update", gm);
+ok(
+  r.code === 1 &&
+    /but Gemini CLI has sam-ui 0.2.0 installed/.test(r.out) &&
+    r.out.trim().split("\n").pop().trim() ===
+      `node ${geminiSkill}/scripts/kit.mjs update ${gm}`,
+  `refused, with the Gemini CLI skill install's command\n${r.out}`,
+);
+r = run(`${geminiSkill}/scripts/kit.mjs`, "update", gm);
+ok(
+  r.code === 0 && manifestOf(gm).version === "0.2.0",
+  `a standalone skill install updates the project using VERSION\n${r.out}`,
+);
+fs.rmSync(geminiSkill, { recursive: true });
+const geminiExt = `${geminiHome}/.gemini/extensions/sam-ui`;
+fs.cpSync(path.join(root, "kit-v2"), geminiExt, { recursive: true });
+fs.writeFileSync(
+  `${geminiExt}/gemini-extension.json`,
+  JSON.stringify({ name: "sam-ui", version: "0.2.0" }),
+);
+r = run(v1, "check", gm);
+ok(
+  r.out.includes(
+    `Gemini CLI has sam-ui 0.2.0 installed: ${geminiExt}/skills/sam-ui-kit/scripts/kit.mjs`,
+  ),
+  `check names the Gemini CLI extension install\n${r.out}`,
+);
+fs.rmSync(`${geminiHome}/.gemini`, { recursive: true });
 
 fs.rmSync(root, { recursive: true, force: true });
 console.log(`\n${passes} passed, ${failures} failed`);

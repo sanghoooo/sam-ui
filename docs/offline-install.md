@@ -1,7 +1,7 @@
-# sam-plugins (오프라인): SAM UI 킷 Claude Code / Codex 플러그인 sam-ui
+# sam-plugins (오프라인): SAM UI 킷 Claude Code / Codex / Gemini CLI 플러그인 sam-ui
 
 SAM UI 킷(사이드바 레이아웃, 필터 툴바, 세그먼트 · 탭 · 월 선택 · 스위치, 차트, 라이트/다크 토큰, air · TDS · MVNO
-로고와 브랜드 색)을 프로젝트에 설치하고 그 킷으로 화면을 만드는 Claude Code / Codex 플러그인입니다.
+로고와 브랜드 색)을 프로젝트에 설치하고 그 킷으로 화면을 만드는 Claude Code / Codex / Gemini CLI 플러그인입니다.
 네트워크 없이 이 폴더에서 바로 설치합니다.
 
 ## 설치
@@ -21,6 +21,12 @@ SAM UI 킷(사이드바 레이아웃, 필터 툴바, 세그먼트 · 탭 · 월 
    ```
    codex plugin marketplace add ~/sam-plugins
    codex plugin add sam-ui@sam-plugins
+   ```
+
+   Gemini CLI에서는 터미널에서:
+
+   ```
+   gemini skills install ~/sam-plugins/plugins/sam-ui/skills/sam-ui-kit
    ```
 3. 쓸 프로젝트를 새 세션으로 열고 "SAM UI 킷 설치해줘"라고 하면 `sam-ui:sam-ui-kit` 스킬이 킷을 복사 ·
    설정하고, 이후 화면도 이 킷으로 만듭니다. 요구 사항: React 19, Tailwind CSS 4, `@/*` 경로 별칭(레이아웃은
@@ -42,6 +48,7 @@ SAM UI 킷(사이드바 레이아웃, 필터 툴바, 세그먼트 · 탭 · 월 
 
 터미널에서는 `claude plugin marketplace update sam-plugins`, `claude plugin update sam-ui@sam-plugins` 후 Claude
 Code를 다시 시작합니다. Codex에서는 터미널에서 `codex plugin add sam-ui@sam-plugins`를 다시 실행한 뒤 새 세션을
-시작합니다.
+시작합니다. Gemini CLI에서는 터미널에서 `gemini skills install ~/sam-plugins/plugins/sam-ui/skills/sam-ui-kit`를 다시
+실행한 뒤 `/skills reload`(또는 새 세션)를 실행합니다.
 
 사업 로고가 들어 있으니 다른 곳에 다시 배포하지 마세요.

@@ -2,7 +2,7 @@
 
 import { type ReactNode, useState } from "react";
 import { SegmentedControl } from "@/components/ui/segmented-control";
-import { ClaudeIcon, CodexIcon } from "./agent-icons";
+import { ClaudeIcon, CodexIcon, GeminiIcon } from "./agent-icons";
 import { CopyCommand } from "./copy-command";
 import { ScreenSwiper, type Slide } from "./screen-swiper";
 import addPlugins from "./shots/claude-app-1-add-plugins.webp";
@@ -14,11 +14,13 @@ import { Terminal } from "./terminal";
 const MARKETPLACE = "https://github.com/sanghoooo/sam-plugins.git";
 /** Codex adds a GitHub marketplace by owner/repo. */
 const CODEX_MARKETPLACE = "sanghoooo/sam-plugins";
+const REPO = "https://github.com/sanghoooo/sam-ui.git";
 
 /** The agents the plugin installs in, each with its mark. */
 const AGENTS = [
   { icon: <ClaudeIcon />, label: "Claude", value: "claude" },
   { icon: <CodexIcon />, label: "Codex", value: "codex" },
+  { icon: <GeminiIcon />, label: "Gemini", value: "gemini" },
 ] as const;
 type Agent = (typeof AGENTS)[number]["value"];
 
@@ -59,10 +61,11 @@ const SHOTS: Slide[] = [
 ];
 
 /**
- * How to install the plugin, any one way being enough, under a Claude / Codex choice. Claude has two ways: Claude
- * Code (its slash commands, in a terminal) and the Claude app (its screens). The app adds plugins from its menu but
- * has no screen for adding a marketplace, so when sam-plugins isn't listed that one step runs in a terminal. Codex
- * takes two shell commands, which serve its CLI and the ChatGPT desktop app alike (the app has no /plugins).
+ * How to install the plugin, any one way being enough, under a Claude / Codex / Gemini choice. Claude has two ways:
+ * Claude Code (its slash commands, in a terminal) and the Claude app (its screens). The app adds plugins from its
+ * menu but has no screen for adding a marketplace, so when sam-plugins isn't listed that one step runs in a terminal.
+ * Codex takes two shell commands, which serve its CLI and the ChatGPT desktop app alike (the app has no /plugins).
+ * Gemini CLI installs the skill directly from this repository with `gemini skills install --path`.
  */
 export function InstallGuide() {
   const [agent, setAgent] = useState<Agent>("claude");
@@ -100,7 +103,7 @@ export function InstallGuide() {
             </div>
           </Way>
         </div>
-      ) : (
+      ) : agent === "codex" ? (
         <div>
           <p className="mb-3 break-keep text-[13px] text-muted-foreground">
             터미널에서 두 명령을 차례로 실행한 뒤 Codex 새 세션을 시작합니다.
@@ -116,6 +119,22 @@ export function InstallGuide() {
             Codex CLI와 ChatGPT 데스크톱 앱 모두 이 명령으로 설치되고, IDE
             확장은 플러그인을 지원하지 않습니다. 둘째 명령을 다시 실행하면 최신
             버전으로 바뀝니다.
+          </p>
+        </div>
+      ) : (
+        <div>
+          <p className="mb-3 break-keep text-[13px] text-muted-foreground">
+            터미널에서 명령을 실행한 뒤 Gemini CLI 새 세션을 시작합니다(열려
+            있는 세션에서는 <Key>/skills reload</Key>).
+          </p>
+          <Terminal
+            lines={[
+              `gemini skills install ${REPO} --path plugins/sam-ui/skills/sam-ui-kit`,
+            ]}
+            title="terminal"
+          />
+          <p className="mt-2 break-keep text-[12px] text-muted-foreground">
+            같은 명령을 다시 실행하면 최신 버전으로 바뀝니다.
           </p>
         </div>
       )}

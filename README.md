@@ -1,15 +1,16 @@
 # sam-ui — SAM UI 킷
 
-SAM UI 킷과, 그 킷을 다른 프로젝트에 설치하고 쓰게 하는 Claude Code / Codex 플러그인 `sam-ui`를 관리하는 저장소입니다.
+SAM UI 킷과, 그 킷을 다른 프로젝트에 설치하고 쓰게 하는 Claude Code / Codex / Gemini CLI 플러그인 `sam-ui`를 관리하는 저장소입니다.
 플러그인은 마켓플레이스 [sam-plugins](https://github.com/sanghoooo/sam-plugins)에 등록돼 있고, Codex도 Claude Code 형식의
-마켓플레이스와 플러그인을 읽으므로 같은 마켓플레이스로 Codex에도 설치됩니다.
+마켓플레이스와 플러그인을 읽으므로 같은 마켓플레이스로 Codex에도 설치됩니다. Gemini CLI에는 `gemini skills install`로
+설치됩니다.
 
 - **킷:** 사이드바 레이아웃(시작용 메뉴), 필터 툴바, SegmentedControl(움직이는 선택 표시), Tabs,
   MonthStepper, Select, Switch, StatePanel, AI Insight 로고, 차트(추이 · 막대 · 누적 영역 · 복합 · 비중 · 막대 목록 ·
   스파크라인 · 산점도 · 흐름 · 레인), air · TDS · MVNO 로고와 브랜드 색, 라이트(기본) · 다크 토큰. React 19 +
   Tailwind CSS 4, 차트는 recharts, 레이아웃은 Next.js App Router.
 - **플러그인:** 설치하면 `sam-ui:sam-ui-kit` 스킬이 생기고, 어떤 프로젝트에서든 "SAM UI 킷 설치해줘"라고 하면
-  Claude(또는 Codex)가 킷을 복사 · 설정하고 이후 화면도 이 킷으로 만듭니다.
+  Claude, Codex 또는 Gemini가 킷을 복사 · 설정하고 이후 화면도 이 킷으로 만듭니다.
 
 ## 구성
 
@@ -17,6 +18,7 @@ SAM UI 킷과, 그 킷을 다른 프로젝트에 설치하고 쓰게 하는 Clau
 plugins/sam-ui/                   플러그인 sam-ui
   .claude-plugin/plugin.json      이름 · 버전
   .codex-plugin/plugin.json       Codex용 이름 · 버전 · 표시 이름(Codex는 이쪽을 먼저 읽음)
+  gemini-extension.json           Gemini CLI 확장용 이름 · 버전
   skills/sam-ui-kit/
     SKILL.md                      설치 순서 · 화면 만드는 법 · 스타일 규칙
     references/                   컴포넌트별 사용법, 차트, 토큰, 레이아웃
@@ -53,7 +55,7 @@ pnpm build
 ## 배포
 
 ```sh
-pnpm release 0.2.0   # 두 plugin.json의 version 변경 → plugin validate → dist/sam-ui-0.2.0.zip
+pnpm release 0.2.0   # 매니페스트들과 kit.mjs의 version 변경 → plugin validate → dist/sam-ui-0.2.0.zip
 ```
 
 그다음 커밋하고 `v0.2.0` 태그와 함께 기본 브랜치에 push합니다. sam-plugins는 이 저장소 기본 브랜치의
@@ -61,7 +63,9 @@ pnpm release 0.2.0   # 두 plugin.json의 version 변경 → plugin validate →
 `/plugin marketplace update sam-plugins` 후 `/reload-plugins`로 받습니다(터미널에서는 `claude plugin marketplace
 update sam-plugins`, `claude plugin update sam-ui@sam-plugins` 후 다시 시작), Codex에서는 터미널에서 `codex plugin add
 sam-ui@sam-plugins`를 다시 실행한 뒤 새 세션으로 받습니다(`codex plugin marketplace upgrade`는 sam-plugins 저장소가
-바뀔 때만 다시 설치하므로 릴리스를 받지 못합니다). `version`을 올리지 않으면 설치된 쪽에 업데이트가 가지 않습니다.
+바뀔 때만 다시 설치하므로 릴리스를 받지 못합니다), Gemini CLI에서는 터미널에서 `gemini skills install
+https://github.com/sanghoooo/sam-ui.git --path plugins/sam-ui/skills/sam-ui-kit`를 다시 실행한 뒤 `/skills reload`(또는 새
+세션)로 받습니다. `version`을 올리지 않으면 설치된 쪽에 업데이트가 가지 않습니다.
 
 사이트(`apps/hoo`)는 main에 push할 때마다 `.github/workflows/pages.yml`이 정적 파일로 export해
 https://sanghoooo.github.io/sam-ui/ 에 배포합니다(저장소 Settings → Pages의 Source가 GitHub Actions여야 합니다).
@@ -84,6 +88,13 @@ codex plugin marketplace add sanghoooo/sam-plugins
 codex plugin add sam-ui@sam-plugins
 ```
 
+Gemini CLI에서는 터미널에서 아래 명령을 실행한 뒤 새 세션을 시작합니다(열려 있는 세션에서는 `/skills reload`). 같은 명령을
+다시 실행하면 최신 릴리스로 바뀝니다.
+
+```
+gemini skills install https://github.com/sanghoooo/sam-ui.git --path plugins/sam-ui/skills/sam-ui-kit
+```
+
 GitHub에 접근할 수 없는 PC는 `pnpm release`가 만든 zip을 풀어 로컬 경로로 추가합니다(`docs/offline-install.md`).
 
 이전 이름(0.3.5까지 `sam-ui@sam-plugins`, 0.4의 `sam-ui-kit@sam-ui`, 0.5.0 · 0.5.1의 `sam-ui@hoo-plugins`)으로
@@ -94,8 +105,9 @@ GitHub에 접근할 수 없는 PC는 `pnpm release`가 만든 zip을 풀어 로�
 ## 사용하는 프로젝트의 업데이트
 
 킷을 배포하면 각 프로젝트는 플러그인을 업데이트한 뒤(Claude Code: `/plugin marketplace update sam-plugins`,
-`/reload-plugins`, Codex: `codex plugin add sam-ui@sam-plugins` 후 새 세션) Claude나 Codex에게 "SAM UI 킷
-업데이트해줘"라고 합니다. 스킬이 `kit.mjs update`로
+`/reload-plugins`, Codex: `codex plugin add sam-ui@sam-plugins` 후 새 세션, Gemini CLI: `gemini skills install
+https://github.com/sanghoooo/sam-ui.git --path plugins/sam-ui/skills/sam-ui-kit` 후 `/skills reload`) Claude, Codex 또는
+Gemini에게 "SAM UI 킷 업데이트해줘"라고 합니다. 스킬이 `kit.mjs update`로
 처리합니다.
 
 - 프로젝트가 손대지 않은 킷 파일은 새 버전으로 바뀌고, 킷에서 빠진 파일은 지워집니다.

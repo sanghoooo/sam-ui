@@ -1,8 +1,8 @@
 # SAM UI
 
 A React 19 + Tailwind CSS 4 dashboard kit, with a skill that installs it into a project and builds screens with
-it. Screens Claude or Codex makes later use the same components and rules, so they look like the ones already
-there.
+it. Screens Claude, Codex or Gemini makes later use the same components and rules, so they look like the ones
+already there.
 
 ## What's in the kit
 
@@ -36,9 +36,16 @@ codex plugin marketplace add sanghoooo/sam-plugins
 codex plugin add sam-ui@sam-plugins
 ```
 
+In Gemini CLI, run this in a terminal, then start a new session (or run `/skills reload`). Running it again brings in a
+newer release.
+
+```
+gemini skills install https://github.com/sanghoooo/sam-ui.git --path plugins/sam-ui/skills/sam-ui-kit
+```
+
 ## Use
 
-Ask Claude or Codex in a project:
+Ask Claude, Codex or Gemini in a project:
 
 - **"Install the SAM UI kit"** ("SAM UI 킷 설치해줘"): it copies the components, wires up the tokens and the
   app shell, and records every file in `sam-ui.json`.

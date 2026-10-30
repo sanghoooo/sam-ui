@@ -28,6 +28,8 @@ const here = path.dirname(script);
 const assets = path.resolve(here, "../assets");
 const pluginRoot = path.resolve(here, "../../..");
 const MANIFEST = "sam-ui.json";
+// Fallback version when only the skill folder is installed (`gemini skills install`); set by scripts/release.sh.
+const VERSION = "0.6.0";
 // Installed once as a starting point, then the project's own: update and check never write them, and
 // update reports ("compare") the ones the kit changed since the manifest was written.
 const STARTERS = ["lib/nav.ts"];
@@ -85,17 +87,31 @@ if (!projectRoot) {
 const manifestPath = path.join(projectRoot, MANIFEST);
 const srcRel =
   path.relative(projectRoot, srcRoot).split(path.sep).join("/") || ".";
-const kitVersion = readJson(
-  path.join(pluginRoot, ".claude-plugin/plugin.json"),
-)?.version;
+const pluginManifest = path.join(pluginRoot, ".claude-plugin/plugin.json");
+const kitRoot = fs.existsSync(pluginManifest)
+  ? pluginRoot
+  : path.resolve(here, "..");
+const kitVersion = fs.existsSync(pluginManifest)
+  ? readJson(pluginManifest)?.version
+  : VERSION;
 if (!kitVersion) {
-  console.error(`No version in ${pluginRoot}/.claude-plugin/plugin.json.`);
+  console.error(`No version in ${pluginManifest}.`);
   process.exit(2);
 }
 
 function readJson(file) {
   try {
     return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+function readScriptVersion(file) {
+  try {
+    return fs
+      .readFileSync(file, "utf8")
+      .match(/^const VERSION = "([^"]+)";/m)?.[1];
   } catch {
     return null;
   }
@@ -164,8 +180,9 @@ function compareVersions(a, b) {
 const PLUGIN_ID = "sam-ui@sam-plugins";
 
 // The installs of sam-ui that cover this project, as { installPath, version, agent }: Claude Code's (user
-// scope, or project scope for this folder or one above it) and Codex's (user-wide, a folder per version in
-// its plugin cache, $CODEX_HOME/plugins/cache/<marketplace>/<plugin>/<version>).
+// scope, or project scope for this folder or one above it), Codex's (user-wide, a folder per version in
+// its plugin cache, $CODEX_HOME/plugins/cache/<marketplace>/<plugin>/<version>) and Gemini CLI's (user-wide,
+// under $GEMINI_CLI_HOME/.gemini/skills/sam-ui-kit or .gemini/extensions/sam-ui).
 function installs() {
   const found = [];
   const config =
@@ -203,10 +220,34 @@ function installs() {
     )?.version;
     if (version) found.push({ installPath, version, agent: "Codex" });
   }
+  const gemini = path.join(
+    process.env.GEMINI_CLI_HOME || os.homedir(),
+    ".gemini",
+  );
+  const geminiExt = path.join(gemini, "extensions", name);
+  const extVersion =
+    readJson(path.join(geminiExt, "gemini-extension.json"))?.version ??
+    readJson(path.join(geminiExt, ".claude-plugin/plugin.json"))?.version;
+  if (extVersion)
+    found.push({
+      installPath: geminiExt,
+      version: extVersion,
+      agent: "Gemini CLI",
+    });
+  const geminiSkill = path.join(gemini, "skills/sam-ui-kit");
+  const skillVersion = readScriptVersion(
+    path.join(geminiSkill, "scripts/kit.mjs"),
+  );
+  if (skillVersion)
+    found.push({
+      installPath: geminiSkill,
+      version: skillVersion,
+      agent: "Gemini CLI",
+    });
   return found;
 }
 
-// A sam-ui newer than this copy that Claude Code or Codex has installed for this project. After a Claude Code
+// A sam-ui newer than this copy that Claude Code, Codex or Gemini CLI has installed for this project. After a
 // plugin update, a session can still hold the old version's path (Codex deletes the old version's folder).
 function newerInstalled() {
   let newest = null;
@@ -216,14 +257,18 @@ function newerInstalled() {
       newest = entry;
   }
   if (!newest) return null;
-  // The skill's folder is sam-ui-kit; it was ui-kit before, so an install from then has its script there.
-  const scripts = ["sam-ui-kit", "ui-kit"].map((skill) =>
-    path.join(newest.installPath, "skills", skill, "scripts/kit.mjs"),
-  );
+  // The skill's folder is sam-ui-kit (at installPath directly for `gemini skills install`, or under skills/);
+  // it was ui-kit before, so an install from then has its script there.
+  const scripts = [
+    path.join(newest.installPath, "scripts/kit.mjs"),
+    ...["sam-ui-kit", "ui-kit"].map((skill) =>
+      path.join(newest.installPath, "skills", skill, "scripts/kit.mjs"),
+    ),
+  ];
   return {
     version: newest.version,
     agent: newest.agent,
-    script: scripts.find((file) => fs.existsSync(file)) ?? scripts[0],
+    script: scripts.find((file) => fs.existsSync(file)) ?? scripts[1],
   };
 }
 
@@ -231,7 +276,7 @@ function refuseIfNewerInstalled() {
   const newer = newerInstalled();
   if (!newer) return;
   console.error(
-    `This is sam-ui ${kitVersion} (${pluginRoot}), but ${newer.agent} has sam-ui ${newer.version} installed. Run that one, and decide any --take/--keep again from its output (the newer kit may change those files):\n  node ${newer.script} ${command} ${srcArg}`,
+    `This is sam-ui ${kitVersion} (${kitRoot}), but ${newer.agent} has sam-ui ${newer.version} installed. Run that one, and decide any --take/--keep again from its output (the newer kit may change those files):\n  node ${newer.script} ${command} ${srcArg}`,
   );
   process.exit(1);
 }
@@ -462,7 +507,7 @@ function update() {
     );
   if (compareVersions(manifest.version, kitVersion) > 0) {
     console.error(
-      `The project has sam-ui ${manifest.version}, newer than this plugin's ${kitVersion}; an older kit would revert its files. Update the plugin first (in Claude Code: /plugin marketplace update sam-plugins, then /reload-plugins; in Codex: codex plugin add sam-ui@sam-plugins, then a new session), then run update with the new version's kit.mjs.`,
+      `The project has sam-ui ${manifest.version}, newer than this plugin's ${kitVersion}; an older kit would revert its files. Update the plugin first (in Claude Code: /plugin marketplace update sam-plugins, then /reload-plugins; in Codex: codex plugin add sam-ui@sam-plugins, then a new session; in Gemini CLI: gemini skills install https://github.com/sanghoooo/sam-ui.git --path plugins/sam-ui/skills/sam-ui-kit, then /skills reload), then run update with the new version's kit.mjs.`,
     );
     process.exit(1);
   }

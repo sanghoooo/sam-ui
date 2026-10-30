@@ -7,8 +7,13 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 version="${1:?usage: pnpm release <version>, e.g. 0.2.0}"
-# Claude Code reads the first, Codex the second (it prefers .codex-plugin), so both carry the version.
-manifests=(plugins/sam-ui/.claude-plugin/plugin.json plugins/sam-ui/.codex-plugin/plugin.json)
+# Claude Code reads the first, Codex the second (it prefers .codex-plugin), and Gemini CLI the third;
+# kit.mjs also carries VERSION for a standalone `gemini skills install`.
+manifests=(
+  plugins/sam-ui/.claude-plugin/plugin.json
+  plugins/sam-ui/.codex-plugin/plugin.json
+  plugins/sam-ui/gemini-extension.json
+)
 
 for manifest in "${manifests[@]}"; do
   node -e '
@@ -21,6 +26,14 @@ if (!pattern.test(text)) throw new Error(`no "version" in ${file}`);
 fs.writeFileSync(file, text.replace(pattern, `"version": "${version}"`));
 ' "$manifest" "$version"
 done
+node -e '
+const fs = require("fs");
+const [file, version] = process.argv.slice(1);
+const text = fs.readFileSync(file, "utf8");
+const pattern = /^const VERSION = "[^"]*";/m;
+if (!pattern.test(text)) throw new Error(`no VERSION in ${file}`);
+fs.writeFileSync(file, text.replace(pattern, `const VERSION = "${version}";`));
+' plugins/sam-ui/skills/sam-ui-kit/scripts/kit.mjs "$version"
 echo "sam-ui version: $version"
 
 # The zip is a local sam-plugins marketplace that lists only this plugin by a relative path, so it installs
@@ -33,7 +46,7 @@ cat >"$stage/sam-plugins/.claude-plugin/marketplace.json" <<'EOF'
 {
   "name": "sam-plugins",
   "owner": { "name": "sanghoooo" },
-  "description": "sanghoooo's Claude Code / Codex plugins (offline copy with sam-ui).",
+  "description": "sanghoooo's Claude Code / Codex / Gemini CLI plugins (offline copy with sam-ui).",
   "plugins": [
     {
       "name": "sam-ui",
