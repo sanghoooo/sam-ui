@@ -534,15 +534,30 @@ export function TodayLine({
   );
 }
 
+/** The steps a daily axis may label at (every day, every 2nd, … every 15th), and the room a "30일" label needs. */
+const DAY_STEPS = [1, 2, 3, 5, 7, 10, 15];
+const DAY_LABEL_ROOM = 26;
+
 /**
  * Korean two-row x ticks. Up to 60 rows label every row ("N일", the bare number where a band is under 22px) with the
- * month under the row where it turns; longer spans tick the first of each month as "M월 D일" with the year under the
- * row where it turns. `ticks` are the keys the axis draws, so each tick can compare itself with the one before it.
+ * month under the row where it turns; where the plot is too narrow for a label a day, every 2nd, 3rd, 5th … row from
+ * the first is labelled instead, the month under the first labelled row of each. Longer spans tick the first of each
+ * month as "M월 D일" with the year under the row where it turns. `ticks` are the keys the axis draws, so each tick can
+ * compare itself with the one before it.
  */
 function makeKoTick(ticks: string[], everyDay: boolean) {
   return function KoTick(props: XAxisTickContentProps) {
     const d = String(props.payload.value);
-    const prev = props.index > 0 ? ticks[props.index - 1] : undefined;
+    // recharts hands each tick the axis width and the tick count, so the step follows the plot's width.
+    const room =
+      Number(props.width ?? 0) / Math.max(1, props.visibleTicksCount - 1);
+    // Without a width to go by (room 0), every row keeps its label.
+    const step =
+      everyDay && room > 0
+        ? (DAY_STEPS.find((n) => n * room >= DAY_LABEL_ROOM) ?? 30)
+        : 1;
+    if (props.index % step !== 0) return <g />;
+    const prev = props.index >= step ? ticks[props.index - step] : undefined;
     const month = Number(d.slice(5, 7));
     const day = Number(d.slice(8, 10));
     const band = 2 * (props.payload.offset ?? 0);

@@ -70,7 +70,7 @@ Rows are in x order and the `xKey` field holds `"YYYY-MM-DD"` (or `"YYYY-MM"` wi
 | `height` / `fill` | plot height (default 260) or a CSS length such as `"clamp(400px,46dvh,680px)"`; `fill` grows into a flex column with `height` as the minimum |
 | `legend` | a `ChartLegend` band above the plot |
 | `showChartKey` / `showChartKeyRow` | the ━ 실적 ┈ Max ╌ Avg ┈ Min ┄ 목표 key row, today-aware date ticks and a tooltip grouped by series; `showChartKeyRow={false}` drops only the row |
-| `koDays` | Korean two-row x ticks ("N일" with "M월" under the month turn; "M월 D일" / "YYYY년" over long spans) and a Korean tooltip date |
+| `koDays` | Korean two-row x ticks ("N일" with "M월" under the month turn, every 2nd, 3rd, 5th … day where the plot is too narrow for one a day; "M월 D일" / "YYYY년" over long spans) and a Korean tooltip date |
 | `monthly` | `"YYYY-MM"` keys: "N월" ticks, today snapped to its month, linear target lines |
 | `dots` | lines with a dot at every point and a gap at a null, no fill (the monthly-line look) |
 | `yEndsOnly` | keep ticks and grid lines only at 0 and the top (plus the named target and `yMarkers`) |

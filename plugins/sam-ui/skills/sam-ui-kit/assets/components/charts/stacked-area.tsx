@@ -145,14 +145,17 @@ export function StackedArea({
                 {...chartAxis}
                 dataKey={xKey}
                 minTickGap={hideYAxis ? 40 : 24}
-                tick={
-                  hideYAxis
-                    ? { ...chartAxis.tick, fontSize: 9 }
-                    : chartAxis.tick
-                }
                 tickFormatter={(v) => (formatX ?? formatPeriodTick)(String(v))}
-                // Daily rows take the trend charts' Korean ticks, unless the caller formats them or the card is small.
-                {...(koAxis ? { ...koAxis, interval: 0 } : {})}
+                // Daily rows take the trend charts' Korean ticks, unless the caller formats them or the card is
+                // small; a small card's ticks are 9px. One spread sets `tick` either way, as TypeScript 5 rejects a
+                // prop that a later spread may set again.
+                {...(koAxis
+                  ? { ...koAxis, interval: 0 }
+                  : {
+                      tick: hideYAxis
+                        ? { ...chartAxis.tick, fontSize: 9 }
+                        : chartAxis.tick,
+                    })}
               />
               {!hideYAxis && (
                 <YAxis
