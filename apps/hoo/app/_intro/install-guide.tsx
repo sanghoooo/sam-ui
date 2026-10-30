@@ -1,4 +1,8 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { type ReactNode, useState } from "react";
+import { SegmentedControl } from "@/components/ui/segmented-control";
+import { ClaudeIcon, CodexIcon } from "./agent-icons";
 import { CopyCommand } from "./copy-command";
 import { ScreenSwiper, type Slide } from "./screen-swiper";
 import addPlugins from "./shots/claude-app-1-add-plugins.webp";
@@ -8,6 +12,15 @@ import added from "./shots/claude-app-4-added.webp";
 import { Terminal } from "./terminal";
 
 const MARKETPLACE = "https://github.com/sanghoooo/sam-plugins.git";
+/** Codex adds a GitHub marketplace by owner/repo. */
+const CODEX_MARKETPLACE = "sanghoooo/sam-plugins";
+
+/** The agents the plugin installs in, each with its mark. */
+const AGENTS = [
+  { icon: <ClaudeIcon />, label: "Claude", value: "claude" },
+  { icon: <CodexIcon />, label: "Codex", value: "codex" },
+] as const;
+type Agent = (typeof AGENTS)[number]["value"];
 
 /** The Claude app's screens, in order. */
 const SHOTS: Slide[] = [
@@ -46,36 +59,66 @@ const SHOTS: Slide[] = [
 ];
 
 /**
- * How to install the plugin, either way being enough: in Claude Code (its slash commands, in a terminal) and in the
- * Claude app (its screens). The app adds plugins from its menu but has no screen for adding a marketplace,
- * so when sam-plugins isn't listed that one step runs in a terminal.
+ * How to install the plugin, any one way being enough, under a Claude / Codex choice. Claude has two ways: Claude
+ * Code (its slash commands, in a terminal) and the Claude app (its screens). The app adds plugins from its menu but
+ * has no screen for adding a marketplace, so when sam-plugins isn't listed that one step runs in a terminal. Codex
+ * takes two shell commands, which serve its CLI and the ChatGPT desktop app alike (the app has no /plugins).
  */
 export function InstallGuide() {
+  const [agent, setAgent] = useState<Agent>("claude");
   return (
-    <div className="space-y-6">
-      <Way title="Claude Code에서">
-        <p className="mb-3 break-keep text-[13px] text-muted-foreground">
-          입력창에 두 명령을 차례로 입력합니다.
-        </p>
-        <Terminal
-          lines={[
-            `/plugin marketplace add ${MARKETPLACE}`,
-            "/plugin install sam-ui@sam-plugins",
-          ]}
-        />
-      </Way>
-      <Or />
-      <Way title="Claude 앱에서">
-        <ScreenSwiper label="Claude 앱 설치 화면" slides={SHOTS} />
-        <p className="mt-5 break-keep text-[12px] text-muted-foreground">
-          목록에 SAM UI가 없으면 터미널에서 마켓플레이스를 먼저 등록합니다.
-        </p>
-        <div className="mt-1.5">
-          <CopyCommand
-            lines={[`claude plugin marketplace add ${MARKETPLACE}`]}
-          />
+    <div className="space-y-5">
+      <SegmentedControl
+        label="설치할 곳"
+        onValueChange={setAgent}
+        options={AGENTS}
+        value={agent}
+      />
+      {agent === "claude" ? (
+        <div className="space-y-6">
+          <Way title="Claude Code에서">
+            <p className="mb-3 break-keep text-[13px] text-muted-foreground">
+              입력창에 두 명령을 차례로 입력합니다.
+            </p>
+            <Terminal
+              lines={[
+                `/plugin marketplace add ${MARKETPLACE}`,
+                "/plugin install sam-ui@sam-plugins",
+              ]}
+            />
+          </Way>
+          <Or />
+          <Way title="Claude 앱에서">
+            <ScreenSwiper label="Claude 앱 설치 화면" slides={SHOTS} />
+            <p className="mt-5 break-keep text-[12px] text-muted-foreground">
+              목록에 SAM UI가 없으면 터미널에서 마켓플레이스를 먼저 등록합니다.
+            </p>
+            <div className="mt-1.5">
+              <CopyCommand
+                lines={[`claude plugin marketplace add ${MARKETPLACE}`]}
+              />
+            </div>
+          </Way>
         </div>
-      </Way>
+      ) : (
+        <div>
+          <p className="mb-3 break-keep text-[13px] text-muted-foreground">
+            터미널에서 두 명령을 차례로 실행한 뒤 Codex 새 세션을 시작합니다.
+          </p>
+          <Terminal
+            lines={[
+              `codex plugin marketplace add ${CODEX_MARKETPLACE}`,
+              "codex plugin add sam-ui@sam-plugins",
+            ]}
+            title="terminal"
+          />
+          <p className="mt-2 break-keep text-[12px] text-muted-foreground">
+            Codex CLI와 ChatGPT 데스크톱 앱 모두 이 명령으로 설치되고, IDE
+            확장은 플러그인을 지원하지 않습니다. 둘째 명령을 다시 실행하면 최신
+            버전으로 바뀝니다.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

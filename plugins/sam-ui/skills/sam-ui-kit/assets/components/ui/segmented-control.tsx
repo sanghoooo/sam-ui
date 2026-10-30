@@ -1,11 +1,19 @@
 "use client";
 
-import { useId, useLayoutEffect, useRef, useState } from "react";
+import {
+  type ReactNode,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { cn } from "@/lib/utils";
 
 export type SegmentOption<T extends string> = {
   value: T;
   label: string;
+  /** Drawn 14px before the label: a lucide icon, or a brand mark as an <svg>. */
+  icon?: ReactNode;
   disabled?: boolean;
 };
 
@@ -122,6 +130,14 @@ export function SegmentedControl<T extends string>({
               type="radio"
               value={option.value}
             />
+            {option.icon && (
+              <span
+                aria-hidden
+                className="mr-1.5 inline-flex shrink-0 [&_svg]:size-3.5"
+              >
+                {option.icon}
+              </span>
+            )}
             {/* A hidden bold copy holds each label at its chosen width, so choosing one (semibold) never
                 shifts the others while the pill slides. */}
             <span className="grid justify-items-center">

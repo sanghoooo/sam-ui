@@ -14,7 +14,14 @@ const LINE_MS = 420;
  * height so the card doesn't grow while it types; screen readers get the full text, and reduced motion
  * shows it all at once.
  */
-export function Terminal({ lines }: { lines: string[] }) {
+export function Terminal({
+  lines,
+  title = "claude",
+}: {
+  lines: string[];
+  /** The window's name in its title bar: the program the lines are typed into. */
+  title?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [typed, setTyped] = useState(0);
   const { copied, copy } = useCopy(lines.join("\n"));
@@ -70,7 +77,9 @@ export function Terminal({ lines }: { lines: string[] }) {
         <span className="size-2.5 rounded-full bg-[#ff5f57]" />
         <span className="size-2.5 rounded-full bg-[#febc2e]" />
         <span className="size-2.5 rounded-full bg-[#28c840]" />
-        <span className="ml-2 font-mono text-[11px] text-white/45">claude</span>
+        <span className="ml-2 font-mono text-[11px] text-white/45">
+          {title}
+        </span>
         <button
           aria-label={copied ? "복사됨" : "명령 복사"}
           className="ml-auto flex size-7 cursor-pointer items-center justify-center rounded-md text-white/55 transition-colors hover:bg-white/10 hover:text-white [&_svg]:size-3.5"

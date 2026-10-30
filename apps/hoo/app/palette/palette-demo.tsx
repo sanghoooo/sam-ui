@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, LayoutGrid, List } from "lucide-react";
 import { type ReactNode, useState, useSyncExternalStore } from "react";
 import { ManualButton } from "@/components/layout/page-header";
 import { WORKSPACES, WorkspaceLogo } from "@/components/layout/workspace-logo";
@@ -111,6 +111,7 @@ export function PaletteDemo() {
   );
   const [basis, setBasis] = useState<"mom" | "yoy" | "target">("mom");
   const [unit, setUnit] = useState<"person" | "team" | "org">("team");
+  const [view, setView] = useState<"list" | "card">("list");
   const [tab, setTab] = useState<
     "overview" | "revenue" | "cost" | "profit" | "forecast"
   >("overview");
@@ -350,7 +351,7 @@ export function PaletteDemo() {
       </Section>
 
       <Section
-        description="@/components/ui/segmented-control. soft는 선택한 항목을 흰 알약으로, solid는 강조 색으로 표시합니다. 화살표 키로 선택을 옮깁니다."
+        description="@/components/ui/segmented-control. soft는 선택한 항목을 흰 알약으로, solid는 강조 색으로 표시합니다. 항목마다 아이콘을 붙일 수 있고, 화살표 키로 선택을 옮깁니다."
         id="segmented"
       >
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
@@ -391,6 +392,17 @@ export function PaletteDemo() {
               ]}
               value={unit}
               variant="solid"
+            />
+          </Field>
+          <Field label="아이콘 포함">
+            <SegmentedControl
+              label="보기"
+              onValueChange={setView}
+              options={[
+                { icon: <List />, label: "목록", value: "list" },
+                { icon: <LayoutGrid />, label: "카드", value: "card" },
+              ]}
+              value={view}
             />
           </Field>
         </div>

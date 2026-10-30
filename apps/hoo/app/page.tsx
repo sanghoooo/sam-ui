@@ -63,7 +63,7 @@ const FEATURES = [
 const STEPS = [
   {
     title: "플러그인 설치",
-    body: "마켓플레이스 sam-plugins를 추가하고 sam-ui를 설치합니다. Claude Code나 Claude 앱 중 편한 한 곳에서만 하면 됩니다.",
+    body: "마켓플레이스 sam-plugins를 추가하고 sam-ui를 설치합니다. Claude Code, Claude 앱, Codex 중 편한 한 곳에서만 하면 됩니다.",
     detail: <InstallGuide />,
   },
   {
@@ -137,14 +137,14 @@ export default function IntroPage() {
         <section>
           <div className="mx-auto max-w-6xl px-4 pt-14 pb-10 lg:px-6 lg:pt-20">
             <div className="mx-auto max-w-3xl text-center">
-              <Badge>v{plugin.version} · Claude Code 플러그인</Badge>
+              <Badge>v{plugin.version} · Claude Code / Codex 플러그인</Badge>
               <h1 className="mt-5 break-keep text-[36px] leading-[1.1] font-bold tracking-tight sm:text-[52px]">
                 대시보드를 첫 화면부터 완성된 모습으로
               </h1>
               <p className="mx-auto mt-5 max-w-2xl break-keep text-[16px] leading-relaxed text-muted-foreground sm:text-[17px]">
                 SAM UI는 대시보드를 위한 React · Tailwind CSS 4 킷입니다. Claude
-                Code 플러그인이 킷을 설치하고 최신으로 유지하며, 새 화면도 같은
-                컴포넌트로 만듭니다.
+                Code / Codex 플러그인이 킷을 설치하고 최신으로 유지하며, 새
+                화면도 같은 컴포넌트로 만듭니다.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
                 <a
