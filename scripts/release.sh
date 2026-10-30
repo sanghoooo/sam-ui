@@ -33,12 +33,12 @@ cat >"$stage/sam-plugins/.claude-plugin/marketplace.json" <<'EOF'
 {
   "name": "sam-plugins",
   "owner": { "name": "sanghoooo" },
-  "description": "sanghoooo's Claude Code plugins (offline copy with sam-ui).",
+  "description": "sanghoooo's Claude Code / Codex plugins (offline copy with sam-ui).",
   "plugins": [
     {
       "name": "sam-ui",
       "source": "./plugins/sam-ui",
-      "description": "SAM UI: install a React + Tailwind CSS 4 dashboard kit into a project and build screens with it."
+      "description": "SAM UI: install a React + Tailwind CSS 4 dashboard kit with charts into a project and build screens with it."
     }
   ]
 }

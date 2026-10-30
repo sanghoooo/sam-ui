@@ -5,8 +5,9 @@ SAM UI 킷과, 그 킷을 다른 프로젝트에 설치하고 쓰게 하는 Clau
 마켓플레이스와 플러그인을 읽으므로 같은 마켓플레이스로 Codex에도 설치됩니다.
 
 - **킷:** 사이드바 레이아웃(시작용 메뉴), 필터 툴바, SegmentedControl(움직이는 선택 표시), Tabs,
-  MonthStepper, Select, Switch, StatePanel, AI Insight 로고, air · TDS · MVNO 로고와 브랜드 색, 라이트(기본) ·
-  다크 토큰. React 19 + Tailwind CSS 4, 레이아웃은 Next.js App Router.
+  MonthStepper, Select, Switch, StatePanel, AI Insight 로고, 차트(추이 · 막대 · 누적 영역 · 복합 · 비중 · 막대 목록 ·
+  스파크라인 · 산점도 · 흐름 · 레인), air · TDS · MVNO 로고와 브랜드 색, 라이트(기본) · 다크 토큰. React 19 +
+  Tailwind CSS 4, 차트는 recharts, 레이아웃은 Next.js App Router.
 - **플러그인:** 설치하면 `sam-ui:sam-ui-kit` 스킬이 생기고, 어떤 프로젝트에서든 "SAM UI 킷 설치해줘"라고 하면
   Claude(또는 Codex)가 킷을 복사 · 설정하고 이후 화면도 이 킷으로 만듭니다.
 
@@ -18,11 +19,11 @@ plugins/sam-ui/                   플러그인 sam-ui
   .codex-plugin/plugin.json       Codex용 이름 · 버전 · 표시 이름(Codex는 이쪽을 먼저 읽음)
   skills/sam-ui-kit/
     SKILL.md                      설치 순서 · 화면 만드는 법 · 스타일 규칙
-    references/                   컴포넌트별 사용법, 토큰, 레이아웃
+    references/                   컴포넌트별 사용법, 차트, 토큰, 레이아웃
     assets/                       킷 원본 (components, lib, styles/ui-kit.css, public/images)
     scripts/kit.mjs               프로젝트에 설치 · 업데이트 · 점검 (sam-ui.json에 버전과 파일 해시 기록)
     templates/placeholder-page.tsx 메뉴 링크용 "준비 중" 페이지
-apps/hoo/                         Next.js 사이트: 킷 소개(/)와 UI 요소를 모두 보여 주는 팔레트(/palette)
+apps/hoo/                         Next.js 사이트: 킷 소개(/), 팔레트(/palette), 차트(/charts)
 .github/workflows/                ci.yml(lint · test · build), pages.yml(사이트를 GitHub Pages에 배포)
 scripts/release.sh                버전 올리기 · 검사 · 오프라인 설치용 zip
 tests/kit.test.mjs                kit.mjs 시나리오 테스트 (pnpm test)
@@ -36,7 +37,7 @@ docs/offline-install.md           zip에 들어가는 설치 안내
 
 ```sh
 pnpm install
-pnpm dev        # http://localhost:3102 (/ 소개, /palette 팔레트)
+pnpm dev        # http://localhost:3102 (/ 소개, /palette 팔레트, /charts 차트)
 pnpm lint
 pnpm test       # kit.mjs 시나리오 테스트
 pnpm build
@@ -46,7 +47,7 @@ pnpm build
 
 1. `assets/`의 파일을 고칩니다. 이 파일들은 다른 프로젝트로 복사되므로 주석에 이 저장소 밖의 경로를 쓰지 않습니다.
 2. 사용법이 바뀌면 `skills/sam-ui-kit/references/`의 해당 문서와 `SKILL.md`를 함께 고칩니다.
-3. 새 컴포넌트나 변형은 팔레트(`apps/hoo/app/palette/palette-demo.tsx`)에 보이게 합니다. 소개 페이지, 사이트 머리, 팔레트 모두 한국어로 씁니다.
+3. 새 컴포넌트나 변형은 팔레트(`apps/hoo/app/palette/palette-demo.tsx`)에, 차트는 `/charts`(`apps/hoo/app/charts/`)에 보이게 합니다. 소개 페이지, 사이트 머리, 팔레트, 차트 페이지 모두 한국어로 씁니다.
 4. `pnpm lint`, `pnpm build`, 라이트 · 다크 화면 확인.
 
 ## 배포

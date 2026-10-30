@@ -319,10 +319,12 @@
     transition: box-shadow 150ms;
   }
   &:hover::-webkit-slider-thumb {
-    box-shadow: 0 0 0 4px color-mix(in oklab, var(--foreground) 10%, transparent);
+    box-shadow: 0 0 0 4px
+      color-mix(in oklab, var(--foreground) 10%, transparent);
   }
   &:hover::-moz-range-thumb {
-    box-shadow: 0 0 0 4px color-mix(in oklab, var(--foreground) 10%, transparent);
+    box-shadow: 0 0 0 4px
+      color-mix(in oklab, var(--foreground) 10%, transparent);
   }
   &:focus-visible {
     outline: none;

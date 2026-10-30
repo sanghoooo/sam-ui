@@ -164,6 +164,14 @@ export default function IntroPage() {
                 >
                   팔레트 보기
                 </Link>
+                <Link
+                  className={buttonClass({
+                    className: "h-10 px-5 text-[14px]",
+                  })}
+                  href="/charts"
+                >
+                  차트 보기
+                </Link>
               </div>
               <p className="mt-6 text-[12px] text-muted-foreground">
                 React 19 · Next.js 16 · TypeScript 7 · Tailwind CSS 4
@@ -314,10 +322,10 @@ export default function IntroPage() {
           <Card className="flex flex-col items-center gap-5 px-6 py-12 text-center">
             <AiInsightTitle as="span" />
             <h2 className="max-w-2xl break-keep text-[26px] leading-tight font-bold tracking-tight sm:text-[32px]">
-              모든 컴포넌트를 두 테마로 확인하세요
+              모든 컴포넌트와 차트를 두 테마로 확인하세요
             </h2>
             <p className="max-w-xl break-keep text-[14px] text-muted-foreground">
-              팔레트에서 컴포넌트마다 모든 변형과 상태를 볼 수 있습니다. 위쪽의
+              팔레트와 차트 페이지에서 모든 변형과 상태를 볼 수 있습니다. 위쪽의
               다크 모드를 켜고 함께 확인하세요.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
@@ -329,6 +337,14 @@ export default function IntroPage() {
                 href="/palette"
               >
                 팔레트 열기 <ArrowRight className="size-4" />
+              </Link>
+              <Link
+                className={buttonClass({
+                  className: "h-10 px-5 text-[14px]",
+                })}
+                href="/charts"
+              >
+                차트 열기
               </Link>
               <a
                 className={buttonClass({ className: "h-10 px-5 text-[14px]" })}
@@ -350,6 +366,9 @@ export default function IntroPage() {
           <nav aria-label="바닥글" className="flex gap-4">
             <Link className="hover:text-foreground" href="/palette">
               팔레트
+            </Link>
+            <Link className="hover:text-foreground" href="/charts">
+              차트
             </Link>
             <a className="hover:text-foreground" href={REPO}>
               소스
