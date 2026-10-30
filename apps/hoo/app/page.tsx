@@ -12,7 +12,6 @@ import type { StaticImageData } from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { WORKSPACES, WorkspaceLogo } from "@/components/layout/workspace-logo";
-import { AiInsightTitle } from "@/components/ui/ai-insight";
 import { Badge } from "@/components/ui/badge";
 import { buttonClass } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -317,44 +316,6 @@ export default function IntroPage() {
             </Card>
           </div>
         </Section>
-
-        <section className="mx-auto max-w-6xl px-4 pb-20 lg:px-6">
-          <Card className="flex flex-col items-center gap-5 px-6 py-12 text-center">
-            <AiInsightTitle as="span" />
-            <h2 className="max-w-2xl break-keep text-[26px] leading-tight font-bold tracking-tight sm:text-[32px]">
-              모든 컴포넌트와 차트를 두 테마로 확인하세요
-            </h2>
-            <p className="max-w-xl break-keep text-[14px] text-muted-foreground">
-              팔레트와 차트 페이지에서 모든 변형과 상태를 볼 수 있습니다. 위쪽의
-              다크 모드를 켜고 함께 확인하세요.
-            </p>
-            <div className="flex flex-wrap justify-center gap-3">
-              <Link
-                className={buttonClass({
-                  className: "h-10 px-5 text-[14px]",
-                  variant: "primary",
-                })}
-                href="/palette"
-              >
-                팔레트 열기 <ArrowRight className="size-4" />
-              </Link>
-              <Link
-                className={buttonClass({
-                  className: "h-10 px-5 text-[14px]",
-                })}
-                href="/charts"
-              >
-                차트 열기
-              </Link>
-              <a
-                className={buttonClass({ className: "h-10 px-5 text-[14px]" })}
-                href="#get-started"
-              >
-                플러그인 설치
-              </a>
-            </div>
-          </Card>
-        </section>
       </main>
 
       <footer className="border-t border-border">
