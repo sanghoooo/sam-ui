@@ -8,8 +8,8 @@ import {
   SunMoon,
   User,
 } from "lucide-react";
-import Link from "next/link";
 import type { StaticImageData } from "next/image";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { WORKSPACES, WorkspaceLogo } from "@/components/layout/workspace-logo";
 import { AiInsightTitle } from "@/components/ui/ai-insight";
@@ -21,6 +21,7 @@ import plugin from "../../../plugins/sam-ui/.claude-plugin/plugin.json";
 import { CopyButton } from "./_intro/copy-command";
 import { HeroPreview } from "./_intro/hero-preview";
 import { InstallGuide } from "./_intro/install-guide";
+import dashboardBuilt from "./_intro/shots/dashboard-built.webp";
 import kitInstalled from "./_intro/shots/kit-installed.webp";
 import screenBuilt from "./_intro/shots/screen-built.webp";
 
@@ -92,9 +93,22 @@ const STEPS = [
     ),
     result: {
       image: screenBuilt,
-      alt: "기준월과 사업 필터, 주문 · 매출 탭, 이번 달 · 최근 6개월 평균 카드, 사업별로 쌓은 월별 추이 막대가 있는 개요 화면",
+      alt: "기준월과 사업 필터, 주문 · 매출 탭, 이번 달 · 최근 6개월 평균 카드, 사업별 이번 달 · 지난달 · 전월 대비 · 비중 표가 있는 개요 화면",
       caption:
-        "요청대로 만든 화면: 기준월 · 사업 필터, 주문 · 매출 탭, 이번 달 카드와 사업별 월별 추이",
+        "요청대로 만든 화면: 기준월 · 사업 필터, 주문 · 매출 탭, 이번 달 카드와 사업별 현황 표",
+    },
+  },
+  {
+    title: "차트 대시보드",
+    body: "킷에 든 차트로 추이, 막대, 비중을 한 화면에 그립니다. 툴팁과 색이 같아 차트끼리도 어울립니다.",
+    detail: (
+      <Prompt text="주문 추이와 채널 · 요금제 비중을 차트로 보여 주는 대시보드 만들어줘" />
+    ),
+    result: {
+      image: dashboardBuilt,
+      alt: "일별 주문 추이와 오늘 · 목표선, 온라인 비중 링, 사업별 월간 주문 막대, 요금제별 비중 트리맵, 채널별 주문 막대 목록이 있는 주문 분석 화면",
+      caption:
+        "요청대로 만든 대시보드: 일별 추이, 온라인 비중, 사업별 월간 막대, 요금제 트리맵, 채널별 주문",
     },
   },
 ];
@@ -128,9 +142,9 @@ export default function IntroPage() {
                 대시보드를 첫 화면부터 완성된 모습으로
               </h1>
               <p className="mx-auto mt-5 max-w-2xl break-keep text-[16px] leading-relaxed text-muted-foreground sm:text-[17px]">
-                SAM UI는 대시보드를 위한 React · Tailwind CSS 4 킷입니다.
-                Claude Code 플러그인이 킷을 설치하고 최신으로 유지하며, 새
-                화면도 같은 컴포넌트로 만듭니다.
+                SAM UI는 대시보드를 위한 React · Tailwind CSS 4 킷입니다. Claude
+                Code 플러그인이 킷을 설치하고 최신으로 유지하며, 새 화면도 같은
+                컴포넌트로 만듭니다.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
                 <a
@@ -167,7 +181,7 @@ export default function IntroPage() {
         <Section
           eyebrow="사용 방법"
           id="get-started"
-          title="빈 프로젝트에서 완성된 화면까지, 세 번의 요청"
+          title="빈 프로젝트에서 완성된 화면까지, 네 번의 요청"
         >
           <ol className="space-y-4">
             {STEPS.map(({ title, body, detail, result }, i) => (
