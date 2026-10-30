@@ -20,9 +20,13 @@ import {
   chartTooltipProps,
   formatCompact,
   formatNumber,
+  formatPeriodTick,
   INITIAL_DIMENSION,
+  koDayAxis,
   seriesColor,
+  useDotLayer,
   useMounted,
+  withoutZero,
 } from "./chart-parts";
 import { useChartZoom } from "./chart-zoom";
 import { ChartZoomControl } from "./chart-zoom-control";
@@ -31,11 +35,6 @@ import { ChartZoomControl } from "./chart-zoom-control";
 const Y_AXIS_WIDTH = 40;
 /** The chart's right margin; the zoom hook takes it as the plot's right edge. */
 const RIGHT_MARGIN = 8;
-
-/** "2026-10-01" → "10-01"; any other label as it is. */
-function defaultFormatX(v: string) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v.slice(5) : v;
-}
 
 /**
  * Stacked areas, one per series, as counts or (`percent`) as shares of each row's total (stackOffset "expand"). Ctrl +
@@ -55,7 +54,7 @@ export function StackedArea({
   zoom: zoomOn = true,
   format = formatNumber,
   formatY = formatCompact,
-  formatX = defaultFormatX,
+  formatX,
   legend = false,
   tooltipExtra,
   label,
@@ -79,7 +78,10 @@ export function StackedArea({
   format?: (v: number) => string;
   /** Y ticks (counts only; percent mode prints shares). */
   formatY?: (v: number) => string;
-  /** X ticks; "YYYY-MM-DD" shortens to "MM-DD" by default. */
+  /**
+   * X ticks. By default daily rows take the trend charts' Korean ticks ("9월 1일" with the year under it) and months
+   * read "10월".
+   */
   formatX?: (v: string) => string;
   /** A legend row above the plot. */
   legend?: boolean;
@@ -89,6 +91,8 @@ export function StackedArea({
   label?: string;
 }) {
   const mounted = useMounted();
+  // Hover dots draw over the tooltip, so it passes under them.
+  const { layer, overDot } = useDotLayer();
   // The hook runs even with zoom off (hooks are unconditional); its ref and control are then simply not used.
   const zoom = useChartZoom(
     sourceData,
@@ -99,6 +103,11 @@ export function StackedArea({
   );
   const data = zoomOn ? zoom.data : sourceData;
   const colors = series.map((s, i) => s.color ?? seriesColor(i));
+  const keys = data.map((row) => String(row[xKey]));
+  const koAxis =
+    !formatX && !hideYAxis && keys.every((k) => /^\d{4}-\d{2}-\d{2}$/.test(k))
+      ? koDayAxis(keys)
+      : undefined;
   // The zoom control rides in the top margin; without it the plot needs only a little room above its top tick.
   const top = zoomOn ? 32 : hideYAxis ? 4 : 8;
   const legendRow = legend ? (
@@ -141,21 +150,22 @@ export function StackedArea({
                     ? { ...chartAxis.tick, fontSize: 9 }
                     : chartAxis.tick
                 }
-                tickFormatter={(v) => formatX(String(v))}
+                tickFormatter={(v) => (formatX ?? formatPeriodTick)(String(v))}
+                // Daily rows take the trend charts' Korean ticks, unless the caller formats them or the card is small.
+                {...(koAxis ? { ...koAxis, interval: 0 } : {})}
               />
               {!hideYAxis && (
                 <YAxis
                   {...chartAxis}
-                  tickFormatter={(v) =>
-                    percent
-                      ? `${Math.round(Number(v) * 100)}%`
-                      : formatY(Number(v))
-                  }
+                  tickFormatter={withoutZero((v) =>
+                    percent ? `${Math.round(v * 100)}%` : formatY(v),
+                  )}
                   width={Y_AXIS_WIDTH}
                 />
               )}
               {series.map((s, i) => (
                 <Area
+                  activeDot={overDot()}
                   dataKey={s.key}
                   fill={colors[i]}
                   fillOpacity={fillOpacity}
@@ -193,6 +203,7 @@ export function StackedArea({
               />
             </AreaChart>
           </ResponsiveContainer>
+          {layer}
         </div>
       ) : (
         <ChartPlaceholder height={height} />

@@ -27,7 +27,7 @@ export default function BarListSection() {
             label: row.name,
             value: row.value,
             color: channelColor(row.name),
-            note: i === 0 ? <Badge>{row.note}</Badge> : undefined,
+            tag: i === 0 ? <Badge>{row.note}</Badge> : undefined,
           }))}
           label="채널별 가입"
         />

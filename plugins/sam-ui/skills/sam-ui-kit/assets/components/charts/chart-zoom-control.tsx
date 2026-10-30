@@ -98,7 +98,7 @@ export function ChartZoomControl({
       >
         <span className="absolute inset-x-0 h-1 bg-foreground/15" />
         <span
-          className="absolute h-1 rounded-full bg-foreground/45"
+          className="absolute h-1 rounded-full bg-muted-foreground"
           style={{
             left: `${(zoom.start / last) * 100}%`,
             right: `${100 - (zoom.end / last) * 100}%`,

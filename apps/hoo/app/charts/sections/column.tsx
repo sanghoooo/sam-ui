@@ -35,13 +35,19 @@ const rng = mulberry32(13);
 const noise = (amount: number) => (rng() - 0.5) * 2 * amount;
 
 /** "2026-03" → "26.03" */
-const monthTick = (key: string) => `${key.slice(2, 4)}.${key.slice(5, 7)}`;
+/** "2026-10" → "2026년 10월", as the trend charts' tooltips read a month. */
+const monthTick = (key: string) =>
+  `${key.slice(0, 4)}년 ${Number(key.slice(5, 7))}월`;
 const CURRENT = MONTHS[MONTHS.length - 1];
 
-/** The monthly lines with the current month flagged as in progress. */
-const linesRows = monthlyRows.map((row) => ({
+/**
+ * The monthly lines with the current month flagged as in progress, and a target set inside the bars (about three
+ * quarters of their height), so its dotted line runs across them rather than along their tops.
+ */
+const linesRows = monthlyRows.map((row, i) => ({
   ...row,
   partial: row.key === CURRENT,
+  target: 34000 + 800 * i,
 }));
 
 /**
@@ -127,21 +133,21 @@ const netRows = NET_MONTHS.map((key, i) => {
 const NET_SERIES = [
   {
     key: "air",
-    name: "air",
+    name: "A",
     color: "var(--brand-air)",
     stack: true,
     forecastKey: "airRest",
   },
   {
     key: "tds",
-    name: "TDS",
+    name: "B",
     color: "var(--brand-tds)",
     stack: true,
     forecastKey: "tdsRest",
   },
   {
     key: "mvno",
-    name: "MVNO",
+    name: "C",
     color: "var(--brand-mvno)",
     stack: true,
     forecastKey: "mvnoRest",
@@ -175,7 +181,7 @@ export default function ColumnSection() {
   const zoomed = GROUP_OUTLIER && scale === "zoom";
   return (
     <Section
-      description="@/components/charts/column-chart. 월별 막대와 점선 목표, 그룹 막대, 부호별 누적 막대입니다. 진행 중인 달은 옅게, 예측 잔여분은 빗금으로, 합계 선의 예상 마감은 빈 점과 범위 막대로 표시합니다. 툴팁 커서는 막대 가운데를 지나는 1px 선입니다."
+      description="@/components/charts/column-chart. 월별 막대와 점선 목표, 그룹 막대, 부호별 누적 막대입니다. 진행 중인 달은 옅게, 예측인 달은 빗금으로, 합계 선의 예상 마감은 빈 점과 범위 막대로 표시합니다. 툴팁 커서는 막대 가운데를 지나는 1px 선입니다."
       id={SECTION.id}
       title={SECTION.title}
     >
@@ -193,7 +199,6 @@ export default function ColumnSection() {
         <ColumnChart
           data={linesRows}
           fadedKey="partial"
-          formatX={monthTick}
           height={160}
           label="월별 회선과 목표"
           labels
@@ -212,11 +217,12 @@ export default function ColumnSection() {
               ? `${monthTick(String(row.key))} · 진행 중`
               : monthTick(String(row.key))
           }
+          zoom={false}
         />
-        <p className="text-[10px] text-muted-foreground">
-          {monthTick(CURRENT)}은 진행 중 - 흐린 막대. 2026-02는 값이 없어 비어
-          있습니다.
-        </p>
+        <ul className="list-disc space-y-0.5 pl-4 text-[10px] text-muted-foreground">
+          <li>{monthTick(CURRENT)}은 진행 중입니다.</li>
+          <li>2026년 2월은 값이 없어 비어 있습니다.</li>
+        </ul>
       </Demo>
 
       <Demo
@@ -245,7 +251,6 @@ export default function ColumnSection() {
           barGap={1}
           data={groupRows}
           fadedKey="partial"
-          formatX={monthTick}
           highlight={highlight === "all" ? null : highlight}
           label="워크스페이스별 월간 순증"
           maxBarSize={12}
@@ -254,14 +259,13 @@ export default function ColumnSection() {
           series={WORKSPACE_SERIES.map((s) => ({ ...s }))}
           signed
           tooltipLabel={netLabel}
+          zoom={false}
         />
         <ul className="list-disc space-y-0.5 pl-4 text-[10px] text-muted-foreground">
+          <li>{monthTick(MONTHS[0])}은 리포트에서 읽은 샘플 - 점선 테두리.</li>
+          <li>{monthTick(CURRENT)}은 진행 중입니다.</li>
           <li>
-            {monthTick(MONTHS[0])}은 리포트에서 읽은 샘플 - 점선 테두리.{" "}
-            {monthTick(CURRENT)}은 진행 중 - 흐린 막대.
-          </li>
-          <li>
-            {monthTick(OUTLIER_MONTH)}의 air는 캠페인으로 다른 달의 몇 배
+            {monthTick(OUTLIER_MONTH)}의 A는 캠페인으로 다른 달의 몇 배
             (hasOutlier) - 확대/전체로 세로축을 바꿉니다.
           </li>
           {zoomed && <li>{OUTLIER_NOTE}</li>}
@@ -276,20 +280,25 @@ export default function ColumnSection() {
           data={netRows}
           fadedKey="partial"
           forecastFlagKey="forecast"
-          formatX={monthTick}
           label="워크스페이스별 순증 기여와 합계 예측"
           maxBarSize={36}
           rangeKey="totalRange"
           series={NET_SERIES}
           signed
           tooltipLabel={netLabel}
+          zoom={false}
         />
-        <p className="text-[10px] text-muted-foreground">
-          막대가 0 위면 늘어난 워크스페이스, 아래면 줄어든 워크스페이스입니다.{" "}
-          {monthTick(CURRENT)}은 진행 중 - 흐린 막대는 실적, 빗금은 남은 날
-          예측, 빈 점은 예상 마감과 80% 범위. {monthTick(AHEAD[0])} ·{" "}
-          {monthTick(AHEAD[1])}은 전부 예측입니다.
-        </p>
+        <ul className="list-disc space-y-0.5 pl-4 text-[10px] text-muted-foreground">
+          <li>
+            막대가 0 위면 늘어난 워크스페이스, 아래면 줄어든 워크스페이스입니다.
+          </li>
+          <li>{monthTick(CURRENT)}은 진행 중이라 흐린 막대로 그립니다.</li>
+          <li>
+            {monthTick(AHEAD[0])} · {monthTick(AHEAD[1])}은 전부 예측이라
+            빗금으로 그립니다.
+          </li>
+          <li>빈 점은 예상 마감, 세로 막대는 80% 범위입니다.</li>
+        </ul>
       </Demo>
     </Section>
   );

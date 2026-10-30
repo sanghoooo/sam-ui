@@ -20,6 +20,8 @@ import {
   INITIAL_DIMENSION,
   type LegendItem,
   seriesColor,
+  useDotLayer,
+  withoutZero,
 } from "./chart-parts";
 
 /** One dot of a ScatterPlot. */
@@ -38,6 +40,13 @@ export type ScatterPlotPoint = {
   /** An extra tooltip row (a plan's conditions, a channel). */
   detail?: string;
 };
+
+/** A tick label's rough width in px at 11px: a Hangul syllable about a full em, a space 0.3 em, anything else 0.62. */
+function tickTextWidth(text: string) {
+  let em = 0;
+  for (const ch of text) em += /[가-힣]/.test(ch) ? 1 : ch === " " ? 0.3 : 0.62;
+  return em * 11;
+}
 
 /**
  * Dots over two numeric axes, one Scatter per group, with an optional third value as the dot size. Reference groups
@@ -83,6 +92,8 @@ export function ScatterPlot({
   label?: string;
 }) {
   // Groups in first-seen order; a group's color is its first point's, else the chart color at its index.
+  // The points draw over the tooltip, so it passes under them.
+  const { layer, overDot } = useDotLayer();
   const groups = [...new Set(points.map((p) => p.group))];
   const colorOf = new Map(
     groups.map((g, i) => [
@@ -96,19 +107,21 @@ export function ScatterPlot({
     kind: "square",
   }));
   const rowCount = yCategories?.length ?? 0;
-  // A categorical axis needs room for its words; a numeric one holds a compact number.
-  const yWidth = yCategories ? 88 : 44;
+  // A categorical axis is as wide as its longest row label (88px at least), the 14px past it holding the tick gap; a
+  // numeric one holds a compact number.
+  const yWidth = yCategories
+    ? Math.max(88, Math.ceil(Math.max(...yCategories.map(tickTextWidth)) + 14))
+    : 44;
   const yValue = (y: number) =>
     yCategories ? (yCategories[y] ?? format(y)) : format(y);
   const hostClass = cn("w-full min-w-0", className);
   const body = (
     <>
       {/* The legend starts at the plot's left edge (the y axis width). */}
-      <ChartLegend
-        className={yCategories ? "pl-[88px]" : "pl-[44px]"}
-        items={legend}
-      />
-      <div style={{ height }}>
+      <div style={{ paddingLeft: yWidth }}>
+        <ChartLegend items={legend} />
+      </div>
+      <div className="relative" style={{ height }}>
         <ResponsiveContainer
           height="100%"
           initialDimension={INITIAL_DIMENSION}
@@ -137,7 +150,10 @@ export function ScatterPlot({
                 dataKey="y"
                 domain={[-0.4, rowCount - 0.6]}
                 name={yLabel}
-                tickFormatter={(v) => yCategories[Number(v)] ?? ""}
+                // No-break spaces, so recharts never wraps a row label at its spaces.
+                tickFormatter={(v) =>
+                  (yCategories[Number(v)] ?? "").replaceAll(" ", "\u00a0")
+                }
                 ticks={yCategories.map((_, i) => i)}
                 type="number"
                 width={yWidth}
@@ -147,7 +163,7 @@ export function ScatterPlot({
                 {...chartAxis}
                 dataKey="y"
                 name={yLabel}
-                tickFormatter={(v) => formatY(Number(v))}
+                tickFormatter={withoutZero(formatY)}
                 type="number"
                 width={yWidth}
               />
@@ -161,6 +177,21 @@ export function ScatterPlot({
                 isAnimationActive={false}
                 key={g}
                 name={g}
+                // recharts sizes a point by its area (ZAxis range): a circle of the same area, in the layer.
+                shape={overDot(
+                  (p: { cx?: number; cy?: number; size?: number }) =>
+                    p.cx == null || p.cy == null ? (
+                      <g />
+                    ) : (
+                      <circle
+                        cx={p.cx}
+                        cy={p.cy}
+                        fill={colorOf.get(g)}
+                        fillOpacity={faintGroups?.includes(g) ? 0.35 : 0.9}
+                        r={Math.sqrt((p.size ?? 64) / Math.PI)}
+                      />
+                    ),
+                )}
               />
             ))}
             <Tooltip
@@ -185,6 +216,7 @@ export function ScatterPlot({
             />
           </ScatterChart>
         </ResponsiveContainer>
+        {layer}
       </div>
     </>
   );

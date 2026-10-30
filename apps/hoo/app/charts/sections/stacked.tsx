@@ -1,5 +1,4 @@
 import { StackedArea } from "@/components/charts/stacked-area";
-import { Card } from "@/components/ui/card";
 import { CHANNELS, DAYS } from "../sample-data";
 import { Demo, Section, type SectionMeta } from "../section";
 
@@ -24,7 +23,7 @@ function mulberry32(seed: number) {
 const rng = mulberry32(11);
 const noise = (amount: number) => (rng() - 0.5) * 2 * amount;
 
-/** Daily adds by channel over DAYS (the shared data stacks channels by month only), plus the card's two line kinds. */
+/** Daily adds by channel over DAYS (the shared data stacks channels by month only). */
 const dailyChannelRows = DAYS.map((key, i) => {
   // 2026-09-01 is a Tuesday: weekends sell less.
   const day = (i + 2) % 7;
@@ -51,8 +50,6 @@ const dailyChannelRows = DAYS.map((key, i) => {
     call,
     store,
     partner,
-    newLines: Math.round((app + web) * 0.62 + noise(20)),
-    transfers: Math.round((call + store + partner) * 0.48 + noise(16)),
   };
 });
 
@@ -62,55 +59,35 @@ const CHANNEL_SERIES = CHANNELS.map(({ key, name, color }) => ({
   color,
 }));
 
-const LINE_SERIES = [
-  { key: "newLines", name: "010 신규", color: "var(--chart-1)" },
-  { key: "transfers", name: "번호이동", color: "var(--chart-2)" },
-];
-
 export default function StackedSection() {
   return (
     <Section
-      description="@/components/charts/stacked-area. 채널별 가입을 누적 영역으로, 또는 100% 기준으로 그립니다. 오른쪽 위의 작은 슬라이더와 Ctrl + 휠로 확대합니다."
+      description="@/components/charts/stacked-area. 채널별 가입을 누적 영역으로, 또는 100% 기준으로 그립니다. 확대 · 축소는 맨 아래 공통 영역에서 봅니다."
       id={SECTION.id}
       title={SECTION.title}
     >
-      <Demo title="누적 (값)">
-        <StackedArea
-          data={dailyChannelRows}
-          label="채널별 일간 가입"
-          legend
-          series={CHANNEL_SERIES}
-        />
-      </Demo>
-      <Demo title="누적 (100%) · 카드 축약형">
-        <div className="grid gap-4 md:grid-cols-2">
+      {/* The two side by side on wide screens, one under the other on narrow ones. */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Demo title="누적 (값)">
+          <StackedArea
+            data={dailyChannelRows}
+            label="채널별 일간 가입"
+            legend
+            series={CHANNEL_SERIES}
+            zoom={false}
+          />
+        </Demo>
+        <Demo title="누적 (100%)">
           <StackedArea
             data={dailyChannelRows}
             label="채널별 가입 비중"
             legend
             percent
             series={CHANNEL_SERIES}
+            zoom={false}
           />
-          <Card className="min-w-0 p-4">
-            <h4 className="text-[13px] font-semibold">
-              회선 성장 · 010 신규 / 번호이동
-            </h4>
-            <p className="mt-0.5 text-[11px] text-muted-foreground">
-              y축 없이 카드에 맞춘 축약형
-            </p>
-            <StackedArea
-              className="mt-3"
-              data={dailyChannelRows}
-              fillOpacity={0.25}
-              height={128}
-              hideYAxis
-              label="회선 성장"
-              series={LINE_SERIES}
-              zoom={false}
-            />
-          </Card>
-        </div>
-      </Demo>
+        </Demo>
+      </div>
     </Section>
   );
 }

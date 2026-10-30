@@ -4,10 +4,10 @@ import BarListSection, { SECTION as BAR_LIST } from "./sections/bar-list";
 import ColumnSection, { SECTION as COLUMN } from "./sections/column";
 import ComboSection, { SECTION as COMBO } from "./sections/combo";
 import CommonSection, { SECTION as COMMON } from "./sections/common";
-import DonutSection, { SECTION as DONUT } from "./sections/donut";
 import LanesSection, { SECTION as LANES } from "./sections/lanes";
 import PathwaySection, { SECTION as PATHWAY } from "./sections/pathway";
 import ScatterSection, { SECTION as SCATTER } from "./sections/scatter";
+import ShareSection, { SECTION as SHARE } from "./sections/share";
 import SparklineSection, { SECTION as SPARKLINE } from "./sections/sparkline";
 import StackedSection, { SECTION as STACKED } from "./sections/stacked";
 import StagedPathwaySection, {
@@ -24,7 +24,7 @@ const SECTIONS = [
   { meta: COLUMN, Section: ColumnSection },
   { meta: STACKED, Section: StackedSection },
   { meta: COMBO, Section: ComboSection },
-  { meta: DONUT, Section: DonutSection },
+  { meta: SHARE, Section: ShareSection },
   { meta: BAR_LIST, Section: BarListSection },
   { meta: SPARKLINE, Section: SparklineSection },
   { meta: SCATTER, Section: ScatterSection },

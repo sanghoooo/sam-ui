@@ -6,6 +6,7 @@ import { TrendChart } from "@/components/charts/trend-chart";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import {
   dailyRows,
+  forecastRows,
   monthlyRows,
   quarterRows,
   TODAY,
@@ -23,12 +24,12 @@ export const SECTION: SectionMeta = {
 const SERIES = WORKSPACE_SERIES.map((s) => ({ ...s, estimatedKey: "est" }));
 const AIR_PROJECTION = {
   key: "air",
-  name: "air",
+  name: "A",
   maxKey: "airForecastMax",
   avgKey: "airForecastAvg",
   minKey: "airForecastMin",
 };
-const AIR_BAND = { key: "air", name: "air", dataKey: "airRange" };
+const AIR_BAND = { key: "air", name: "A", dataKey: "airRange" };
 const ESTIMATE_NOTE =
   "리포트가 없는 날의 가입을 다음 리포트 구간에 고르게 나눈 값";
 
@@ -43,6 +44,12 @@ const HIGHLIGHTS = [
 
 type Period = (typeof PERIODS)[number]["value"];
 type Highlight = (typeof HIGHLIGHTS)[number]["value"];
+
+/** The bar example draws only its first 15 days as estimates (hatched), in a run. */
+const withEstimates = <R extends { est: boolean }>(rows: R[]) =>
+  rows.map((row, i) => ({ ...row, est: i < 15 }));
+const BAR_DAILY = withEstimates(dailyRows);
+const BAR_QUARTER = withEstimates(quarterRows);
 
 function BarDemo() {
   const [period, setPeriod] = useState<Period>("month");
@@ -68,7 +75,7 @@ function BarDemo() {
       title="막대 · 빗금 추정 · 기간 전환 줌"
     >
       <TrendChart
-        data={period === "month" ? dailyRows : quarterRows}
+        data={period === "month" ? BAR_DAILY : BAR_QUARTER}
         estimateNote={ESTIMATE_NOTE}
         highlight={highlight === "all" ? null : highlight}
         kind="bar"
@@ -78,8 +85,8 @@ function BarDemo() {
         projectionGroups={[AIR_PROJECTION]}
         series={SERIES}
         today={TODAY}
-        todayLabel="chip"
         unit="회선"
+        zoom={false}
         // The period flip animates even though both row sets end on the same day.
         zoomResetKey={period}
       />
@@ -87,16 +94,25 @@ function BarDemo() {
   );
 }
 
+/**
+ * The monthly rows with the target set well above the lines, and a y range around both, so the two lines stand apart
+ * and the lines' month-to-month shape shows (from 0 they would run flat together).
+ */
+const MONTHLY_GOAL_ROWS = monthlyRows.map((row, i) => ({
+  ...row,
+  target: 47000 + 700 * i,
+}));
+
 export default function TrendSection() {
   return (
     <Section
-      description="@/components/charts/trend-chart. 일별 · 월별 추이를 영역, 선, 막대로 그립니다. 툴팁은 커서 선을 따라 움직이고 플롯 위에 고정되며, 호버 점은 툴팁 위에 그려집니다. Ctrl + 휠로 확대하고 드래그로 옮기며, 기간을 바꾸면 이전 보기가 새 범위로 줌됩니다. 전망은 점선, 범위는 띠, 추정값은 빈 점이나 빗금으로 표시합니다."
+      description="@/components/charts/trend-chart. 일별 · 월별 추이를 영역, 선, 막대로 그립니다. 툴팁은 커서 선을 따라 움직이고 플롯 위에 고정되며, 호버 점은 툴팁 위에 그려집니다. 기간을 바꾸면 이전 보기가 새 범위로 줌되고, 휠 · 드래그 확대는 맨 아래 공통 영역에서 봅니다. 전망은 점선, 범위는 띠, 추정값은 빈 점이나 빗금으로 표시합니다."
       id={SECTION.id}
       title={SECTION.title}
     >
       <Demo title="영역 · 전망과 범위 · 오늘">
         <TrendChart
-          data={dailyRows}
+          data={forecastRows}
           estimateNote={ESTIMATE_NOTE}
           guides={[
             {
@@ -131,13 +147,14 @@ export default function TrendSection() {
               label: "단말 출시",
             },
           ]}
+          zoom={false}
         />
       </Demo>
       <BarDemo />
       <Demo title="월별 점 · 지수 기준선">
         <div className="grid gap-4 md:grid-cols-2">
           <TrendChart
-            data={monthlyRows}
+            data={MONTHLY_GOAL_ROWS}
             denseTooltip
             dots
             height={180}
@@ -150,13 +167,15 @@ export default function TrendSection() {
               { key: "target", name: "목표", color: "var(--chart-3)" },
             ]}
             unit="회선"
+            yDomain={[30000, 60000]}
+            zoom={false}
           />
           <TrendChart
             actualsOnlyTooltip
             data={dailyRows}
             format={(v) => formatNumber(v, 1)}
             height={180}
-            hideZeroTick
+            koDays
             label="가입 지수 추이"
             series={[
               { key: "index100", name: "가입 지수", color: "var(--chart-2)" },
@@ -164,6 +183,7 @@ export default function TrendSection() {
             today={TODAY}
             yDomain="auto"
             yMarkers={[{ y: 100, label: "기준 100" }]}
+            zoom={false}
           />
         </div>
       </Demo>

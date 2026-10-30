@@ -24,6 +24,7 @@ import {
   chartTooltipProps,
   formatCompact,
   formatNumber,
+  formatPeriodTick,
   formatSigned,
   INITIAL_DIMENSION,
   type LegendItem,
@@ -31,6 +32,7 @@ import {
   stepTicks,
   useDotLayer,
   useMounted,
+  withoutZero,
 } from "./chart-parts";
 import { useChartZoom } from "./chart-zoom";
 import { ChartZoomControl } from "./chart-zoom-control";
@@ -105,7 +107,7 @@ export function ComboChart({
   zoom: zoomEnabled = true,
   format = formatNumber,
   formatY = formatCompact,
-  formatX = (v) => v,
+  formatX = formatPeriodTick,
   tooltipLabel,
   tooltipExtra,
   label,
@@ -361,7 +363,7 @@ export function ComboChart({
           <YAxis
             {...chartAxis}
             {...scaleProps("left")}
-            tickFormatter={formatY}
+            tickFormatter={withoutZero(formatY)}
             width={LEFT_WIDTH}
             yAxisId="left"
           />
@@ -370,7 +372,7 @@ export function ComboChart({
               {...chartAxis}
               {...rightProps}
               orientation="right"
-              tickFormatter={formatRight}
+              tickFormatter={withoutZero(formatRight)}
               width={rightWidth}
               yAxisId="right"
             />
@@ -426,7 +428,11 @@ export function ComboChart({
               <Line
                 activeDot={overDot({ r: 4, fill: l.color, strokeWidth: 0 })}
                 dataKey={l.key}
-                dot={dots ? { r: 2.5, fill: l.color, strokeWidth: 0 } : false}
+                dot={
+                  dots
+                    ? overDot({ r: 2.5, fill: l.color, strokeWidth: 0 })
+                    : false
+                }
                 isAnimationActive={false}
                 key={l.key}
                 stroke={l.color}

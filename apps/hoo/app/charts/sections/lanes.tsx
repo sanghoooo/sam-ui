@@ -62,7 +62,7 @@ const MARKERS: ChartMarker[] = [
   },
 ];
 
-const SERIES = [{ key: "air", name: "air", color: "var(--brand-air)" }];
+const SERIES = [{ key: "air", name: "A", color: "var(--brand-air)" }];
 
 type Window = { from: string; to: string; color: string; label?: string };
 
@@ -103,6 +103,7 @@ export default function LanesSection() {
           series={SERIES}
           today={TODAY}
           windows={windows}
+          zoom={false}
         />
       </Demo>
     </Section>

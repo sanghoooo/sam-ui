@@ -8,8 +8,8 @@ it. Screens Claude makes later use the same components and rules, so they look l
 - **Components:** button, badge, card, toolbar, state panel, field, select, segmented control, tabs, month
   stepper, switch, and the AI Insight title for AI-written summaries.
 - **Charts** (recharts): trend (areas, lines, bars with forecasts and targets), column, stacked area, combo,
-  donut, bar list, sparkline, scatter, flow (Sankey) and annotation lanes, sharing one tooltip, zoom and series
-  colors.
+  share (ring, pie, treemap), bar list, sparkline, scatter, flow (Sankey) and annotation lanes, sharing one tooltip,
+  zoom and series colors.
 - **App shell** for the Next.js App Router: a collapsible sidebar with a starter menu, a page header and a back
   button.
 - **Light and dark tokens:** every color has a dark value, so screens follow the theme without `dark:` classes.

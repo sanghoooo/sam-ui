@@ -34,8 +34,6 @@ const PORTING_BARS = [
   },
 ];
 
-/** "2026-10" → "10월". */
-const monthTick = (key: string) => `${Number(key.slice(5, 7))}월`;
 /** "2026-10" → "2026년 10월". */
 const monthLabel = (key: string) =>
   `${key.slice(0, 4)}년 ${Number(key.slice(5, 7))}월`;
@@ -71,21 +69,22 @@ export default function ComboSection() {
           lines={PORTING_LINES}
           rightAxis={{ format: (v) => formatSigned(v) }}
           tooltipLabel={(row) =>
-            `${String(row.key)}${row.partial ? " (진행 중)" : ""}`
+            `${monthLabel(String(row.key))}${row.partial ? " (진행 중)" : ""}`
           }
           zeroLine
+          zoom={false}
         />
       </Demo>
       <Demo title="누적 막대 + 비중 선 (% 축)">
         <ComboChart
           bars={SOURCE_BARS}
           data={sourceRows}
-          formatX={monthTick}
           label="월별 가입 유형별 건수와 신규 비중"
           legend
           lines={SOURCE_LINES}
           rightAxis={{ percent: true }}
           tooltipLabel={(row) => monthLabel(String(row.key))}
+          zoom={false}
         />
       </Demo>
     </Section>

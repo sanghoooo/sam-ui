@@ -8,6 +8,8 @@ import {
   ErrorBar,
   LabelList,
   Line,
+  Rectangle,
+  type RectangleProps,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -25,12 +27,15 @@ import {
   chartTooltipProps,
   formatCompact,
   formatNumber,
+  formatPeriodTick,
   formatSigned,
   hatchPattern,
   INITIAL_DIMENSION,
   seriesColor,
   stepTicks,
+  useDotLayer,
   useMounted,
+  withoutZero,
 } from "./chart-parts";
 import { useChartZoom } from "./chart-zoom";
 import { ChartZoomControl } from "./chart-zoom-control";
@@ -89,6 +94,72 @@ export function hasOutlier(values: number[]) {
 
 type DotRenderProps = { cx?: number; cy?: number; payload?: Row };
 
+/** How far below the plot top a clipped bar now ends, so its rounded end shows under the axis top. */
+const CLIPPED_END = 6;
+
+/**
+ * A bar the outlier zoom shortens: its true length doesn't fit, so it ends just under the plot top with its rounded
+ * end showing, and a break across its upper part says the length between is left out: a gap in the surface color
+ * edged by two wavy lines that run a little past the bar on both sides. Bars that fit draw as usual.
+ */
+function shortenedBar(plotTop: number, ticks: number[]) {
+  return function ShortenedBar(
+    props: RectangleProps & { y?: number; value?: unknown },
+  ) {
+    const y = Number(props.y);
+    const height = Number(props.height);
+    if (!(y < plotTop - 0.5)) return <Rectangle {...props} />;
+    const bottom = y + height;
+    const top = plotTop + CLIPPED_END;
+    const x = Number(props.x);
+    const width = Number(props.width);
+    // The scale's pixels per unit, from the bar's full (overflowing) length, place the ticks: the break sits in the
+    // top band, between the last two ticks, where the axis itself is broken (its top tick reads the true top).
+    const raw = Array.isArray(props.value)
+      ? Number(props.value[1]) - Number(props.value[0])
+      : Number(props.value);
+    const perUnit = raw > 0 ? height / raw : 0;
+    const below = ticks.length > 1 ? ticks[ticks.length - 2] : 0;
+    const bandBottom = perUnit ? bottom - below * perUnit : bottom;
+    const mid = Math.max(top + 8, (plotTop + bandBottom) / 2);
+    const from = x - 4;
+    const to = x + width + 4;
+    const round = (n: number) => Math.round(n * 100) / 100;
+    const wave = (offset: number) => {
+      const steps = Math.max(8, Math.ceil(to - from));
+      return Array.from({ length: steps + 1 }, (_, i) => {
+        const t = from + ((to - from) * i) / steps;
+        return [
+          round(t),
+          round(mid + offset + 2 * Math.sin(((t - from) / 8) * Math.PI * 2)),
+        ];
+      });
+    };
+    const upper = wave(-3);
+    const lower = wave(3);
+    const line = (points: number[][]) =>
+      `M${points.map((pt) => pt.join(",")).join("L")}`;
+    return (
+      <g>
+        <Rectangle {...props} height={bottom - top} y={top} />
+        <path
+          d={`${line(upper)}L${[...lower]
+            .reverse()
+            .map((pt) => pt.join(","))
+            .join("L")}Z`}
+          fill="var(--chart-surface, var(--card))"
+        />
+        <path
+          d={`${line(upper)}${line(lower)}`}
+          fill="none"
+          stroke="var(--muted-foreground)"
+          strokeWidth={1}
+        />
+      </g>
+    );
+  };
+}
+
 /**
  * Columns per row: one series, several side by side, or stacked (signed stacks pile the positives up and the
  * negatives down from a zero line). A series' `forecastKey` adds a hatched remainder bar on top of its bar; a `line`
@@ -123,7 +194,7 @@ export function ColumnChart({
   outlierZoom = false,
   format,
   formatY = formatCompact,
-  formatX = (v) => v,
+  formatX = formatPeriodTick,
   tooltipLabel,
   tooltipExtra,
   label,
@@ -258,6 +329,10 @@ export function ColumnChart({
     hi = Math.min(hi, bulk);
   }
   const spanned = signed || outlier ? stepTicks(lo, hi, 0) : null;
+  // With the outlier zoom the axis is broken under its top tick, which then reads the tallest value rounded up to the
+  // step, so the shortened bar's end means its real size.
+  const step = spanned && spanned.length > 1 ? spanned[1] - spanned[0] : 1;
+  const trueTop = Math.ceil(Math.max(0, ...values) / step) * step;
   const scaleProps = spanned
     ? {
         allowDataOverflow: outlier,
@@ -293,7 +368,10 @@ export function ColumnChart({
           (highlightRow != null && highlightRow !== xOf(row))
         ? DIM_OPACITY
         : 1;
-  const cells = (key: string, color: string, faded: boolean) =>
+  // `fill` overrides the series color: the forecast remainder keeps its hatch pattern, which a Cell's plain fill would
+  // otherwise paint over. A row in progress (fadedKey) draws its remainder plain and faded like its actual, so the
+  // whole month reads as one faint bar and only months wholly ahead are hatched.
+  const cells = (key: string, color: string, faded: boolean, fill = color) =>
     rows.map((row) => {
       const x = xOf(row);
       if (separators && isSeparator(x))
@@ -308,14 +386,19 @@ export function ColumnChart({
             strokeDasharray="3 2"
           />
         );
+      if (fill !== color && flagged(row, fadedKey))
+        return (
+          <Cell fill={color} fillOpacity={opacityOf(row, key, true)} key={x} />
+        );
       return (
-        <Cell fill={color} fillOpacity={opacityOf(row, key, faded)} key={x} />
+        <Cell fill={fill} fillOpacity={opacityOf(row, key, faded)} key={x} />
       );
     });
 
-  const hollowDot =
-    (color: string, r: number) =>
-    ({ cx, cy, payload }: DotRenderProps) =>
+  // Line dots draw over the tooltip, so it passes under them.
+  const { layer, overDot } = useDotLayer();
+  const hollowDot = (color: string, r: number) =>
+    overDot(({ cx, cy, payload }: DotRenderProps) =>
       isForecast(payload) && cx !== undefined && cy !== undefined ? (
         <circle
           cx={cx}
@@ -328,7 +411,8 @@ export function ColumnChart({
         />
       ) : (
         <g key={xOf(payload ?? {})} />
-      );
+      ),
+    );
 
   if (!mounted)
     return <ChartPlaceholder className={className} height={height} />;
@@ -434,7 +518,18 @@ export function ColumnChart({
             {...chartAxis}
             {...scaleProps}
             tick={tick}
-            tickFormatter={formatY}
+            tickFormatter={
+              outlier && spanned
+                ? withoutZero((v) =>
+                    // The broken axis's top tick reads the true top, rounded up to the step.
+                    v === spanned[spanned.length - 1]
+                      ? // Spelled out, so it reads as a number next to the ticks under it rather than an
+                        // abbreviation.
+                        formatNumber(trueTop)
+                      : formatY(v),
+                  )
+                : withoutZero(formatY)
+            }
             width={yWidth}
           />
           {separators &&
@@ -488,6 +583,11 @@ export function ColumnChart({
                 key={b.key}
                 maxBarSize={maxBarSize}
                 radius={stackId ? undefined : [radius, radius, 0, 0]}
+                shape={
+                  outlier && spanned
+                    ? shortenedBar(margin.top, spanned)
+                    : undefined
+                }
                 stackId={stackId}
               >
                 {cells(b.key, b.color, true)}
@@ -516,7 +616,7 @@ export function ColumnChart({
                       maxBarSize={maxBarSize}
                       stackId={stackId}
                     >
-                      {cells(b.key, b.color, false)}
+                      {cells(b.key, b.color, false, `url(#${hatchId(b.key)})`)}
                     </Bar>,
                   ]
                 : []),
@@ -536,9 +636,9 @@ export function ColumnChart({
           )}
           {lineSeries.flatMap((l) => [
             <Line
-              activeDot={{ r: 4, fill: l.color, strokeWidth: 0 }}
+              activeDot={overDot({ r: 4, fill: l.color, strokeWidth: 0 })}
               dataKey={l.key}
-              dot={{ r: 3, fill: l.color, strokeWidth: 0 }}
+              dot={overDot({ r: 3, fill: l.color, strokeWidth: 0 })}
               isAnimationActive={false}
               key={l.key}
               stroke={l.color}
@@ -577,6 +677,7 @@ export function ColumnChart({
           ])}
         </ComposedChart>
       </ResponsiveContainer>
+      {layer}
     </div>
   );
 

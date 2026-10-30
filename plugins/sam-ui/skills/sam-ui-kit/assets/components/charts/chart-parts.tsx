@@ -17,6 +17,7 @@ import {
   ResponsiveContainer,
   type TooltipProps,
   usePlotArea,
+  type XAxisTickContentProps,
 } from "recharts";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -56,9 +57,9 @@ export type LegendItem = {
 };
 
 /**
- * The tooltip body: a frosted surface (a faint card fill, a backdrop blur, a faint line along the bottom and right
- * edges), a bold label over a divider, then name/value rows. `extra` renders under the rows inside the box. Pure
- * render, no hooks.
+ * The tooltip body: a frosted surface (a faint card fill and a backdrop blur, no edge lines), a bold label over a
+ * divider, then name/value rows, all in the text color so they read over the blurred plot. `extra` renders under
+ * the rows inside the box. Pure render, no hooks.
  */
 export function ChartTip({
   label,
@@ -77,7 +78,7 @@ export function ChartTip({
     // the blurred plot behind it is darker and the fill must lift the text off it a little more.
     <div
       className={cn(
-        "z-50 max-w-sm rounded-md border-r border-b border-foreground/12 bg-card/10 text-foreground text-xs backdrop-blur-md sm:max-w-md dark:bg-card/25",
+        "z-50 max-w-sm rounded-none bg-card/10 text-foreground text-xs backdrop-blur-md sm:max-w-md dark:bg-card/25",
         dense ? "px-2.5 py-2" : "p-3",
         dense ? undefined : "min-w-44",
       )}
@@ -104,7 +105,7 @@ export function ChartTip({
             )}
             key={`${r.name}-${index}`}
           >
-            <span className="flex items-center gap-1.5 text-muted-foreground">
+            <span className="flex items-center gap-1.5 text-foreground">
               <span
                 className={cn(
                   "inline-block",
@@ -382,9 +383,10 @@ type DotProps = {
 };
 
 /**
- * Hover dots above the tooltip: recharts draws activeDots in the chart's SVG, under the HTML tooltip, whose edge sits
- * 1px off the cursor line and so covers part of each dot. overDot(style) is an activeDot renderer that portals the dot
- * into `layer`, an SVG stacked over the tooltip; before mount (and on the server) the dot renders inline. The host is
+ * Line dots above the tooltip: recharts draws dots in the chart's SVG, under the HTML tooltip, which then hides the
+ * dots it passes over. overDot(spec) is a `dot` or `activeDot` renderer that portals the dot into `layer`, an SVG
+ * stacked over the tooltip, so the tooltip always sits under the line dots. `spec` is a dot style or a render function
+ * (for dots drawn on some points only); before mount (and on the server) the dot renders inline. The host is
  * position:relative and renders `layer` after its ResponsiveContainer.
  */
 export function useDotLayer() {
@@ -392,24 +394,34 @@ export function useDotLayer() {
   const layer = (
     <svg
       aria-hidden
-      className="pointer-events-none absolute top-0 left-0 z-30 overflow-visible"
+      // Above ChartTip's z-50, so the tooltip passes under the dots.
+      className="pointer-events-none absolute top-0 left-0 z-[60] overflow-visible"
       ref={ref}
     />
   );
   const overDot = useCallback(
-    (style: DotStyle = {}) =>
-      (props: DotProps) => {
-        const dot = (
-          <circle
-            cx={props.cx}
-            cy={props.cy}
-            fill={style.fill ?? props.fill}
-            fillOpacity={style.fillOpacity}
-            r={style.r ?? props.r}
-            stroke={style.stroke ?? props.stroke}
-            strokeWidth={style.strokeWidth ?? props.strokeWidth}
-          />
-        );
+    <P extends DotProps>(spec: DotStyle | ((props: P) => ReactElement) = {}) =>
+      (props: P) => {
+        // A point without a value (a gap) gets no dot, as recharts' own dots do.
+        if (
+          typeof spec !== "function" &&
+          (props.cx == null || props.cy == null)
+        )
+          return <g />;
+        const dot =
+          typeof spec === "function" ? (
+            spec(props)
+          ) : (
+            <circle
+              cx={props.cx}
+              cy={props.cy}
+              fill={spec.fill ?? props.fill}
+              fillOpacity={spec.fillOpacity}
+              r={spec.r ?? props.r}
+              stroke={spec.stroke ?? props.stroke}
+              strokeWidth={spec.strokeWidth ?? props.strokeWidth}
+            />
+          );
         return ref.current ? createPortal(dot, ref.current) : dot;
       },
     [],
@@ -520,4 +532,65 @@ export function TodayLine({
       </text>
     </g>
   );
+}
+
+/**
+ * Korean two-row x ticks. Up to 60 rows label every row ("N일", the bare number where a band is under 22px) with the
+ * month under the row where it turns; longer spans tick the first of each month as "M월 D일" with the year under the
+ * row where it turns. `ticks` are the keys the axis draws, so each tick can compare itself with the one before it.
+ */
+function makeKoTick(ticks: string[], everyDay: boolean) {
+  return function KoTick(props: XAxisTickContentProps) {
+    const d = String(props.payload.value);
+    const prev = props.index > 0 ? ticks[props.index - 1] : undefined;
+    const month = Number(d.slice(5, 7));
+    const day = Number(d.slice(8, 10));
+    const band = 2 * (props.payload.offset ?? 0);
+    const top = everyDay
+      ? `${day}${band > 0 && band < 22 ? "" : "일"}`
+      : `${month}월 ${day}일`;
+    const turns =
+      !prev ||
+      (everyDay
+        ? prev.slice(5, 7) !== d.slice(5, 7)
+        : prev.slice(0, 4) !== d.slice(0, 4));
+    return (
+      <g>
+        <text
+          className="recharts-cartesian-axis-tick-value"
+          dy="0.71em"
+          fill="var(--muted-foreground)"
+          fontSize={everyDay ? 10 : 11}
+          textAnchor="middle"
+          x={props.x}
+          y={props.y}
+        >
+          {top}
+        </text>
+        {turns && (
+          <text
+            dy="1.95em"
+            fill="var(--muted-foreground)"
+            fillOpacity={0.75}
+            fontSize={10}
+            textAnchor="middle"
+            x={props.x}
+            y={props.y}
+          >
+            {everyDay ? `${month}월` : `${d.slice(0, 4)}년`}
+          </text>
+        )}
+      </g>
+    );
+  };
+}
+
+/**
+ * The x axis of daily rows ("YYYY-MM-DD" keys) in the trend charts' Korean style: up to 60 rows tick every day,
+ * longer spans the first of each month. Spread the result on XAxis as `ticks`, `tick`, `height` and `interval={0}`.
+ */
+export function koDayAxis(keys: string[]) {
+  const everyDay = keys.length <= 60;
+  const ticks = everyDay ? keys : keys.filter((key) => key.endsWith("-01"));
+  return { ticks, tick: makeKoTick(ticks, everyDay), height: 34 };
 }

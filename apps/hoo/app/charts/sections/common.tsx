@@ -15,6 +15,7 @@ import {
   formatDateKo,
   formatMonthDay,
   formatNumber,
+  formatPeriodTick,
   formatSigned,
   type LegendItem,
 } from "@/components/charts/chart-parts";
@@ -49,7 +50,7 @@ const octoberRow = stackedRows[stackedRows.length - 1];
 /** The roomy tip: line rows (a forecast with its range, a guide line), then the target, then bar rows. */
 const ROOMY_ROWS: ChartTipRow[] = [
   {
-    name: "air",
+    name: "A",
     color: "var(--brand-air)",
     dashed: true,
     value: (
@@ -155,9 +156,6 @@ const BOX_LEGEND: LegendItem[] = CHANNELS.map(({ name, color }) => ({
 /** The 30 days to TODAY, every one with an actual, for the standalone control and the brush. */
 const LAST_30 = dailyRows.filter((r) => r.air !== null).slice(-30);
 
-/** "2026-10" → "26.10" */
-const monthTick = (v: unknown) =>
-  `${String(v).slice(2, 4)}.${String(v).slice(5, 7)}`;
 /** The gap over the box's plot; its tooltip pins to it. */
 const BOX_PLOT_TOP = 8;
 
@@ -255,12 +253,12 @@ export default function CommonSection() {
               label={formatMonthDay(TODAY)}
               rows={[
                 {
-                  name: "air",
+                  name: "A",
                   color: "var(--brand-air)",
                   value: formatNumber(todayRow.air ?? 0),
                 },
                 {
-                  name: "TDS",
+                  name: "B",
                   color: "var(--brand-tds)",
                   value: formatNumber(todayRow.tds ?? 0),
                 },
@@ -301,10 +299,12 @@ export default function CommonSection() {
             <ChartSwatch key={token} token={token} use={use} />
           ))}
         </ul>
-        <p className="text-[11px] text-muted-foreground">
-          색을 주지 않은 시리즈는 순서대로 이 색을 받습니다 (seriesColor). 큰
-          칩은 현재 테마의 값, 작은 칩은 다크 값입니다.
-        </p>
+        <ul className="list-disc space-y-0.5 pl-4 text-[11px] text-muted-foreground">
+          <li>
+            색을 주지 않은 시리즈는 순서대로 이 색을 받습니다 (seriesColor).
+          </li>
+          <li>큰 칩은 현재 테마의 값, 작은 칩은 다크 값입니다.</li>
+        </ul>
       </Demo>
 
       <Demo title="ChartBox · 확대 컨트롤 · 브러시">
@@ -323,7 +323,11 @@ export default function CommonSection() {
             margin={{ top: BOX_PLOT_TOP, right: 8, bottom: 0, left: 0 }}
           >
             {chartGrid}
-            <XAxis {...chartAxis} dataKey="key" tickFormatter={monthTick} />
+            <XAxis
+              {...chartAxis}
+              dataKey="key"
+              tickFormatter={(v) => formatPeriodTick(String(v))}
+            />
             <YAxis
               {...chartAxis}
               tickFormatter={(v) => formatCompact(Number(v))}

@@ -189,7 +189,7 @@ an example and the pitfalls.
 | Column bars: monthly, grouped, signed stacks, hatched forecast, labels, target, outlier zoom | `ColumnChart`, `withSeparators`, `hasOutlier` (`@/components/charts/column-chart`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |
 | Stacked areas, also 100% | `StackedArea` (`@/components/charts/stacked-area`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |
 | Bars and lines on two axes, a share line in % | `ComboChart` (`@/components/charts/combo-chart`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |
-| A share ring with a figure in the hole, a composition pie | `Donut` (`@/components/charts/donut`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |
+| Shares of a whole: a ring with a figure in the hole, a composition pie, boxes sized by share (a stock-map look) | `ShareChart` with `kind` `ring`, `pie`, `treemap` (`@/components/charts/share-chart`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |
 | A ranked list of label · bar · value | `BarList` (`@/components/charts/bar-list`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |
 | A sparkline beside a KPI | `Sparkline` (`@/components/charts/sparkline`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |
 | Points by two values, bubble size for a third | `ScatterPlot` (`@/components/charts/scatter-plot`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |

@@ -52,11 +52,14 @@ export const DAYS = QUARTER_DAYS.slice(31);
 export const TODAY = "2026-10-29";
 const TODAY_INDEX = QUARTER_DAYS.indexOf(TODAY);
 
-/** The workspaces, in brand colors. */
+/**
+ * The workspaces, in brand colors, named A, B and C on the page so the samples don't read as real figures. The keys
+ * stay the workspace ids the colors come from.
+ */
 export const WORKSPACE_SERIES = [
-  { key: "air", name: "air", color: "var(--brand-air)" },
-  { key: "tds", name: "TDS", color: "var(--brand-tds)" },
-  { key: "mvno", name: "MVNO", color: "var(--brand-mvno)" },
+  { key: "air", name: "A", color: "var(--brand-air)" },
+  { key: "tds", name: "B", color: "var(--brand-tds)" },
+  { key: "mvno", name: "C", color: "var(--brand-mvno)" },
 ] as const;
 
 /** The sales channels, on the categorical chart colors. */
@@ -149,6 +152,35 @@ export const quarterRows: DailyRow[] = buildDailyRows(QUARTER_DAYS);
 /** The same rows over DAYS (the last 61 of quarterRows). */
 export const dailyRows: DailyRow[] = quarterRows.slice(31);
 
+/**
+ * The first trend example's rows: 2026-09-01 to 2026-11-17, so TODAY sits about three quarters along and the
+ * forecast and its range run on past it. The November days carry the forecast only, drawn from fixed curves (not
+ * the shared noise, so the other examples' data stays as it is).
+ */
+export const forecastRows: DailyRow[] = (() => {
+  const last = quarterRows[quarterRows.length - 1];
+  const start = quarterRows.findIndex((r) => r.key === TODAY);
+  const todayActual = quarterRows[start].airForecastAvg ?? 0;
+  const lastAhead = quarterRows.length - 1 - start;
+  const november = Array.from({ length: 17 }, (_, i) => {
+    const ahead = lastAhead + i + 1;
+    const avg = Math.round(
+      todayActual + 6 * ahead + 18 * Math.sin(ahead / 2.3),
+    );
+    const spread = Math.round(Math.sqrt(ahead) * 110);
+    return {
+      ...last,
+      key: `2026-11-${String(i + 1).padStart(2, "0")}`,
+      airForecastAvg: avg,
+      airForecastMax: avg + spread,
+      airForecastMin: avg - spread,
+      airRange: [avg - spread, avg + spread] as [number, number],
+      est: false,
+    };
+  });
+  return [...dailyRows, ...november];
+})();
+
 export type MonthlyRow = {
   /** "YYYY-MM" */
   key: string;
@@ -202,7 +234,7 @@ export const comboRows: ComboRow[] = MONTHS.map((month, i) => {
   const inflow = Math.round(5200 + 110 * i + noise(600));
   const outflow = -Math.round(4600 + 60 * i + noise(500));
   return {
-    key: `${month.slice(2, 4)}.${month.slice(5, 7)}`,
+    key: month,
     inflow,
     outflow,
     net: inflow + outflow,

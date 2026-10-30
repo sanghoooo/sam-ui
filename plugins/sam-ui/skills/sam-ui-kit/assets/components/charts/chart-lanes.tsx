@@ -400,7 +400,7 @@ function LaneMarker({
         // biome-ignore lint/a11y/useSemanticElements: the list holds no form controls; a group named by its header is what a screen reader should hear
         <div
           aria-labelledby={headerId}
-          className="absolute top-7 z-50 flex w-[300px] max-w-[calc(100vw-2rem)] flex-col rounded-md border-r border-b border-foreground/12 bg-card/80 text-left backdrop-blur-md"
+          className="absolute top-7 z-50 flex w-[300px] max-w-[calc(100vw-2rem)] flex-col rounded-md bg-card/80 text-left backdrop-blur-md"
           id={panelId}
           onBlur={onBlur}
           onKeyDown={onKeyDown}

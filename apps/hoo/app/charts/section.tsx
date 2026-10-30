@@ -4,6 +4,37 @@ import { Card } from "@/components/ui/card";
 /** What a section file exports beside its component: the jump-pill text and the heading. */
 export type SectionMeta = { id: string; short: string; title: string };
 
+/**
+ * A section description that starts with import paths ("@/components/ui/tabs. 왼쪽 …"), split into the paths and the
+ * text after them, so the paths sit on a line of their own without the period. Descriptions that don't start with a
+ * path stay whole.
+ */
+export function splitDescription(description: string) {
+  if (!/^(@\/|[\w-]+\/)/.test(description)) return { text: description };
+  const end = description.indexOf(". ");
+  if (end < 0)
+    return /\s/.test(description.replaceAll(", ", ","))
+      ? { text: description }
+      : { path: description };
+  const path = description.slice(0, end);
+  // A path list is paths joined by ", "; anything else with a space is a sentence that only begins with a path.
+  if (/\s/.test(path.replaceAll(", ", ","))) return { text: description };
+  return { path, text: description.slice(end + 2) };
+}
+
+/** The import paths on one line, then the description under it. */
+export function SectionDescription({ description }: { description: string }) {
+  const { path, text } = splitDescription(description);
+  return (
+    <div className="mt-1 space-y-0.5 break-keep">
+      {path && (
+        <p className="font-mono text-[11px] text-muted-foreground">{path}</p>
+      )}
+      {text && <p className="text-[12px] text-muted-foreground">{text}</p>}
+    </div>
+  );
+}
+
 /** One chart kind's section, in the palette's look; `description` starts with the import path. */
 export function Section({
   id,
@@ -23,9 +54,9 @@ export function Section({
       id={id}
     >
       <h2 className="break-keep text-[15px] font-bold">{title}</h2>
-      <p className="mt-1 mb-4 break-keep text-[12px] text-muted-foreground">
-        {description}
-      </p>
+      <div className="mb-4">
+        <SectionDescription description={description} />
+      </div>
       <div className="space-y-6">{children}</div>
     </Card>
   );

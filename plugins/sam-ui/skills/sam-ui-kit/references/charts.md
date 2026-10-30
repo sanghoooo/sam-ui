@@ -5,7 +5,7 @@ import { TrendChart } from "@/components/charts/trend-chart";
 import { ColumnChart, hasOutlier, OUTLIER_NOTE, withSeparators } from "@/components/charts/column-chart";
 import { StackedArea } from "@/components/charts/stacked-area";
 import { ComboChart } from "@/components/charts/combo-chart";
-import { Donut } from "@/components/charts/donut";
+import { ShareChart } from "@/components/charts/share-chart";
 import { BarList } from "@/components/charts/bar-list";
 import { SPARK_BOX_CLASS, Sparkline } from "@/components/charts/sparkline";
 import { ScatterPlot } from "@/components/charts/scatter-plot";
@@ -27,6 +27,9 @@ dashed or hatched forecasts, and Ctrl + wheel / drag zoom with a slider control.
 (`seriesColor(i)`), and the workspace colors (`var(--brand-air)` …) fit the same `color` props.
 
 Every chart takes `label`, the figure's aria-label; inside a `ChartBox` leave it off (the box is the figure).
+Every x axis reads dates as the trend charts do: daily rows as "9월 1일" with the year under the first
+(`koDayAxis(keys)` in `chart-parts.tsx`), months as "10월". No chart labels the 0 of its value axis: the baseline's grid line marks it (`withoutZero(format)` in
+`chart-format.ts` does this for a hand-built y axis).
 A `ChartSeries` is `{ key, name, color?, groupKey?, stack?, dashed?, dotted?, line?, forecastKey?,
 estimatedKey?, separatorBefore?, endLabel? }` (`chart-format.ts`); each chart reads the parts it supports.
 
@@ -60,8 +63,8 @@ Rows are in x order and the `xKey` field holds `"YYYY-MM-DD"` (or `"YYYY-MM"` wi
 | `windows` | `{ from, to, color?, label? }[]`: shaded spans (a one-day window still shows as a 6px band) |
 | `markers` | `{ x, color?, label? }[]`: dashed vertical lines |
 | `yMarkers` | `{ y, color?, label?, dasharray? }[]`: horizontal lines whose values become y ticks (an index's 100, a baseline) |
-| `yDomain` | `[number, number]` (rounded up, kept while zooming) or `"auto"` (the data's min..max with 0 inside, for signed or around-100 series); default 0-based rounding |
-| `selectedRange` / `rangeLabels` / `showRangeStartLine` | primary shading over `{ start, end }` with a dashed start line; `rangeLabels` = `[left of the start line (default 조회 시작), top of the shading]` |
+| `yDomain` | `[number, number]` (kept while zooming; from 0 rounded up, or from a low end other than 0 in round steps, so lines far above 0 keep their shape) or `"auto"` (the data's min..max with 0 inside, for signed or around-100 series); default 0-based rounding |
+| `selectedRange` / `rangeLabels` / `showRangeStartLine` | primary shading over `{ start, end }` with a dashed line at each end in view; `rangeLabels` = `[left of the start line (default 조회 시작), right of it]` |
 | `showShading` | `false` drops the area fills, windows, bands (a lines-only look) |
 | `highlight` | a series key kept at full strength while every other series dims |
 | `height` / `fill` | plot height (default 260) or a CSS length such as `"clamp(400px,46dvh,680px)"`; `fill` grows into a flex column with `height` as the minimum |
@@ -70,7 +73,7 @@ Rows are in x order and the `xKey` field holds `"YYYY-MM-DD"` (or `"YYYY-MM"` wi
 | `koDays` | Korean two-row x ticks ("N일" with "M월" under the month turn; "M월 D일" / "YYYY년" over long spans) and a Korean tooltip date |
 | `monthly` | `"YYYY-MM"` keys: "N월" ticks, today snapped to its month, linear target lines |
 | `dots` | lines with a dot at every point and a gap at a null, no fill (the monthly-line look) |
-| `hideZeroTick` / `yEndsOnly` | blank the 0 label; keep ticks and grid lines only at 0 and the top (plus the named target and `yMarkers`) |
+| `yEndsOnly` | keep ticks and grid lines only at 0 and the top (plus the named target and `yMarkers`) |
 | `tightRight` | the plot ends 8px from the right edge instead of 12px (for a ChartBox) |
 | `unit` / `format` / `formatY` / `formatX` | tooltip suffix; tooltip values (`formatNumber`), y ticks (`formatCompact`), x ticks when neither `koDays` nor `monthly` (`formatMonthDay`, "yy.mm.dd" across years) |
 | `denseTooltip` / `actualsOnlyTooltip` / `tooltipExtra` | the dense tooltip; the simple tooltip (target, "<series> 실적" rows, guide tips); a node under the rows `(row, x) => ReactNode` |
@@ -114,7 +117,8 @@ import { ColumnChart, hasOutlier, OUTLIER_NOTE, withSeparators } from "@/compone
 ```
 
 Columns per row: one series, grouped, or stacked (`stack`; `signed` piles positives up and negatives down
-from a zero line). A bar's `forecastKey` adds a hatched remainder bar on top of it; a `line` series is drawn
+from a zero line). A bar's `forecastKey` adds a hatched remainder bar on top of it (plain and faded, like its actual, on a row in
+progress, `fadedKey`); a `line` series is drawn
 over the bars and its `forecastKey` is the dashed continuation that carries hollow dots and range bars.
 
 | Prop | Meaning |
@@ -132,7 +136,9 @@ over the bars and its `forecastKey` is the dashed continuation that carries holl
 | `maxBarSize` / `barGap` / `barCategoryGap` / `radius` | defaults 24 / recharts' / `"30%"` / 3 (thin grouped bars: `maxBarSize={12} barGap={1}`); stacked bars keep square tops |
 | `height` / `className` | default 260; small cards pass 120 |
 | `zoom` | wheel and drag zoom with its control (hidden under two rows); default `true` |
-| `outlierZoom` | with an outlier among the values (`hasOutlier(values)`) the y range holds the bulk of the bars and the taller ones clip; the caller offers the 확대/전체 toggle and shows `OUTLIER_NOTE` |
+| `outlierZoom` | with an outlier among the values (`hasOutlier(values)`) the y range holds the bulk of the bars and a taller bar ends just under the plot top with its rounded
+end showing and a break in the axis's top band (two wavy lines running past its sides) for the length left out, and the top
+tick reads the tallest value rounded up to the step; the caller offers the 확대/전체 toggle and shows `OUTLIER_NOTE` |
 | `format` / `formatY` / `formatX` | tooltip and label values (`formatNumber`, `formatSigned` when `signed`); y ticks (`formatCompact`); x labels |
 | `tooltipLabel` / `tooltipExtra` | the tooltip heading `(row) => ReactNode` (default the x value); a node under the rows |
 | `label` | the figure's aria-label |
@@ -209,26 +215,38 @@ Bars and lines on one plot, with an optional right axis (a share line in %) or o
 />
 ```
 
-## Donut
+## ShareChart
 
 ```tsx
-import { Donut } from "@/components/charts/donut";
+import { ShareChart } from "@/components/charts/share-chart";
 ```
 
-A ring with a figure in the hole (a KPI share), or a full pie of a composition with a side list.
+Shares of a whole under one name, its kinds picked by `kind`: `"ring"`, a ring with a figure in the hole (a KPI
+share); `"pie"`, a full pie of a composition, with an optional side list; `"treemap"`, boxes sized by share and
+labelled with their names and shares where they fit (a stock-map look), for more parts than a pie can hold. Every
+kind's tooltip gives a part's value and share.
 
 | Prop | Meaning |
 |---|---|
-| `data` | `{ name, value, color? }[]`; the rest slice of a share ring is `{ name: "나머지", value: Math.max(0, total - part), color: "var(--muted)" }` |
-| `center` / `sub` | the big figure in the hole; a small muted caption under it |
-| `size` | width = height in px (default 148) |
-| `pie` | a full pie: no hole, card-colored gaps |
-| `legend` | a side list of color dots, names and shares |
+| `kind` | `"ring"`, `"pie"` or `"treemap"` |
+| `data` | `{ name, value, color? }[]`; the rest part of a share ring is `{ name: "나머지", value: Math.max(0, total - part), color: "var(--muted)" }`, a treemap's `{ name: "기타", value, color: "var(--muted-foreground)" }` |
+| `center` / `sub` | ring: the big figure in the hole; a small muted caption under it |
+| `size` | ring, pie: width = height in px (default 148) |
+| `legend` | ring, pie: a side list of color dots, names and shares; it goes under the shape when the box is too narrow for both |
+| `height` | treemap: px (default 240); the width fills the parent |
+| `color` | treemap: the boxes' hue (default `var(--chart-1)`); a part's `color` overrides it |
 | `format` / `label` | the tooltip's value; the figure's aria-label |
 
+- **ring, pie:** the parts take seriesColor(index) unless they carry a `color`. The ring's parts are 2° apart with no
+  edge, the pie's 1.5° apart with card-colored gaps. When every value is 0 the ring is muted with "-" in the hole.
+- **treemap:** the boxes are laid out largest first, tinted in one hue with the larger ones darker, 2px apart; a hover
+  darkens a box. A box too small for its name shows the share only, a sliver nothing. Parts of 0 or less are left
+  out; when nothing is left the box is muted with "-" in it.
+
 ```tsx
-<Donut center="62.5%" data={[{ name: "온라인", value: 625 }, { name: "나머지", value: 375, color: "var(--muted)" }]} label="온라인 비중" sub="온라인 비중" />
-<Donut data={CHANNEL_DATA} label="채널별 가입 구성" legend pie size={260} />
+<ShareChart center="62.5%" data={[{ name: "온라인", value: 625 }, { name: "나머지", value: 375, color: "var(--muted)" }]} kind="ring" label="온라인 비중" sub="온라인 비중" />
+<ShareChart data={CHANNEL_DATA} kind="pie" label="채널별 가입 구성" legend size={260} />
+<ShareChart data={PLAN_DATA} height={160} kind="treemap" label="요금제별 회선 비중" />
 ```
 
 ## BarList
@@ -237,11 +255,12 @@ A ring with a figure in the hole (a KPI share), or a full pie of a composition w
 import { BarList } from "@/components/charts/bar-list";
 ```
 
-A ranked list of label · bar · value rows (no recharts; renders on the server too).
+A ranked list of label · bar · value rows (no recharts; renders on the server too). The rows share one grid, so
+the values right-align in one column and every bar ends at the same x, whatever the values' widths.
 
 | Prop | Meaning |
 |---|---|
-| `items` | `{ label: ReactNode, value, color?, note?: ReactNode }[]`; the bar is primary by default, `note` sits after the value |
+| `items` | `{ label: ReactNode, value, color?, tag?: ReactNode, note?: ReactNode }[]`; the bar is primary by default, `tag` (a badge) sits right of the label, `note` after the value |
 | `format` | default `formatNumber`; `formatSigned` for deltas |
 | `labelWidth` | the label column's cap (default `"7.5rem"`) |
 | `label` | aria-label on the `<ul>` |
@@ -373,7 +392,9 @@ import { ChartBrush } from "@/components/charts/chart-brush";
 `chart-format.ts` has no React or recharts in it, so a server component can format with it: `formatNumber(v,
 decimals?)` (ko-KR grouping, fixed decimals), `formatSigned` (a leading +), `formatCompact` (1.5만, 1.2억),
 `parseCompact`, `formatDateKo` ("2026년 10월 1일"), `formatMonthDay` ("10.01"), `roundTicks(max)`,
-`stepTicks(lo, hi, keep?)` (1·2·5 steps spanning signed values), `seriesColor(i)` and the `ChartSeries` type.
+`stepTicks(lo, hi, keep?)` (1·2·5 steps spanning signed values), `formatPeriodTick` ("2026-10" → "10월",
+"2026-10-01" → "10월 1일", the default x format), `withoutZero(format)` (a y tick formatter
+that leaves 0 blank), `seriesColor(i)` and the `ChartSeries` type.
 `chart-parts.tsx` re-exports it for client code.
 
 | Part | Props |

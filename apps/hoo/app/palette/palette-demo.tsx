@@ -16,6 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs } from "@/components/ui/tabs";
 import { subscribeToTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
+import { SectionDescription } from "../charts/section";
 
 /** The color tokens in styles/ui-kit.css. Swatches follow the current theme. */
 const COLORS = [
@@ -182,7 +183,7 @@ export function PaletteDemo() {
       </Section>
 
       <Section
-        description="styles/ui-kit.css의 토큰입니다. 오른쪽 위의 다크 모드 스위치를 켜면 다크 값을 볼 수 있습니다."
+        description="styles/ui-kit.css. 킷의 색 토큰입니다. 오른쪽 위의 다크 모드 스위치를 켜면 다크 값을 볼 수 있습니다."
         id="colors"
       >
         <ul className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3">
@@ -600,11 +601,7 @@ function Section({
       id={id}
     >
       <h2 className="break-keep text-[15px] font-bold">{titleOf(id)}</h2>
-      {description && (
-        <p className="mt-1 break-keep text-[12px] text-muted-foreground">
-          {description}
-        </p>
-      )}
+      {description && <SectionDescription description={description} />}
       <div className="mt-4">{children}</div>
     </Card>
   );

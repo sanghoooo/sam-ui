@@ -6,14 +6,17 @@ export type BarListItem = {
   value: number;
   /** The bar color; defaults to the primary color. */
   color?: string;
-  /** Sits after the value: a badge, a delta, a hint. */
+  /** Sits right of the label: a badge that says something about the row (전월 대비 상승). */
+  tag?: ReactNode;
+  /** Sits after the value: a delta, a hint. */
   note?: ReactNode;
 };
 
 /**
  * A ranked list of label · bar · value rows, in HTML rather than SVG so it reads at any width. Each bar's width is
  * its share of the largest absolute value, so negative rows still get a bar; a sign-aware color or note is the
- * caller's (pass `color` by sign and formatSigned as `format`).
+ * caller's (pass `color` by sign and formatSigned as `format`). The rows share one grid (subgrid), so the value column
+ * is as wide as the widest value and every bar track ends at the same x.
  */
 export function BarList({
   items,
@@ -34,15 +37,18 @@ export function BarList({
   return (
     <ul
       aria-label={label}
-      className="space-y-2"
+      className="grid grid-cols-[minmax(0,var(--bar-list-label))_1fr_auto] gap-2 text-[12px]"
       style={{ "--bar-list-label": labelWidth } as CSSProperties}
     >
       {items.map((i, n) => (
         <li
-          className="grid grid-cols-[minmax(0,var(--bar-list-label))_1fr_auto] items-center gap-2 text-[12px]"
+          className="col-span-full grid grid-cols-subgrid items-center"
           key={n}
         >
-          <span className="truncate">{i.label}</span>
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span className="truncate">{i.label}</span>
+            {i.tag != null && <span className="shrink-0">{i.tag}</span>}
+          </span>
           <span className="relative h-2 overflow-hidden rounded-full bg-muted">
             <span
               className="absolute inset-y-0 left-0 rounded-full"
@@ -52,7 +58,7 @@ export function BarList({
               }}
             />
           </span>
-          <span className="flex items-center gap-1.5 text-right tabular-nums">
+          <span className="flex items-center justify-end gap-1.5 tabular-nums">
             {format(i.value)}
             {i.note}
           </span>

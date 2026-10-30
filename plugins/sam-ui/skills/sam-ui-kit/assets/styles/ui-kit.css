@@ -278,7 +278,8 @@
 }
 
 /* The zoom control's range inputs (components/charts/chart-zoom-control.tsx): appearance only. The native track is
-   hidden (the control draws its own track and indicator under two stacked inputs) and the thumbs are primary, ringed
+   hidden (the control draws its own track and indicator under two stacked inputs) and the thumbs are
+   --muted-foreground, the same solid gray as the indicator between them, so the slider reads as one quiet part, ringed
    in the surface they sit on (--chart-surface, else the card) so the ring reads as a gap rather than an outline, as a
    checked radio's dot is. Which input receives the pointer is the control's choice (z-index), not pointer-events on a
    pseudo-element, which Firefox ignores. WebKit aligns the thumb's top with the track's, so the thumb is pushed down
@@ -301,7 +302,7 @@
     height: 14px;
     margin-top: 5px;
     border-radius: 9999px;
-    background: var(--primary);
+    background: var(--muted-foreground);
     border: 2px solid var(--chart-surface, var(--card));
     cursor: pointer;
     transition: box-shadow 150ms;
@@ -312,16 +313,16 @@
     height: 14px;
     box-sizing: border-box;
     border-radius: 9999px;
-    background: var(--primary);
+    background: var(--muted-foreground);
     border: 2px solid var(--chart-surface, var(--card));
     cursor: pointer;
     transition: box-shadow 150ms;
   }
   &:hover::-webkit-slider-thumb {
-    box-shadow: 0 0 0 4px color-mix(in oklab, var(--primary) 15%, transparent);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--foreground) 10%, transparent);
   }
   &:hover::-moz-range-thumb {
-    box-shadow: 0 0 0 4px color-mix(in oklab, var(--primary) 15%, transparent);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--foreground) 10%, transparent);
   }
   &:focus-visible {
     outline: none;

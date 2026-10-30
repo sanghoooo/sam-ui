@@ -18,6 +18,25 @@ export const chartAxis = {
 } as const;
 
 /**
+ * An x tick for a period key in the trend charts' style: "2026-10" → "10월", "2026-10-01" → "10월 1일"; any other
+ * label as it is. The default x format of the charts that take `formatX`.
+ */
+export function formatPeriodTick(v: string) {
+  if (/^\d{4}-\d{2}$/.test(v)) return `${Number(v.slice(5, 7))}월`;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(v))
+    return `${Number(v.slice(5, 7))}월 ${Number(v.slice(8, 10))}일`;
+  return v;
+}
+
+/**
+ * A y axis tick formatter that leaves 0 unlabeled: every chart's value axis starts at its baseline without a "0", the
+ * grid line alone marking it.
+ */
+export function withoutZero(format: (v: number) => string) {
+  return (v: unknown) => (Number(v) === 0 ? "" : format(Number(v)));
+}
+
+/**
  * A number rounded to `decimals` with ko-KR grouping, the fraction digits fixed so the server and the browser print the
  * same string. The default `format` of every chart.
  */
@@ -34,6 +53,11 @@ export function formatNumber(v: number, decimals = 0) {
 /** formatNumber with a leading + on positive values, for deltas and signed bars. */
 export function formatSigned(v: number, decimals = 0) {
   return `${v > 0 ? "+" : ""}${formatNumber(v, decimals)}`;
+}
+
+/** A part's share of the total as "62.5", "0.0" when the total is 0; the share charts print it with a "%". */
+export function shareOf(value: number, total: number) {
+  return total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
 }
 
 /**

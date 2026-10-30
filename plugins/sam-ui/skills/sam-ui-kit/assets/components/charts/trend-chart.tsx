@@ -26,7 +26,6 @@ import {
   usePlotArea,
   useYAxisDomain,
   XAxis,
-  type XAxisTickContentProps,
   YAxis,
   ZIndexLayer,
 } from "recharts";
@@ -47,6 +46,7 @@ import {
   formatNumber,
   hatchPattern,
   INITIAL_DIMENSION,
+  koDayAxis,
   type LegendItem,
   minWidthRect,
   roundTicks,
@@ -263,57 +263,6 @@ function BandBars({ data, bars }: { data: Row[]; bars: BandBar[] }) {
   );
 }
 
-/**
- * Korean two-row x ticks. Up to 60 rows label every row ("N일", the bare number where a band is under 22px) with the
- * month under the row where it turns; longer spans tick the first of each month as "M월 D일" with the year under the
- * row where it turns. `ticks` are the keys the axis draws, so each tick can compare itself with the one before it.
- */
-function makeKoTick(ticks: string[], everyDay: boolean) {
-  return function KoTick(props: XAxisTickContentProps) {
-    const d = String(props.payload.value);
-    const prev = props.index > 0 ? ticks[props.index - 1] : undefined;
-    const month = Number(d.slice(5, 7));
-    const day = Number(d.slice(8, 10));
-    const band = 2 * (props.payload.offset ?? 0);
-    const top = everyDay
-      ? `${day}${band > 0 && band < 22 ? "" : "일"}`
-      : `${month}월 ${day}일`;
-    const turns =
-      !prev ||
-      (everyDay
-        ? prev.slice(5, 7) !== d.slice(5, 7)
-        : prev.slice(0, 4) !== d.slice(0, 4));
-    return (
-      <g>
-        <text
-          className="recharts-cartesian-axis-tick-value"
-          dy="0.71em"
-          fill={MUTED}
-          fontSize={everyDay ? 10 : 11}
-          textAnchor="middle"
-          x={props.x}
-          y={props.y}
-        >
-          {top}
-        </text>
-        {turns && (
-          <text
-            dy="1.95em"
-            fill={MUTED}
-            fillOpacity={0.75}
-            fontSize={10}
-            textAnchor="middle"
-            x={props.x}
-            y={props.y}
-          >
-            {everyDay ? `${month}월` : `${d.slice(0, 4)}년`}
-          </text>
-        )}
-      </g>
-    );
-  };
-}
-
 /** A label haloed in the background color, so it stays legible over lines and bands. */
 function HaloText({
   x,
@@ -423,7 +372,6 @@ export function TrendChart({
   koDays = false,
   monthly = false,
   dots = false,
-  hideZeroTick = false,
   yEndsOnly = false,
   tightRight = false,
   unit = "",
@@ -474,9 +422,12 @@ export function TrendChart({
   windows?: TrendWindow[];
   markers?: TrendMarker[];
   yMarkers?: TrendYMarker[];
-  /** A fixed y range (rounded up, so zooming keeps it), or "auto" to span the data's min..max with 0 inside. */
+  /**
+   * A fixed y range, so zooming keeps it: from 0 rounded up, or, with a low end other than 0, from that low end in round
+   * steps. "auto" spans the data's min..max with 0 inside.
+   */
   yDomain?: [number, number] | "auto";
-  /** Primary shading over these rows, with a dashed line at its start. */
+  /** Primary shading over these rows, with a dashed line at each end in view. */
   selectedRange?: { start: string; end: string };
   /** Labels the selected range's start: the first just left of it, the second at the top of the shading. */
   rangeLabels?: [string, string];
@@ -503,8 +454,6 @@ export function TrendChart({
   monthly?: boolean;
   /** Lines with a dot at every point and a gap at a null, no fill. */
   dots?: boolean;
-  /** Leaves the y axis's 0 unlabeled (the axis still starts at 0). */
-  hideZeroTick?: boolean;
   /** Only the floor and the top of the y range keep a tick and a grid line (plus the named target's and yMarkers'). */
   yEndsOnly?: boolean;
   /** The plot ends 8px short of the box's right edge instead of 12px, the zoom control's right end with it. */
@@ -707,6 +656,9 @@ export function TrendChart({
   const headroom = hasEndLabel ? 1.12 : 1;
   let roundY: number[] | undefined;
   if (yDomain === "auto") roundY = spanTicks(lo, hi > 0 ? hi * headroom : hi);
+  else if (yDomain && yDomain[0] !== 0)
+    // A low end other than 0 starts the axis there, so lines far above 0 keep their shape.
+    roundY = stepTicks(yDomain[0], yDomain[1] * headroom, yDomain[0]);
   else if (yDomain)
     roundY = yDomain[1] > 0 ? roundTicks(yDomain[1] * headroom) : undefined;
   else if (kind === "bar")
@@ -755,14 +707,9 @@ export function TrendChart({
   // koDays needs the ticks up front, to compare each with the one before it. A window of up to 60 rows is labeled
   // row by row, the month on a second line where it turns; longer spans mark only the first of each month, the year
   // on the second line.
-  const everyDay = koDays && !monthly && data.length <= 60;
-  const xTicks = everyDay
-    ? data.map(keyOf)
-    : koDays && !monthly
-      ? data.map(keyOf).filter((key) => key.endsWith("-01"))
-      : dateTicks;
-  const koTick =
-    koDays && !monthly ? makeKoTick(xTicks ?? [], everyDay) : undefined;
+  const koAxis = koDays && !monthly ? koDayAxis(data.map(keyOf)) : undefined;
+  const xTicks = koAxis ? koAxis.ticks : dateTicks;
+  const koTick = koAxis?.tick;
 
   // The last row with a value, for the end labels.
   const lastValueAt = (key: string) => {
@@ -955,7 +902,8 @@ export function TrendChart({
               tickFormatter={(v) => {
                 const n = Number(v);
                 if (n === targetAt) return targetLabel ?? "";
-                if (hideZeroTick && n === 0) return "";
+                // The baseline goes unlabeled, as on every kit chart (withoutZero).
+                if (n === 0) return "";
                 // A round tick right next to the target's name would overlap it.
                 if (
                   targetAt !== undefined &&
@@ -1060,6 +1008,18 @@ export function TrendChart({
                   strokeDasharray="3 3"
                   strokeOpacity={0.5}
                   x={rangeStartKey}
+                />
+              )}
+            {/* The range's end, when it falls before the last row, closes the shading with the same dashed line. */}
+            {selectedRange &&
+              rangeShown &&
+              rangeEnd < data.length - 1 &&
+              showRangeStartLine && (
+                <ReferenceLine
+                  stroke="var(--primary)"
+                  strokeDasharray="3 3"
+                  strokeOpacity={0.5}
+                  x={rangeEndKey}
                 />
               )}
             {/* With the start in view, the current period's label sits right of the same line, mirroring the first
@@ -1205,20 +1165,20 @@ export function TrendChart({
                 // The dots look: a line with a dot at every point, a gap at a null, the hover dot inline.
                 return (
                   <Line
-                    activeDot={{
+                    activeDot={overDot({
                       r: 5,
                       fill: s.color,
                       strokeWidth: 2,
                       stroke: "var(--background)",
-                    }}
+                    })}
                     connectNulls={false}
                     dataKey={s.key}
-                    dot={{
+                    dot={overDot({
                       r: 3.5,
                       fill: s.color,
                       strokeWidth: 1.5,
                       stroke: "var(--background)",
-                    }}
+                    })}
                     isAnimationActive={false}
                     key={s.key}
                     name={s.name}
@@ -1240,22 +1200,33 @@ export function TrendChart({
                   // Hollow dots on estimated days; undefined keeps the default (no dots).
                   dot={
                     estimatedSeries.has(s.key)
-                      ? ({ cx, cy, payload }) =>
-                          cx != null &&
-                          cy != null &&
-                          isEstimated(s, payload) ? (
-                            <circle
-                              cx={cx}
-                              cy={cy}
-                              fill="var(--background)"
-                              r={2.5}
-                              stroke={s.color}
-                              strokeOpacity={emphasized ? 1 : 0.14}
-                              strokeWidth={1.5}
-                            />
-                          ) : (
-                            <g />
-                          )
+                      ? overDot(
+                          ({
+                            cx,
+                            cy,
+                            payload,
+                          }: {
+                            cx?: number;
+                            cy?: number;
+                            payload?: Row;
+                          }) =>
+                            cx != null &&
+                            cy != null &&
+                            payload != null &&
+                            isEstimated(s, payload) ? (
+                              <circle
+                                cx={cx}
+                                cy={cy}
+                                fill="var(--background)"
+                                r={2.5}
+                                stroke={s.color}
+                                strokeOpacity={emphasized ? 1 : 0.14}
+                                strokeWidth={1.5}
+                              />
+                            ) : (
+                              <g />
+                            ),
+                        )
                       : undefined
                   }
                   fill={shading && !s.line ? `url(#g-${s.key})` : "none"}
@@ -1303,6 +1274,7 @@ export function TrendChart({
               const edgeWidth = highlight && emphasized ? 2 : 1.3;
               const avgLine = (
                 <Line
+                  activeDot={overDot()}
                   connectNulls
                   dataKey={group.avgKey}
                   dot={false}
@@ -1323,6 +1295,7 @@ export function TrendChart({
               if (!forecastRange || banded) return [avgLine];
               return [
                 <Line
+                  activeDot={overDot()}
                   connectNulls
                   dataKey={group.maxKey}
                   dot={false}
@@ -1337,6 +1310,7 @@ export function TrendChart({
                 />,
                 avgLine,
                 <Line
+                  activeDot={overDot()}
                   connectNulls
                   dataKey={group.minKey}
                   dot={false}
@@ -1353,6 +1327,7 @@ export function TrendChart({
             })}
             {targetSeries.map((s) => (
               <Line
+                activeDot={overDot()}
                 connectNulls
                 dataKey={s.key}
                 dot={false}
@@ -1423,6 +1398,7 @@ export function TrendChart({
                 ]
               ) : (
                 <Line
+                  activeDot={overDot({ r: 3, fill: "var(--foreground)" })}
                   dataKey={targetKey}
                   dot={false}
                   isAnimationActive={false}
@@ -1441,6 +1417,13 @@ export function TrendChart({
                 key={`end-${e.name}`}
                 label={endLabelContent(`${e.name} ${format(e.y)}`, e.color)}
                 r={4}
+                // Over the tooltip, as the line dots are.
+                shape={overDot({
+                  r: 4,
+                  fill: e.color,
+                  stroke: "var(--background)",
+                  strokeWidth: 2,
+                })}
                 stroke="var(--background)"
                 strokeWidth={2}
                 x={e.x}
@@ -1646,7 +1629,7 @@ export function TrendChart({
                       <span className="flex flex-col items-end leading-tight">
                         <span>{value(avgVal)}</span>
                         {spread && (
-                          <span className="text-[10px] font-normal text-muted-foreground">
+                          <span className="text-[10px] font-normal text-foreground/80">
                             {rangeLabel ? `${rangeLabel} ` : ""}최소{" "}
                             {format(Number(minVal))} ~ 최대{" "}
                             {format(Number(maxVal))}
@@ -1703,7 +1686,7 @@ export function TrendChart({
                       isFuture ? (
                         <>
                           {shownLabel}
-                          <span className="ml-1.5 rounded bg-muted px-1 py-px align-middle text-[10px] font-medium text-muted-foreground">
+                          <span className="ml-1.5 rounded bg-muted px-1 py-px align-middle text-[10px] font-medium text-foreground">
                             전망
                           </span>
                         </>
