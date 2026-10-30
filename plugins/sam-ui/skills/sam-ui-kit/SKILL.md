@@ -20,6 +20,10 @@ A small kit of React components for dashboard screens: Tailwind CSS 4, `lucide-r
 library; the charts use recharts. The look is a white sidebar with collapsible groups, a gray page, white bordered cards, a filter
 toolbar of segmented choices and selects, and pill tabs. Light is the default theme; dark is an option.
 
+`${CLAUDE_SKILL_DIR}` in this file is this skill's folder, the one holding this SKILL.md. Claude Code fills
+it in; where it is still written out (in Codex), put that folder's absolute path in its place. Run kit.mjs by
+that absolute path: it runs from the project, where a path relative to the skill does not resolve.
+
 The kit's files live in `${CLAUDE_SKILL_DIR}/assets`, mirroring where they go in a project:
 `components/ui/*` (the components), `components/charts/*` (the charts), `components/layout/*` (the
 Next.js app shell and the workspace logos), `lib/*` (helpers, the sidebar menu), `styles/ui-kit.css` (the
@@ -120,12 +124,15 @@ app shell (`components/layout/*`) needs the Next.js App Router.
 
 A newer kit arrives with the plugin, so update the plugin first, then the project:
 
-1. **The plugin.** The user (or you, if allowed) updates it: in a session `/plugin marketplace update
-   sam-plugins`, then `/reload-plugins`; in a terminal `claude plugin marketplace update sam-plugins` and
-   `claude plugin update sam-ui@sam-plugins`, then a restart. The paths in this skill still point at the
-   version that was loaded, so invoke the skill again after the update. If you don't, kit.mjs refuses to
-   run while Claude Code has a newer sam-ui than its own, and prints the newer script's command to run
-   instead; decide any `--take`/`--keep` again from that script's output.
+1. **The plugin.** The user (or you, if allowed) updates it. In Claude Code: in a session `/plugin
+   marketplace update sam-plugins`, then `/reload-plugins`; in a terminal `claude plugin marketplace update
+   sam-plugins` and `claude plugin update sam-ui@sam-plugins`, then a restart. In Codex: `codex plugin add
+   sam-ui@sam-plugins` in a terminal, which fetches the newest release and replaces the installed one, then a
+   new session. The paths in this skill still point at the version that was loaded, so invoke the skill again
+   after the update. If you don't, kit.mjs refuses to run while Claude Code or Codex has a newer sam-ui than
+   its own, and prints the newer script's command to run instead; decide any `--take`/`--keep` again from
+   that script's output. Codex removes the old version's folder, so there an old path fails with "Cannot
+   find module" instead: read the skill again from its new folder.
 2. **The project.** Run `node ${CLAUDE_SKILL_DIR}/scripts/kit.mjs update <src-root>`. Per file it reports:
    - `added` (new in the kit, or a missing kit file put back), `updated` (the project had not changed it),
      `removed` (dropped from the kit, unchanged here);

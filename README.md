@@ -1,13 +1,14 @@
 # sam-ui — SAM UI 킷
 
-SAM UI 킷과, 그 킷을 다른 프로젝트에 설치하고 쓰게 하는 Claude Code 플러그인 `sam-ui`를 관리하는 저장소입니다.
-플러그인은 마켓플레이스 [sam-plugins](https://github.com/sanghoooo/sam-plugins)에 등록돼 있습니다.
+SAM UI 킷과, 그 킷을 다른 프로젝트에 설치하고 쓰게 하는 Claude Code / Codex 플러그인 `sam-ui`를 관리하는 저장소입니다.
+플러그인은 마켓플레이스 [sam-plugins](https://github.com/sanghoooo/sam-plugins)에 등록돼 있고, Codex도 Claude Code 형식의
+마켓플레이스와 플러그인을 읽으므로 같은 마켓플레이스로 Codex에도 설치됩니다.
 
 - **킷:** 사이드바 레이아웃(시작용 메뉴), 필터 툴바, SegmentedControl(움직이는 선택 표시), Tabs,
   MonthStepper, Select, Switch, StatePanel, AI Insight 로고, air · TDS · MVNO 로고와 브랜드 색, 라이트(기본) ·
   다크 토큰. React 19 + Tailwind CSS 4, 레이아웃은 Next.js App Router.
 - **플러그인:** 설치하면 `sam-ui:sam-ui-kit` 스킬이 생기고, 어떤 프로젝트에서든 "SAM UI 킷 설치해줘"라고 하면
-  Claude가 킷을 복사 · 설정하고 이후 화면도 이 킷으로 만듭니다.
+  Claude(또는 Codex)가 킷을 복사 · 설정하고 이후 화면도 이 킷으로 만듭니다.
 
 ## 구성
 
@@ -56,8 +57,9 @@ pnpm release 0.2.0   # plugin.json version 변경 → plugin validate → dist/s
 그다음 커밋하고 `v0.2.0` 태그와 함께 기본 브랜치에 push합니다. sam-plugins는 이 저장소 기본 브랜치의
 `plugins/sam-ui`를 가리키므로(`git-subdir`) 릴리스할 때 고치지 않습니다. 설치한 사람은 Claude Code에서
 `/plugin marketplace update sam-plugins` 후 `/reload-plugins`로 받습니다(터미널에서는 `claude plugin marketplace
-update sam-plugins`, `claude plugin update sam-ui@sam-plugins` 후 다시 시작). `version`을 올리지 않으면 설치된 쪽에
-업데이트가 가지 않습니다.
+update sam-plugins`, `claude plugin update sam-ui@sam-plugins` 후 다시 시작), Codex에서는 터미널에서 `codex plugin add
+sam-ui@sam-plugins`를 다시 실행한 뒤 새 세션으로 받습니다(`codex plugin marketplace upgrade`는 sam-plugins 저장소가
+바뀔 때만 다시 설치하므로 릴리스를 받지 못합니다). `version`을 올리지 않으면 설치된 쪽에 업데이트가 가지 않습니다.
 
 사이트(`apps/hoo`)는 main에 push할 때마다 `.github/workflows/pages.yml`이 정적 파일로 export해
 https://sanghoooo.github.io/sam-ui/ 에 배포합니다(저장소 Settings → Pages의 Source가 GitHub Actions여야 합니다).
@@ -72,6 +74,14 @@ GitHub에 접근할 수 있으면 Claude Code에서:
 /plugin install sam-ui@sam-plugins
 ```
 
+Codex(CLI 또는 ChatGPT 데스크톱 앱, IDE 확장은 플러그인을 지원하지 않습니다)에서는 터미널에서 두 명령을 차례로 실행한 뒤
+새 세션(데스크톱 앱은 새 대화)을 시작합니다. 로그인 없이 설치되고, 둘째 명령을 다시 실행하면 최신 릴리스로 바뀝니다.
+
+```
+codex plugin marketplace add sanghoooo/sam-plugins
+codex plugin add sam-ui@sam-plugins
+```
+
 GitHub에 접근할 수 없는 PC는 `pnpm release`가 만든 zip을 풀어 로컬 경로로 추가합니다(`docs/offline-install.md`).
 
 이전 이름(0.3.5까지 `sam-ui@sam-plugins`, 0.4의 `sam-ui-kit@sam-ui`, 0.5.0 · 0.5.1의 `sam-ui@hoo-plugins`)으로
@@ -81,8 +91,9 @@ GitHub에 접근할 수 없는 PC는 `pnpm release`가 만든 zip을 풀어 로�
 
 ## 사용하는 프로젝트의 업데이트
 
-킷을 배포하면 각 프로젝트는 플러그인을 업데이트한 뒤(`/plugin marketplace update sam-plugins`,
-`/reload-plugins`) Claude에게 "SAM UI 킷 업데이트해줘"라고 합니다. 스킬이 `kit.mjs update`로
+킷을 배포하면 각 프로젝트는 플러그인을 업데이트한 뒤(Claude Code: `/plugin marketplace update sam-plugins`,
+`/reload-plugins`, Codex: `codex plugin add sam-ui@sam-plugins` 후 새 세션) Claude나 Codex에게 "SAM UI 킷
+업데이트해줘"라고 합니다. 스킬이 `kit.mjs update`로
 처리합니다.
 
 - 프로젝트가 손대지 않은 킷 파일은 새 버전으로 바뀌고, 킷에서 빠진 파일은 지워집니다.

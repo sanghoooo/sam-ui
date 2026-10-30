@@ -1,7 +1,8 @@
 # SAM UI
 
 A React 19 + Tailwind CSS 4 dashboard kit, with a skill that installs it into a project and builds screens with
-it. Screens Claude makes later use the same components and rules, so they look like the ones already there.
+it. Screens Claude or Codex makes later use the same components and rules, so they look like the ones already
+there.
 
 ## What's in the kit
 
@@ -27,13 +28,21 @@ In Claude Code:
 
 In the Claude app, open **+** beside the prompt box, choose **Add plugins**, find **SAM UI** and add it.
 
+In Codex (the CLI or the ChatGPT desktop app; the IDE extension has no plugins), run these in a terminal, then
+start a new session (a new chat in the desktop app). Running the second one again brings in a newer release.
+
+```
+codex plugin marketplace add sanghoooo/sam-plugins
+codex plugin add sam-ui@sam-plugins
+```
+
 ## Use
 
-Ask Claude in a project:
+Ask Claude or Codex in a project:
 
-- **"Install the SAM UI kit"** ("SAM UI 킷 설치해줘"): Claude copies the components, wires up the tokens and the
+- **"Install the SAM UI kit"** ("SAM UI 킷 설치해줘"): it copies the components, wires up the tokens and the
   app shell, and records every file in `sam-ui.json`.
-- **Describe a screen:** Claude builds it from the kit's components, in light and dark.
+- **Describe a screen:** it builds the screen from the kit's components, in light and dark.
 - **"Update the SAM UI kit"**: only files the project left alone change; the ones it edited are listed, not
   overwritten.
 

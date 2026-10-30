@@ -163,10 +163,11 @@ function compareVersions(a, b) {
 // those ids stopped there, so they never count. Up to 0.3.5 it was this one, older than any kit reading it.
 const PLUGIN_ID = "sam-ui@sam-plugins";
 
-// A sam-ui newer than this copy that Claude Code has installed for this project (user scope, or project
-// scope for this folder or one above it). After a plugin update, a session can still hold the old
-// version's path.
-function newerInstalled() {
+// The installs of sam-ui that cover this project, as { installPath, version, agent }: Claude Code's (user
+// scope, or project scope for this folder or one above it) and Codex's (user-wide, a folder per version in
+// its plugin cache, $CODEX_HOME/plugins/cache/<marketplace>/<plugin>/<version>).
+function installs() {
+  const found = [];
   const config =
     process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), ".claude");
   const installed = readJson(
@@ -178,15 +179,41 @@ function newerInstalled() {
     const rel = path.relative(entry.projectPath, projectRoot);
     return !rel.startsWith("..") && !path.isAbsolute(rel);
   };
-  let newest = null;
   for (const [id, entries] of Object.entries(installed?.plugins ?? {})) {
     if (id !== PLUGIN_ID) continue;
-    for (const entry of [entries].flat()) {
-      if (!entry?.installPath || !fs.existsSync(entry.installPath)) continue;
-      if (!coversProject(entry)) continue;
-      if (compareVersions(entry.version, newest?.version ?? kitVersion) > 0)
-        newest = entry;
-    }
+    for (const entry of [entries].flat())
+      if (entry?.installPath && coversProject(entry))
+        found.push({ ...entry, agent: "Claude Code" });
+  }
+  const [name, marketplace] = PLUGIN_ID.split("@");
+  const cache = path.join(
+    process.env.CODEX_HOME || path.join(os.homedir(), ".codex"),
+    "plugins/cache",
+    marketplace,
+    name,
+  );
+  let versions = [];
+  try {
+    versions = fs.readdirSync(cache);
+  } catch {}
+  for (const folder of versions) {
+    const installPath = path.join(cache, folder);
+    const version = readJson(
+      path.join(installPath, ".claude-plugin/plugin.json"),
+    )?.version;
+    if (version) found.push({ installPath, version, agent: "Codex" });
+  }
+  return found;
+}
+
+// A sam-ui newer than this copy that Claude Code or Codex has installed for this project. After a Claude Code
+// plugin update, a session can still hold the old version's path (Codex deletes the old version's folder).
+function newerInstalled() {
+  let newest = null;
+  for (const entry of installs()) {
+    if (!fs.existsSync(entry.installPath)) continue;
+    if (compareVersions(entry.version, newest?.version ?? kitVersion) > 0)
+      newest = entry;
   }
   if (!newest) return null;
   // The skill's folder is sam-ui-kit; it was ui-kit before, so an install from then has its script there.
@@ -195,6 +222,7 @@ function newerInstalled() {
   );
   return {
     version: newest.version,
+    agent: newest.agent,
     script: scripts.find((file) => fs.existsSync(file)) ?? scripts[0],
   };
 }
@@ -203,7 +231,7 @@ function refuseIfNewerInstalled() {
   const newer = newerInstalled();
   if (!newer) return;
   console.error(
-    `This is sam-ui ${kitVersion} (${pluginRoot}), but Claude Code has sam-ui ${newer.version} installed. Run that one, and decide any --take/--keep again from its output (the newer kit may change those files):\n  node ${newer.script} ${command} ${srcArg}`,
+    `This is sam-ui ${kitVersion} (${pluginRoot}), but ${newer.agent} has sam-ui ${newer.version} installed. Run that one, and decide any --take/--keep again from its output (the newer kit may change those files):\n  node ${newer.script} ${command} ${srcArg}`,
   );
   process.exit(1);
 }
@@ -434,7 +462,7 @@ function update() {
     );
   if (compareVersions(manifest.version, kitVersion) > 0) {
     console.error(
-      `The project has sam-ui ${manifest.version}, newer than this plugin's ${kitVersion}; an older kit would revert its files. Update the plugin first (in Claude Code: /plugin marketplace update sam-plugins, then /reload-plugins), then run update with the new version's kit.mjs.`,
+      `The project has sam-ui ${manifest.version}, newer than this plugin's ${kitVersion}; an older kit would revert its files. Update the plugin first (in Claude Code: /plugin marketplace update sam-plugins, then /reload-plugins; in Codex: codex plugin add sam-ui@sam-plugins, then a new session), then run update with the new version's kit.mjs.`,
     );
     process.exit(1);
   }
@@ -661,7 +689,7 @@ function check() {
   const newer = newerInstalled();
   if (newer)
     console.log(
-      `Claude Code has sam-ui ${newer.version} installed: ${newer.script}`,
+      `${newer.agent} has sam-ui ${newer.version} installed: ${newer.script}`,
     );
   const count = Object.values(out).reduce((sum, rels) => sum + rels.length, 0);
   if (count) {

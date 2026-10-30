@@ -16,9 +16,11 @@ const KIT = fileURLToPath(
 const root = fs.mkdtempSync(
   path.join(process.env.TMPDIR || os.tmpdir(), "kit-test-"),
 );
-// An empty Claude Code config folder: kit.mjs looks there for a newer installed sam-ui.
+// An empty Claude Code config folder and Codex home: kit.mjs looks there for a newer installed sam-ui.
 const config = path.join(root, "claude-config");
 fs.mkdirSync(config);
+const codexHome = path.join(root, "codex-home");
+fs.mkdirSync(codexHome);
 let failures = 0;
 let passes = 0;
 
@@ -62,7 +64,7 @@ function project(name, { src = false } = {}) {
 function run(kit, ...args) {
   const r = spawnSync(process.execPath, [kit, ...args], {
     encoding: "utf8",
-    env: { ...process.env, CLAUDE_CONFIG_DIR: config },
+    env: { ...process.env, CLAUDE_CONFIG_DIR: config, CODEX_HOME: codexHome },
   });
   return { code: r.status, out: `${r.stdout}${r.stderr}` };
 }
@@ -919,6 +921,37 @@ m.starters["components/layout/brand.tsx"] = hash("brand1");
 fs.writeFileSync(`${ug}/sam-ui.json`, JSON.stringify(m));
 r = run(v2, "update", ug);
 ok(!/unused/.test(r.out), `not reported when the file is gone\n${r.out}`);
+
+console.log("33. a newer sam-ui that Codex installed");
+const cx = project("codex");
+run(v1, "install", cx);
+// Codex keeps each installed version whole under $CODEX_HOME/plugins/cache/<marketplace>/<plugin>/<version>.
+const codexCache = `${codexHome}/plugins/cache/sam-plugins/sam-ui`;
+fs.cpSync(path.join(root, "kit-v2"), `${codexCache}/0.2.0`, {
+  recursive: true,
+});
+r = run(v1, "update", cx);
+ok(
+  r.code === 1 &&
+    /but Codex has sam-ui 0.2.0 installed/.test(r.out) &&
+    r.out.trim().split("\n").pop().trim() ===
+      `node ${codexCache}/0.2.0/skills/sam-ui-kit/scripts/kit.mjs update ${cx}`,
+  `refused, with the Codex install's command\n${r.out}`,
+);
+r = run(v1, "check", cx);
+ok(
+  r.out.includes(
+    `Codex has sam-ui 0.2.0 installed: ${codexCache}/0.2.0/skills/sam-ui-kit/scripts/kit.mjs`,
+  ),
+  `check names the Codex install\n${r.out}`,
+);
+fs.rmSync(`${codexCache}/0.2.0`, { recursive: true });
+fs.cpSync(path.join(root, "kit-v1"), `${codexCache}/0.1.0`, {
+  recursive: true,
+});
+r = run(v1, "update", cx);
+ok(r.code === 0, `the same version in Codex does not refuse\n${r.out}`);
+fs.rmSync(`${codexHome}/plugins`, { recursive: true });
 
 fs.rmSync(root, { recursive: true, force: true });
 console.log(`\n${passes} passed, ${failures} failed`);
