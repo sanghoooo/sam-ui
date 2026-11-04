@@ -52,7 +52,8 @@ const GLYPHS = [
   "0123456789 ₩ $ % & @ # · → ▲ ▼",
 ];
 
-/** The weights the kit's classes use. */
+/** Pretendard's named weights as this site uses them: the kit's medium, semibold and bold over the body's
+ * regular, and the header name's extrabold. */
 const WEIGHTS = [
   { className: "font-normal", name: "Regular", weight: 400 },
   { className: "font-medium", name: "Medium", weight: 500 },
@@ -159,6 +160,10 @@ export function PaletteDemo() {
               <AiSparkle className="size-6" />
             </span>
             아이콘 (AiSparkle)
+          </span>
+          <span className="flex items-center gap-2">
+            <AiSparkle className="size-6 text-primary" still />
+            아이콘 정지 (still)
           </span>
         </div>
       </Section>
@@ -303,7 +308,8 @@ export function PaletteDemo() {
             >
               <ChevronRight />
             </Button>
-            <ManualButton />
+            {/* The site has no /manual (a project's placeholder serves it), so the sample opens the README. */}
+            <ManualButton href="https://github.com/sanghoooo/sam-ui#readme" />
           </div>
         </div>
       </Section>
@@ -563,6 +569,8 @@ function WorkspaceCard({
         )}
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
+        {/* Each mark on its own theme's surface whatever the page theme, so the colors are pinned: the
+            light card, border and muted-foreground of ui-kit.css, then the dark sidebar's. */}
         <span className="flex items-center gap-2 rounded-lg border border-[#e3e7ec] bg-white py-1.5 pr-3 pl-1.5">
           <WorkspaceLogo id={workspace.id} theme="light" />
           <span className="text-[11px] text-[#6b7684]">라이트</span>

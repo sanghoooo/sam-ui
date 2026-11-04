@@ -112,16 +112,17 @@ const STEPS = [
   },
 ];
 
+// kit.mjs's own wording, in the order it prints the labels (the kit: lines and closing hints left out).
 const UPDATE_LOG = [
-  ["updated", "components/ui/tabs.tsx", ""],
   ["added", "components/ui/switch.tsx", ""],
+  ["updated", "components/ui/tabs.tsx", ""],
+  ["compare", "lib/nav.ts", "a starter the kit changed: the project's is kept"],
   ["local", "lib/utils.ts", "changed here; the kit's version did not change"],
   [
     "merge",
     "components/ui/card.tsx",
     "changed here and in the kit: left as it is",
   ],
-  ["compare", "lib/nav.ts", "a starter the kit changed: yours is kept"],
 ] as const;
 
 export default function IntroPage() {
@@ -356,7 +357,8 @@ function Section({
 }) {
   return (
     <section
-      className="mx-auto max-w-6xl scroll-mt-16 px-4 py-14 lg:px-6"
+      // A linked section stops just below the header, which grows when it wraps on a phone.
+      className="mx-auto max-w-6xl scroll-mt-[var(--header-height,57px)] px-4 py-14 lg:px-6"
       id={id}
     >
       <p className="text-[13px] font-semibold text-muted-foreground">

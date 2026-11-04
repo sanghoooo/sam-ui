@@ -4,6 +4,15 @@
 /* The kit's components live outside this app, so Tailwind is told to scan them. */
 @source "../../../plugins/sam-ui/skills/sam-ui-kit/assets";
 
+/* The site's own links and buttons get the kit controls' focus outline. The kit's components set theirs
+   with utilities, which come after this layer and win. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+}
+
 /* The header's name (site-header.tsx), every 5.1s: "Sales and Marketing 본부" for 2s, then the letters after
    each initial fold away in 0.3s as their grid column goes from 1fr to 0fr, so each part narrows from its own
    width, while "A" takes the place of "a" and "UI" of "본부"; "SAM UI" for 2.5s, then it all comes back in

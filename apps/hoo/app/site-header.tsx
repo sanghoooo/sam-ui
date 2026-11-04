@@ -38,7 +38,7 @@ export function SiteHeader() {
       ref={ref}
     >
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-2.5 lg:px-6">
-        <nav aria-label="페이지" className="flex items-center gap-2">
+        <nav aria-label="페이지" className="flex flex-wrap items-center gap-2">
           <Link aria-label="SAM UI" className="mr-5 flex" href="/">
             <SiteName />
           </Link>
@@ -76,8 +76,8 @@ export function SiteHeader() {
           ))}
         </nav>
         {/* The hover fill is see-through, so it sits as softly on the intro's blue wash as on gray. */}
-        <div className="whitespace-nowrap [&>label:hover]:bg-foreground/6">
-          <ThemeToggle />
+        <div className="whitespace-nowrap">
+          <ThemeToggle className="hover:bg-foreground/6" />
         </div>
       </div>
     </header>

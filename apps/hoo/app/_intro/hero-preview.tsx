@@ -230,9 +230,10 @@ export function HeroPreview() {
 
           <Card className="p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h3 className="text-[14px] font-semibold">
+              {/* A label of the sample dashboard, not a heading of the page's outline. */}
+              <p className="text-[14px] font-semibold">
                 월별 {metricLabel} · {name}
-              </h3>
+              </p>
               <Tabs
                 items={METRICS}
                 label="지표"
@@ -288,6 +289,10 @@ function ColumnChart({
   const top = niceMax(Math.max(...values));
   const ticks = [top, top / 2, 0];
   const last = months.length - 1;
+  // One column per month, for the bars and their labels alike.
+  const columns = {
+    gridTemplateColumns: `repeat(${months.length}, minmax(0, 1fr))`,
+  };
 
   return (
     <div className="mt-4">
@@ -306,7 +311,7 @@ function ColumnChart({
               style={{ top: `${(i / (ticks.length - 1)) * 100}%` }}
             />
           ))}
-          <div className="absolute inset-0 grid grid-cols-6">
+          <div className="absolute inset-0 grid" style={columns}>
             {months.map((m, k) => {
               const height = (values[k] / top) * 100;
               const showTip = active === k;
@@ -363,7 +368,10 @@ function ColumnChart({
           </div>
         </div>
       </div>
-      <div className="ml-11 grid grid-cols-6 pt-1.5 text-center text-[11px] text-muted-foreground">
+      <div
+        className="ml-11 grid pt-1.5 text-center text-[11px] text-muted-foreground"
+        style={columns}
+      >
         {months.map((m) => (
           <span key={m}>{monthName(m)}</span>
         ))}

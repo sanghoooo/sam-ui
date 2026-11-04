@@ -101,7 +101,9 @@ export function Terminal({
                 <span className="text-white/50 [text-shadow:none]">&gt; </span>
                 {line.slice(0, Math.max(0, typed - starts[i]))}
                 {i === current && (
-                  <span className="ml-px inline-block h-[1.1em] w-[0.6em] translate-y-[0.15em] animate-caret-blink bg-[#39ff14] shadow-[0_0_6px_rgb(57_255_20/0.6)]" />
+                  // Top-aligned, the caret stays inside the line box, so the typed line is no taller than
+                  // the unseen copy's; the translate only moves it down to the letters.
+                  <span className="ml-px inline-block h-[1.1em] w-[0.6em] translate-y-[0.25em] align-top animate-caret-blink bg-[#39ff14] shadow-[0_0_6px_rgb(57_255_20/0.6)]" />
                 )}
               </span>
             ),

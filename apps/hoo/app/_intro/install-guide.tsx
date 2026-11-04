@@ -156,17 +156,9 @@ function Or() {
 }
 
 /** One place to install from: its name, then how. */
-function Way({
-  title,
-  className,
-  children,
-}: {
-  title: string;
-  className?: string;
-  children: ReactNode;
-}) {
+function Way({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className={className}>
+    <div>
       <h4 className="mb-2 text-[13px] font-semibold">{title}</h4>
       {children}
     </div>

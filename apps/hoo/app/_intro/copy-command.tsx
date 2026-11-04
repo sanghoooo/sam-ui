@@ -1,20 +1,24 @@
 "use client";
 
 import { Check, Copy } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 /** Copies text to the clipboard; `copied` stays true for 1.6s after. */
 export function useCopy(text: string) {
   const [copied, setCopied] = useState(false);
+  // One timer at a time, so a second copy restarts the 1.6s instead of being cut short by the first.
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(timer.current), []);
 
   async function copy() {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      setTimeout(() => setCopied(false), 1600);
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => setCopied(false), 1600);
     } catch {
-      // The clipboard is blocked: the commands stay selectable.
+      // The clipboard is blocked: the text stays selectable.
     }
   }
 
