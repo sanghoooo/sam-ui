@@ -1,5 +1,7 @@
-# sam-ui CI: lint, the kit script's tests, and a build of the site in apps/hoo (which compiles every kit
-# file) on pull requests and on main. plugin validate needs the claude CLI, so it runs in `pnpm release` locally.
+# sam-ui CI on pull requests and on main: Biome (lint, formatting and import order), the kit script's tests,
+# and the site in apps/hoo built the way GitHub Pages serves it (a static export under /sam-ui), which
+# type-checks every kit file and bundles the ones the site imports. plugin validate needs the claude CLI, so
+# it runs in `pnpm release` locally.
 
 name: CI
 
@@ -22,6 +24,9 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
+      - run: pnpm check
       - run: pnpm test
       - run: pnpm build
+        env:
+          PAGES: "1"
+          NEXT_PUBLIC_BASE_PATH: /sam-ui

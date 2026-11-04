@@ -7,6 +7,24 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 version="${1:?usage: pnpm release <version>, e.g. 0.2.0}"
+# x.y.z only (the tag is v<version>, so a "v" here would double it), and never below the current version:
+# kit.mjs refuses a plugin older than a project's kit. The same version again is fine, to redo a release.
+if [[ ! $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "version must look like 0.2.0, got $version" >&2
+  exit 2
+fi
+node -e '
+const [current, next] = [process.argv[1], process.argv[2]].map((v) => v.split(".").map(Number));
+for (let i = 0; i < 3; i++) {
+  if (next[i] !== current[i]) {
+    if (next[i] < current[i]) {
+      console.error(`version ${process.argv[2]} is below the current ${process.argv[1]}`);
+      process.exit(2);
+    }
+    break;
+  }
+}
+' "$(node -p 'require("./plugins/sam-ui/.claude-plugin/plugin.json").version')" "$version"
 # Claude Code reads the first, Codex the second (it prefers .codex-plugin), and Gemini CLI the third;
 # kit.mjs also carries VERSION for a standalone `gemini skills install`.
 manifests=(
@@ -40,6 +58,7 @@ echo "sam-ui version: $version"
 # as sam-ui@sam-plugins like the online one.
 root=$(pwd)
 stage=$(mktemp -d)
+trap 'rm -rf "$stage"' EXIT
 mkdir -p "$stage/sam-plugins/.claude-plugin" dist
 cp -R plugins "$stage/sam-plugins/"
 cat >"$stage/sam-plugins/.claude-plugin/marketplace.json" <<'EOF'
@@ -59,9 +78,10 @@ EOF
 cp docs/offline-install.md "$stage/sam-plugins/README.md"
 find "$stage" -name .DS_Store -delete
 
-# claude is often only bundled with the VS Code extension, not on PATH.
+# claude is often only bundled with the VS Code extension, not on PATH; of several versions, the newest.
 claude_bin=$(command -v claude ||
-  ls -d "$HOME"/.vscode/extensions/anthropic.claude-code-*/resources/native-binary/claude 2>/dev/null | tail -1 ||
+  ls -d "$HOME"/.vscode/extensions/anthropic.claude-code-*/resources/native-binary/claude 2>/dev/null |
+  sort -V | tail -1 ||
   true)
 if [[ -n "$claude_bin" ]]; then
   "$claude_bin" plugin validate ./plugins/sam-ui --strict
@@ -72,7 +92,6 @@ fi
 
 rm -f "dist/sam-ui-$version.zip"
 (cd "$stage" && zip -qr "$root/dist/sam-ui-$version.zip" sam-plugins)
-rm -rf "$stage"
 
 echo "built dist/sam-ui-$version.zip"
 echo "next: commit, tag v$version and merge to the default branch."

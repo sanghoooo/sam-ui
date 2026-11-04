@@ -1,5 +1,7 @@
 # Publishes the site in apps/hoo to GitHub Pages (https://sanghoooo.github.io/sam-ui/) from main, as a
 # static export under the repository's path. Pages' source must be "GitHub Actions" (Settings → Pages).
+# A manual run publishes whichever branch it is started from, to preview a release branch; the next push to
+# main publishes main again.
 
 name: Pages
 

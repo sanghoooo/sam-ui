@@ -46,7 +46,7 @@
       "correctness": {
         "useExhaustiveDependencies": "warn"
       },
-      "recommended": true,
+      "preset": "recommended",
       "security": {
         "noDangerouslySetInnerHtml": "off"
       },
