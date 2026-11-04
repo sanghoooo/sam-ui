@@ -16,7 +16,9 @@
 // --take puts the kit's version in place; for a changed file the kit dropped, it deletes the file.
 // --keep keeps the project's version: a local change on top of the current kit, or, for a file the kit
 // dropped, the project's own. update --force takes the kit's version of every kit file the project
-// changed. Exit codes: 0 done, 1 something needs attention (see the output), 2 bad usage.
+// changed and deletes the changed files the kit dropped; starters, `differs` files and files named with
+// --keep stay. A kit file kept as a symlink is replaced by a plain copy, so the kit never writes into the
+// link's target. Exit codes: 0 done, 1 something needs attention (see the output), 2 bad usage.
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
@@ -29,9 +31,10 @@ const assets = path.resolve(here, "../assets");
 const pluginRoot = path.resolve(here, "../../..");
 const MANIFEST = "sam-ui.json";
 // Fallback version when only the skill folder is installed (`gemini skills install`); set by scripts/release.sh.
-const VERSION = "0.6.0";
-// Installed once as a starting point, then the project's own: update and check never write them, and
-// update reports ("compare") the ones the kit changed since the manifest was written.
+const VERSION = "0.6.1";
+// Installed once as a starting point, then the project's own. update never overwrites one on its own: it
+// puts a missing one back (`starter`), replaces one only when named with --take, and reports ("compare")
+// the ones the kit changed since the manifest was written. check never writes them.
 const STARTERS = ["lib/nav.ts"];
 
 function usage(problem) {
@@ -74,7 +77,21 @@ if (command === "check" && (force || takeArgs.length || keepArgs.length))
   usage("check takes no options.");
 const srcArg = positional[0];
 
+// A path as it can be pasted into a shell: quoted when it holds anything but plain path characters.
+const q = (s) =>
+  /^[\w@%+=:,./\\-]+$/.test(s)
+    ? s
+    : process.platform === "win32"
+      ? `"${s}"`
+      : `'${s.replace(/'/g, `'\\''`)}'`;
+
 const srcRoot = path.resolve(srcArg);
+if (!fs.statSync(srcRoot, { throwIfNoEntry: false })?.isDirectory()) {
+  console.error(
+    `${srcArg} is not a folder: give the folder the project's "@/" alias points at (the project root, or src/).`,
+  );
+  process.exit(2);
+}
 const projectRoot = [srcRoot, path.dirname(srcRoot)].find((dir) =>
   fs.existsSync(path.join(dir, "package.json")),
 );
@@ -120,7 +137,9 @@ function readScriptVersion(file) {
 const sha256 = (data) => createHash("sha256").update(data).digest("hex");
 // The hashes a file's content may be recorded under, its own hash first. Text files (no NUL byte) hash
 // with LF line endings, so a CRLF checkout (Windows, git autocrlf) still matches the kit. sam-ui 0.2.0
-// hashed raw bytes, so its manifests may hold the raw or the CRLF form.
+// hashed raw bytes, so its manifests may hold the raw or the CRLF form. latin1 maps every byte to one
+// character and back, so the round trip changes nothing but the line endings (UTF-8 decoding would
+// rewrite an invalid sequence and change the hash).
 function hashesOf(file) {
   const data = fs.readFileSync(file);
   if (data.includes(0)) return [sha256(data)];
@@ -158,21 +177,60 @@ function kitFiles(dir = assets, prefix = "") {
 }
 
 function copy(rel) {
-  fs.mkdirSync(path.dirname(target(rel)), { recursive: true });
-  fs.copyFileSync(asset(rel), target(rel));
+  const file = target(rel);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  // A symlink is replaced, not written through: its target may be another package or a plugin's assets.
+  if (fs.lstatSync(file, { throwIfNoEntry: false })?.isSymbolicLink())
+    fs.rmSync(file);
+  fs.copyFileSync(asset(rel), file);
 }
 
+// What stops a kit file from being read or written where it goes: a folder at its path, or a file where
+// one of its folders should be. Checked before anything is written.
+function obstacle(rel) {
+  const file = target(rel);
+  if (fs.statSync(file, { throwIfNoEntry: false })?.isDirectory())
+    return "a folder is in the way";
+  const top = rel.startsWith("public/") ? projectRoot : srcRoot;
+  for (let dir = path.dirname(file); dir.startsWith(top); ) {
+    const stat = fs.statSync(dir, { throwIfNoEntry: false });
+    if (stat && !stat.isDirectory())
+      return `${path.relative(projectRoot, dir).split(path.sep).join("/")} is a file, not a folder`;
+    const up = path.dirname(dir);
+    if (up === dir) break;
+    dir = up;
+  }
+  return null;
+}
+
+function refuseObstacles(rels, what) {
+  const blocked = rels.filter(obstacle);
+  if (!blocked.length) return;
+  print("blocked", blocked, (rel) => `  (${obstacle(rel)})`);
+  console.log(
+    `${what}: move what is in the way of these ${blocked.length} file(s), then run this again.`,
+  );
+  process.exit(1);
+}
+
+// Numeric parts compared in turn; a prerelease (0.6.0-rc.1) comes before its release (0.6.0).
 function compareVersions(a, b) {
-  const parts = (v) =>
-    String(v)
-      .split(".")
-      .map((n) => Number.parseInt(n, 10) || 0);
-  const [pa, pb] = [parts(a), parts(b)];
-  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
-    const d = (pa[i] ?? 0) - (pb[i] ?? 0);
+  const split = (v) => {
+    const [main, ...pre] = String(v).replace(/^v/, "").split("-");
+    return {
+      parts: main.split(".").map((n) => Number.parseInt(n, 10) || 0),
+      pre: pre.join("-"),
+    };
+  };
+  const [va, vb] = [split(a), split(b)];
+  for (let i = 0; i < Math.max(va.parts.length, vb.parts.length); i++) {
+    const d = (va.parts[i] ?? 0) - (vb.parts[i] ?? 0);
     if (d) return Math.sign(d);
   }
-  return 0;
+  if (va.pre === vb.pre) return 0;
+  if (!va.pre) return 1;
+  if (!vb.pre) return -1;
+  return Math.sign(va.pre.localeCompare(vb.pre, "en", { numeric: true }));
 }
 
 // The plugin's id in Claude Code. It was sam-ui-kit@sam-ui in 0.4 and sam-ui@hoo-plugins in 0.5.0 and 0.5.1;
@@ -180,7 +238,8 @@ function compareVersions(a, b) {
 const PLUGIN_ID = "sam-ui@sam-plugins";
 
 // The installs of sam-ui that cover this project, as { installPath, version, agent }: Claude Code's (user
-// scope, or project scope for this folder or one above it), Codex's (user-wide, a folder per version in
+// and managed scope cover every project; project and local scope cover their projectPath and the folders
+// below it), Codex's (user-wide, a folder per version in
 // its plugin cache, $CODEX_HOME/plugins/cache/<marketplace>/<plugin>/<version>) and Gemini CLI's (user-wide,
 // under $GEMINI_CLI_HOME/.gemini/skills/sam-ui-kit or .gemini/extensions/sam-ui).
 function installs() {
@@ -194,10 +253,13 @@ function installs() {
     if (entry.scope !== "project" && entry.scope !== "local") return true;
     if (!entry.projectPath) return false;
     const rel = path.relative(entry.projectPath, projectRoot);
-    return !rel.startsWith("..") && !path.isAbsolute(rel);
+    return (
+      rel !== ".." && !rel.startsWith(`..${path.sep}`) && !path.isAbsolute(rel)
+    );
   };
   for (const [id, entries] of Object.entries(installed?.plugins ?? {})) {
     if (id !== PLUGIN_ID) continue;
+    // One record per id in the file's first format, a list of them (one per scope) since `version: 2`.
     for (const entry of [entries].flat())
       if (entry?.installPath && coversProject(entry))
         found.push({ ...entry, agent: "Claude Code" });
@@ -252,31 +314,27 @@ function installs() {
 function newerInstalled() {
   let newest = null;
   for (const entry of installs()) {
-    if (!fs.existsSync(entry.installPath)) continue;
+    // The skill's folder is sam-ui-kit (at installPath directly for `gemini skills install`, or under
+    // skills/); it was ui-kit before, so an install from then has its script there. An install without
+    // the script (gone, or half written) can't be run, so it doesn't count.
+    const script = [
+      path.join(entry.installPath, "scripts/kit.mjs"),
+      ...["sam-ui-kit", "ui-kit"].map((skill) =>
+        path.join(entry.installPath, "skills", skill, "scripts/kit.mjs"),
+      ),
+    ].find((file) => fs.existsSync(file));
+    if (!script) continue;
     if (compareVersions(entry.version, newest?.version ?? kitVersion) > 0)
-      newest = entry;
+      newest = { version: entry.version, agent: entry.agent, script };
   }
-  if (!newest) return null;
-  // The skill's folder is sam-ui-kit (at installPath directly for `gemini skills install`, or under skills/);
-  // it was ui-kit before, so an install from then has its script there.
-  const scripts = [
-    path.join(newest.installPath, "scripts/kit.mjs"),
-    ...["sam-ui-kit", "ui-kit"].map((skill) =>
-      path.join(newest.installPath, "skills", skill, "scripts/kit.mjs"),
-    ),
-  ];
-  return {
-    version: newest.version,
-    agent: newest.agent,
-    script: scripts.find((file) => fs.existsSync(file)) ?? scripts[1],
-  };
+  return newest;
 }
 
 function refuseIfNewerInstalled() {
   const newer = newerInstalled();
   if (!newer) return;
   console.error(
-    `This is sam-ui ${kitVersion} (${kitRoot}), but ${newer.agent} has sam-ui ${newer.version} installed. Run that one, and decide any --take/--keep again from its output (the newer kit may change those files):\n  node ${newer.script} ${command} ${srcArg}`,
+    `This is sam-ui ${kitVersion} (${kitRoot}), but ${newer.agent} has sam-ui ${newer.version} installed. Run that one, and decide any --take/--keep again from its output (the newer kit may change those files):\n  node ${q(newer.script)} ${command} ${q(srcArg)}`,
   );
   process.exit(1);
 }
@@ -362,9 +420,27 @@ function readManifest() {
     );
     process.exit(2);
   }
-  if ((manifest.srcRoot ?? ".") !== srcRel) {
+  const hashes = (value) =>
+    value === undefined ||
+    (typeof value === "object" &&
+      value !== null &&
+      !Array.isArray(value) &&
+      Object.values(value).every((hash) => typeof hash === "string"));
+  if (
+    Array.isArray(manifest) ||
+    !hashes(manifest.files) ||
+    // sam-ui 0.2.0 listed the starters' names without hashes.
+    !(Array.isArray(manifest.starters) || hashes(manifest.starters))
+  ) {
     console.error(
-      `${MANIFEST} says the kit lives in "${manifest.srcRoot}" of this project, not "${srcRel}": give that folder.`,
+      `${manifestPath} is not a manifest this script wrote ("files" and "starters" map paths to hashes): restore it from git, then run this again.`,
+    );
+    process.exit(2);
+  }
+  const recorded = manifest.srcRoot ?? ".";
+  if (recorded !== srcRel) {
+    console.error(
+      `${MANIFEST} says the kit lives in "${recorded}" of this project, not "${srcRel}": give that folder.`,
     );
     process.exit(2);
   }
@@ -430,7 +506,7 @@ function print(label, rels, note = "") {
 const kitCopy = (rel) => `\n          kit: ${asset(rel)}`;
 
 // The command line to name files on, for the messages.
-const rerun = `node ${script} ${command} ${srcArg}`;
+const rerun = `node ${q(script)} ${command} ${q(srcArg)}`;
 
 function install() {
   refuseIfNewerInstalled();
@@ -445,6 +521,7 @@ function install() {
     refuseWorkspaceRoot(": the kit goes into an app");
   const all = kitFiles();
   const { take, keep } = decisions(all);
+  refuseObstacles(all, "Nothing was installed");
   const files = {};
   const starterHashes = {};
   const out = {
@@ -477,7 +554,7 @@ function install() {
   if (out.differs.length) {
     print("differs", out.differs, "  (exists with other content)");
     console.log(
-      `Nothing was installed: ${out.differs.length} file(s) already exist with other content. Decide each with the user and run install again with \`--take <path>\` (the kit's version replaces the project's) or \`--keep <path>\` (the project's stays, as a local change), e.g.\n  ${rerun} --keep ${shown(out.differs[0])}\nFiles from another UI kit with the same names (shadcn has button, badge, card, select, switch, tabs …) can't share a folder with this kit.`,
+      `Nothing was installed: ${out.differs.length} file(s) already exist with other content. Decide each with the user and run install again with \`--take <path>\` (the kit's version replaces the project's) or \`--keep <path>\` (the project's stays, as a local change), e.g.\n  ${rerun} --keep ${q(shown(out.differs[0]))}\nFiles from another UI kit with the same names (shadcn has button, badge, card, select, switch, tabs …) can't share a folder with this kit.`,
     );
     process.exit(1);
   }
@@ -521,7 +598,9 @@ function update() {
   const oldStarterNames = Array.isArray(manifest.starters)
     ? manifest.starters
     : Object.keys(oldStarters);
-  const { take, keep } = decisions([...new Set([...all, ...Object.keys(old)])]);
+  const known = [...new Set([...all, ...Object.keys(old)])];
+  const { take, keep } = decisions(known);
+  refuseObstacles(known, "Nothing was updated");
   const files = {};
   const starterHashes = {};
   const out = {
@@ -532,6 +611,7 @@ function update() {
     kept: [],
     own: [],
     starter: [],
+    restored: [],
     compare: [],
     unused: [],
     local: [],
@@ -546,8 +626,9 @@ function update() {
     if (STARTERS.includes(rel)) {
       starterHashes[rel] = kitHash;
       if (!fs.existsSync(file)) {
+        // The kit's layout imports it, so a missing one is put back.
         copy(rel);
-        out.starter.push(rel);
+        (oldStarterNames.includes(rel) ? out.restored : out.starter).push(rel);
       } else if (hashOf(file) !== kitHash) {
         if (take.has(rel)) {
           copy(rel);
@@ -578,14 +659,15 @@ function update() {
         files[rel] = kitHash;
         out.kept.push(rel);
       } else out.differs.push(rel);
+    } else if (matches(file, base)) {
+      // Unchanged here, so it follows the kit; a --keep would only freeze it on the old version.
+      copy(rel);
+      files[rel] = kitHash;
+      out.updated.push(rel);
     } else if (keep.has(rel)) {
       // A named --keep wins, --force included.
       files[rel] = kitHash;
       out.kept.push(rel);
-    } else if (matches(file, base)) {
-      copy(rel);
-      files[rel] = kitHash;
-      out.updated.push(rel);
     } else if (take.has(rel) || force) {
       copy(rel);
       files[rel] = kitHash;
@@ -613,9 +695,14 @@ function update() {
       out.left.push(rel);
     }
   }
-  // A starter the kit dropped stays the project's, but the kit's files no longer import it.
+  // A starter the kit dropped stays the project's, but the kit's files no longer import it. (One that
+  // became a plain kit file went through the loop above instead.)
   for (const rel of oldStarterNames)
-    if (!STARTERS.includes(rel) && fs.existsSync(target(rel)))
+    if (
+      !STARTERS.includes(rel) &&
+      !all.includes(rel) &&
+      fs.existsSync(target(rel))
+    )
       out.unused.push(rel);
   writeManifest(files, starterHashes);
 
@@ -626,6 +713,11 @@ function update() {
   print("kept", out.kept, "  (the project's version, on top of this kit)");
   print("kept", out.own, "  (dropped from the kit; the project's own now)");
   print("starter", out.starter, "  (new; the project's own from now on)");
+  print(
+    "starter",
+    out.restored,
+    "  (was missing: the kit's starting point is back; the project's own from now on)",
+  );
   print(
     "compare",
     out.compare,
@@ -688,28 +780,47 @@ function check() {
       `No ${MANIFEST} in ${projectRoot}: the kit is not installed here.`,
     );
   const order = compareVersions(manifest.version, kitVersion);
+  // When the project is on this plugin's version, check sorts each file the way update would (left,
+  // merge, differs, behind); on another version a tracked file is only missing or changed against the
+  // hash it was recorded with.
+  const sameKit = order === 0;
   const all = new Set(kitFiles());
   const tracked = manifest.files ?? {};
-  const out = { changed: [], merge: [], left: [], differs: [], missing: [] };
+  const out = {
+    blocked: [],
+    changed: [],
+    merge: [],
+    left: [],
+    differs: [],
+    behind: [],
+    missing: [],
+  };
   for (const [rel, base] of Object.entries(tracked)) {
     const file = target(rel);
-    // With the plugin's own version, check sees what update would do with each file.
-    const sameKit = order === 0;
-    if (!fs.existsSync(file)) {
+    if (obstacle(rel)) out.blocked.push(rel);
+    else if (!fs.existsSync(file)) {
       if (!sameKit || all.has(rel)) out.missing.push(rel);
-    } else if (matches(file, base)) continue;
-    else if (sameKit && !all.has(rel)) out.left.push(rel);
-    else if (sameKit && hashOf(file) === hashOf(asset(rel))) continue;
-    else if (sameKit && !matches(asset(rel), base)) out.merge.push(rel);
-    else out.changed.push(rel);
+    } else if (!sameKit) {
+      if (!matches(file, base)) out.changed.push(rel);
+    } else if (!all.has(rel)) {
+      // Dropped from the kit: update removes it while it is unchanged, and lists it otherwise.
+      (matches(file, base) ? out.behind : out.left).push(rel);
+    } else if (hashOf(file) === hashOf(asset(rel))) continue;
+    else if (matches(asset(rel), base)) {
+      if (!matches(file, base)) out.changed.push(rel);
+    } else (matches(file, base) ? out.behind : out.merge).push(rel);
   }
-  if (order === 0)
+  if (sameKit)
     for (const rel of all) {
-      if (STARTERS.includes(rel) || rel in tracked) continue;
-      if (!fs.existsSync(target(rel))) out.missing.push(rel);
+      if (rel in tracked) continue;
+      if (obstacle(rel)) out.blocked.push(rel);
+      // The kit's layout imports the starter, so a missing one counts (update puts it back).
+      else if (!fs.existsSync(target(rel))) out.missing.push(rel);
+      else if (STARTERS.includes(rel)) continue;
       else if (hashOf(target(rel)) !== hashOf(asset(rel)))
         out.differs.push(rel);
     }
+  print("blocked", out.blocked, (rel) => `  (${obstacle(rel)})`);
   print("changed", out.changed, "  (differs from the kit)");
   print("merge", out.merge, "  (the kit changed it too: update lists it)");
   print(
@@ -722,7 +833,16 @@ function check() {
     out.differs,
     "  (new in the kit, but the project has its own file there: update lists it)",
   );
+  print("behind", out.behind, (rel) =>
+    all.has(rel)
+      ? "  (still an older kit's version: update brings the kit's)"
+      : "  (dropped from the kit, unchanged here: update removes it)",
+  );
   print("missing", out.missing);
+  if (out.behind.length)
+    console.log(
+      `behind: nothing of the project's is in these; run update to bring them to sam-ui ${kitVersion}.`,
+    );
   if (order < 0)
     console.log(
       `The project has sam-ui ${manifest.version}; this plugin carries ${kitVersion}: run update to bring it in.`,

@@ -16,6 +16,8 @@ const KIT = fileURLToPath(
 const root = fs.mkdtempSync(
   path.join(process.env.TMPDIR || os.tmpdir(), "kit-test-"),
 );
+// Removed however the run ends, an uncaught error included.
+process.on("exit", () => fs.rmSync(root, { recursive: true, force: true }));
 // An empty Claude Code config folder, Codex home and Gemini CLI home: kit.mjs looks there for a newer
 // installed sam-ui.
 const config = path.join(root, "claude-config");
@@ -416,7 +418,7 @@ run(v1, "install", w2);
 fs.writeFileSync(`${w2}/lib/nav.ts`, "nav2");
 r = run(v2, "update", w2);
 ok(
-  !/compare/.test(r.out),
+  r.code === 0 && !/compare/.test(r.out),
   `a starter already like the kit's new one is not reported\n${r.out}`,
 );
 
@@ -463,7 +465,7 @@ ok(
 );
 r = run(k021, "update", x);
 ok(
-  !/compare/.test(r.out) && !/unused/.test(r.out),
+  r.code === 0 && !/compare/.test(r.out) && !/unused/.test(r.out),
   `then neither is reported again\n${r.out}`,
 );
 r = run(k022, "update", x);
@@ -473,7 +475,10 @@ ok(
 );
 const x0 = legacy("legacy-untouched");
 r = run(k021, "update", x0);
-ok(!/compare/.test(r.out), `an untouched starter is not reported\n${r.out}`);
+ok(
+  r.code === 0 && !/compare/.test(r.out),
+  `an untouched starter is not reported\n${r.out}`,
+);
 
 console.log("18. an older plugin never downgrades the project");
 const y = project("downgrade");
@@ -921,14 +926,17 @@ ok(
   `reported unused, even untouched, and left alone\n${r.out}`,
 );
 r = run(v2, "update", ud);
-ok(!/unused/.test(r.out), `reported once\n${r.out}`);
+ok(r.code === 0 && !/unused/.test(r.out), `reported once\n${r.out}`);
 const ug = project("unused-gone");
 run(v1, "install", ug);
 m = manifestOf(ug);
 m.starters["components/layout/brand.tsx"] = hash("brand1");
 fs.writeFileSync(`${ug}/sam-ui.json`, JSON.stringify(m));
 r = run(v2, "update", ug);
-ok(!/unused/.test(r.out), `not reported when the file is gone\n${r.out}`);
+ok(
+  r.code === 0 && !/unused/.test(r.out),
+  `not reported when the file is gone\n${r.out}`,
+);
 
 console.log("33. a newer sam-ui that Codex installed");
 const cx = project("codex");
@@ -1022,6 +1030,183 @@ ok(
 );
 fs.rmSync(`${geminiHome}/.gemini`, { recursive: true });
 
-fs.rmSync(root, { recursive: true, force: true });
+console.log("36. a missing starter is put back, and check notices it first");
+const ms = project("missing-starter");
+run(v1, "install", ms);
+fs.rmSync(`${ms}/lib/nav.ts`);
+r = run(v1, "check", ms);
+ok(
+  r.code === 1 && /missing\s+lib\/nav\.ts/.test(r.out),
+  `check reports the missing starter\n${r.out}`,
+);
+r = run(v2, "update", ms);
+ok(
+  r.code === 0 &&
+    read(`${ms}/lib/nav.ts`) === "nav2" &&
+    /starter\s+lib\/nav\.ts\s+\(was missing/.test(r.out),
+  `update puts it back as the kit's\n${r.out}`,
+);
+
+console.log(
+  "37. check lists a file reverted to the kit version it was based on",
+);
+const rv = project("reverted");
+run(v1, "install", rv);
+fs.writeFileSync(`${rv}/components/ui/b.tsx`, "b-mine");
+fs.writeFileSync(`${rv}/components/ui/d.tsx`, "d-mine");
+run(v2, "update", rv);
+fs.writeFileSync(`${rv}/components/ui/b.tsx`, "b1");
+fs.writeFileSync(`${rv}/components/ui/d.tsx`, "d1");
+r = run(v2, "check", rv);
+ok(
+  r.code === 1 &&
+    /behind\s+components\/ui\/b\.tsx\s+\(still an older/.test(r.out) &&
+    /behind\s+components\/ui\/d\.tsx\s+\(dropped/.test(r.out),
+  `a reverted merge and left file are behind\n${r.out}`,
+);
+r = run(v2, "update", rv);
+ok(
+  r.code === 0 &&
+    read(`${rv}/components/ui/b.tsx`) === "b2" &&
+    !fs.existsSync(`${rv}/components/ui/d.tsx`),
+  `update brings them along\n${r.out}`,
+);
+r = run(v2, "check", rv);
+ok(r.code === 0, `then check is clean\n${r.out}`);
+
+console.log("38. --keep on a file the project never changed");
+const ku = project("keep-unchanged");
+run(v1, "install", ku);
+r = run(v2, "update", ku, "--keep", "components/ui/a.tsx");
+ok(
+  r.code === 0 &&
+    read(`${ku}/components/ui/a.tsx`) === "a2" &&
+    /updated\s+components\/ui\/a\.tsx/.test(r.out),
+  `it follows the kit instead of freezing on the old version\n${r.out}`,
+);
+
+console.log("39. <src-root> must be an existing folder");
+const sr = project("src-root", { src: true });
+r = run(v1, "install", `${sr}/scr`);
+ok(
+  r.code === 2 && /is not a folder/.test(r.out) && !fs.existsSync(`${sr}/scr`),
+  `a mistyped folder is refused, not created\n${r.out}`,
+);
+r = run(v1, "install", `${sr}/package.json`);
+ok(
+  r.code === 2 && /is not a folder/.test(r.out),
+  `a file is refused\n${r.out}`,
+);
+
+console.log("40. sam-ui.json without srcRoot, and of the wrong shape");
+const ns = project("no-src-root", { src: true });
+run(v1, "install", ns);
+m = manifestOf(ns);
+delete m.srcRoot;
+fs.writeFileSync(`${ns}/sam-ui.json`, JSON.stringify(m));
+r = run(v1, "check", `${ns}/src`);
+ok(
+  r.code === 2 && /lives in "\." of this project, not "src"/.test(r.out),
+  `the default "." is named, not "undefined"\n${r.out}`,
+);
+fs.writeFileSync(`${ns}/sam-ui.json`, JSON.stringify({ files: "oops" }));
+r = run(v1, "check", ns);
+ok(
+  r.code === 2 && /is not a manifest this script wrote/.test(r.out),
+  `a manifest of the wrong shape is refused\n${r.out}`,
+);
+
+console.log(
+  "41. a folder or a file in the way stops before anything is written",
+);
+const ob = project("obstacle");
+run(v1, "install", ob);
+fs.rmSync(`${ob}/lib/utils.ts`);
+fs.mkdirSync(`${ob}/lib/utils.ts`);
+r = run(v2, "update", ob);
+ok(
+  r.code === 1 &&
+    /blocked\s+lib\/utils\.ts\s+\(a folder is in the way\)/.test(r.out) &&
+    read(`${ob}/components/ui/a.tsx`) === "a1" &&
+    manifestOf(ob).version === "0.1.0",
+  `update writes nothing\n${r.out}`,
+);
+r = run(v1, "check", ob);
+ok(
+  r.code === 1 && /blocked\s+lib\/utils\.ts/.test(r.out),
+  `check reports it\n${r.out}`,
+);
+const ob2 = project("obstacle-install");
+fs.writeFileSync(`${ob2}/components`, "not a folder");
+r = run(v1, "install", ob2);
+ok(
+  r.code === 1 &&
+    /blocked\s+components\/ui\/a\.tsx\s+\(components is a file/.test(r.out) &&
+    !fs.existsSync(`${ob2}/lib`) &&
+    !fs.existsSync(`${ob2}/sam-ui.json`),
+  `install writes nothing\n${r.out}`,
+);
+
+console.log("42. a symlinked kit file is replaced, never written through");
+const sl = project("symlink");
+run(v1, "install", sl);
+const shared = path.join(root, "shared-utils.ts");
+fs.writeFileSync(shared, "u1");
+fs.rmSync(`${sl}/lib/utils.ts`);
+fs.symlinkSync(shared, `${sl}/lib/utils.ts`);
+const v3 = plugin("kit-v3", "0.3.0", {
+  "components/ui/a.tsx": "a2",
+  "lib/nav.ts": "nav2",
+  "lib/utils.ts": "u3",
+});
+r = run(v3, "update", sl, "--force");
+ok(
+  r.code === 0 &&
+    read(shared) === "u1" &&
+    !fs.lstatSync(`${sl}/lib/utils.ts`).isSymbolicLink() &&
+    read(`${sl}/lib/utils.ts`) === "u3",
+  `the link's target is left alone\n${r.out}`,
+);
+
+console.log("43. a path with a space is quoted in the commands it prints");
+const sp = project("my app");
+fs.mkdirSync(`${sp}/components/ui`, { recursive: true });
+fs.writeFileSync(`${sp}/components/ui/a.tsx`, "a-mine");
+r = run(v1, "install", sp);
+ok(
+  r.code === 1 && r.out.includes(`install '${sp}' --keep components/ui/a.tsx`),
+  `the printed command quotes <src-root>\n${r.out}`,
+);
+
+console.log("44. a prerelease comes before its release");
+const rc = plugin("kit-rc", "0.2.0-rc.1", { "components/ui/a.tsx": "a-rc" });
+const pr = project("prerelease");
+run(rc, "install", pr);
+r = run(v2, "update", pr);
+ok(
+  r.code === 0 && manifestOf(pr).version === "0.2.0",
+  `0.2.0 updates a project on 0.2.0-rc.1\n${r.out}`,
+);
+r = run(rc, "update", pr);
+ok(
+  r.code === 1 && /newer than this plugin's 0.2.0-rc.1/.test(r.out),
+  `0.2.0-rc.1 does not downgrade 0.2.0\n${r.out}`,
+);
+
+console.log(
+  "45. a starter that becomes a plain kit file is not reported unused",
+);
+const sf = project("starter-to-file");
+run(v1, "install", sf);
+m = manifestOf(sf);
+m.starters["components/ui/a.tsx"] = hash("a1");
+delete m.files["components/ui/a.tsx"];
+fs.writeFileSync(`${sf}/sam-ui.json`, JSON.stringify(m));
+r = run(v2, "update", sf);
+ok(
+  !/unused\s+components\/ui\/a\.tsx/.test(r.out),
+  `only the regular listing names it\n${r.out}`,
+);
+
 console.log(`\n${passes} passed, ${failures} failed`);
 process.exit(failures ? 1 : 0);
