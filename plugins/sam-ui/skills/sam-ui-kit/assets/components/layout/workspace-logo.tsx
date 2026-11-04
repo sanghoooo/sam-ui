@@ -57,6 +57,8 @@ export function WorkspaceLogo({
         <RadioTower
           className={cn(
             size,
+            // Pinned marks don't follow the page theme: light uses the light --foreground value, dark is
+            // white like the dark SVGs.
             theme === "light" && "text-[#191f28]",
             theme === "dark" && "text-white",
             !theme && "text-foreground dark:text-white",

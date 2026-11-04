@@ -3,7 +3,7 @@
 import { ChevronRight, House } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   NAV_FOOTER,
@@ -16,9 +16,26 @@ import { cn } from "@/lib/utils";
 import { useSidebar } from "./sidebar-context";
 import { ThemeToggle } from "./theme-toggle";
 
+// Whether a menu link is the current page. A trailing slash doesn't count, so a project with
+// `trailingSlash: true` (pathname "/overview/") still matches the menu's "/overview".
+const trim = (path: string) => path.replace(/\/+$/, "") || "/";
+const isCurrent = (href: string, pathname: string) =>
+  trim(href) === trim(pathname);
+
 export function Sidebar() {
   const { open, setOpen } = useSidebar();
   const close = () => setOpen(false);
+  const aside = useRef<HTMLElement>(null);
+  // The open drawer takes the focus, so a keyboard user isn't left behind the backdrop, and gives it back
+  // to where it was (the menu button) when it closes.
+  useEffect(() => {
+    if (!open) return;
+    const before = document.activeElement;
+    aside.current?.querySelector<HTMLElement>("a[href], button")?.focus();
+    return () => {
+      if (before instanceof HTMLElement && before.isConnected) before.focus();
+    };
+  }, [open]);
   // A text label is a section title over the menu; any other node (a brand) heads the sidebar.
   const title = typeof NAV_HOME.label === "string" ? NAV_HOME.label : null;
   return (
@@ -33,10 +50,16 @@ export function Sidebar() {
       )}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-60 shrink-0 flex-col border-r border-border bg-sidebar transition-transform duration-200 lg:sticky lg:top-0 lg:z-auto lg:h-dvh lg:translate-x-0",
-          open ? "translate-x-0" : "-translate-x-full max-lg:invisible",
+          // Closed below lg, the drawer is also invisible, so its links leave the tab order. Closing
+          // transitions visibility with the slide, so it turns hidden only once the drawer is out of view;
+          // opening doesn't, so it is visible at once and can take the focus.
+          "fixed inset-y-0 left-0 z-50 flex w-60 shrink-0 flex-col border-r border-border bg-sidebar transition-[translate] duration-200 lg:sticky lg:top-0 lg:z-auto lg:h-dvh lg:translate-x-0",
+          open
+            ? "translate-x-0"
+            : "-translate-x-full max-lg:invisible max-lg:transition-[translate,visibility]",
         )}
         id="app-sidebar"
+        ref={aside}
       >
         {title === null && (
           <Link
@@ -102,7 +125,7 @@ function SidebarGroup({
   // Open while it holds the current page, until the user toggles it.
   const [toggled, setToggled] = useState<boolean | null>(null);
   const expanded =
-    toggled ?? group.items.some((item) => item.href === pathname);
+    toggled ?? group.items.some((item) => isCurrent(item.href, pathname));
   return (
     <li>
       <button
@@ -143,7 +166,7 @@ function SidebarGroup({
       >
         {group.items.map((item) => (
           <SidebarLink
-            current={item.href === pathname}
+            current={isCurrent(item.href, pathname)}
             item={item}
             key={item.href}
             onNavigate={onNavigate}

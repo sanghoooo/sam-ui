@@ -13,9 +13,12 @@ export function addMonths(month: string, delta: number) {
   return `${Math.floor(index / 12)}-${String((index % 12) + 1).padStart(2, "0")}`;
 }
 
-/** Months from max back to min, newest first. */
+const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
+
+/** Months from max back to min, newest first; none when either bound is not a "YYYY-MM" month. */
 function monthsBetween(min: string, max: string) {
   const months: string[] = [];
+  if (!MONTH.test(min) || !MONTH.test(max)) return months;
   for (let month = max; month >= min; month = addMonths(month, -1)) {
     months.push(month);
   }

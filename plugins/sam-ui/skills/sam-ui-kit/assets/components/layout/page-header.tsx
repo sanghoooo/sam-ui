@@ -4,7 +4,10 @@ import { buttonClass } from "@/components/ui/button";
 import { BackButton } from "./back-button";
 import { SidebarTrigger } from "./sidebar-context";
 
-/** The page's top bar: back button, title and actions on the right. */
+/**
+ * The page's top bar: the menu button that opens the sidebar drawer (below lg only), the back button,
+ * the title and actions on the right.
+ */
 export function PageHeader({
   title,
   actions,

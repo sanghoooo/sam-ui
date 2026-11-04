@@ -5,7 +5,8 @@ import { StatePanel } from "@/components/ui/card";
 import { BUILT_PAGES, findPage, PAGES } from "@/lib/nav";
 
 // Every sidebar and header link resolves here until its screen is built (BUILT_PAGES). Other paths get
-// notFound() below; no `dynamicParams = false`, which Next.js Cache Components rejects.
+// notFound() below; no `dynamicParams = false`, which Next.js Cache Components rejects. Once every page
+// has its own folder, delete this file: an empty generateStaticParams fails a Cache Components build.
 export function generateStaticParams() {
   return PAGES.filter((page) => !BUILT_PAGES.has(page.href)).map((page) => ({
     slug: page.href.slice(1).split("/"),
@@ -29,10 +30,13 @@ export default async function PlaceholderPage({
 }: PageProps<"/[...slug]">) {
   const page = await pageFor(params);
   if (!page) notFound();
+  // The manual is opened from a page's 매뉴얼 button, so it goes back there; menu pages have no back button.
+  const manual = page.href === "/manual";
   return (
     <>
       <PageHeader
-        actions={page.href === "/manual" ? undefined : <ManualButton />}
+        actions={manual ? undefined : <ManualButton />}
+        back={manual}
         title={page.label}
       />
       <main className="flex-1 p-4 lg:p-6">

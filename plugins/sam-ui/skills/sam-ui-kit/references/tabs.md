@@ -7,6 +7,7 @@ import { type TabItem, Tabs } from "@/components/ui/tabs";
 Pill tabs that switch what one panel shows (client component): the selected tab is a raised white pill with
 a hairline ring, the others 70% text, disabled ones light gray. They follow the WAI-ARIA tabs pattern:
 left/right arrow keys select the previous/next enabled tab and move focus to it, skipping disabled ones.
+Tab reaches the selected tab, or the first enabled one when the selected tab is disabled.
 
 | Prop | Meaning |
 |---|---|

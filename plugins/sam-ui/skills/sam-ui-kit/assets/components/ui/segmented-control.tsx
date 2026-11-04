@@ -47,12 +47,17 @@ export function SegmentedControl<T extends string>({
   const name = useId();
   const group = useRef<HTMLFieldSetElement>(null);
   const [pill, setPill] = useState<Pill | null>(null);
+  // The options as one string, so the pill is placed again when they change even if the group's width
+  // doesn't (two labels swapped, say), without depending on a caller's array being stable.
+  const layout = options
+    .map((option) => `${option.value}\u0000${option.label}`)
+    .join("\u0001");
 
-  // Places the pill on the chosen label, again whenever the group's size changes (the web font
-  // arriving, a wrap), so it keeps fitting.
+  // Places the pill on the chosen label, when the choice or the options change, and again whenever the
+  // group's size changes (the web font arriving), so it keeps fitting.
   useLayoutEffect(() => {
     const root = group.current;
-    if (!root) return;
+    if (!root || !layout) return;
     const place = () => {
       const chosen = Array.from(root.querySelectorAll("input"))
         .find((input) => input.value === value)
@@ -80,7 +85,7 @@ export function SegmentedControl<T extends string>({
     const observer = new ResizeObserver(place);
     observer.observe(root);
     return () => observer.disconnect();
-  }, [value]);
+  }, [value, layout]);
 
   return (
     <fieldset

@@ -40,4 +40,9 @@ around it:
 </span>
 ```
 
-Reduced motion shows the resting stars.
+Reduced motion shows the resting stars. `still` drops the light and shows both stars at full strength;
+unlike the title's, it doesn't switch to the primary color, so the sparkle keeps the color around it:
+
+```tsx
+<AiSparkle className="size-6 text-primary" still />
+```

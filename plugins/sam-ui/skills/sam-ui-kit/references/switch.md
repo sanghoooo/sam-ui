@@ -11,7 +11,7 @@ primary color.
 |---|---|
 | `checked` | required; the switch is always controlled |
 | `onCheckedChange` | `(checked: boolean) => void`, called with the new value |
-| `disabled`, `className`, other button props | forwarded to the `<button>` |
+| `disabled`, `className`, other button props | forwarded to the `<button>`, except `onClick`, which is the switch's own: react to `onCheckedChange` |
 
 Give it a name. Either put it in a `<label>` with the text, so clicking the text toggles it too:
 

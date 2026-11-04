@@ -11,4 +11,4 @@ A small gray pill (18px tall, 10px semibold) for a short status: NEW, TBD, ìƒ˜í”
 ```
 
 The sidebar shows one after a menu group or link when `lib/nav.ts` gives it a `badge` (see layout.md).
-Keep the text to a word or two; it does not wrap.
+Keep the text to a word or two; it stays on one line (`whitespace-nowrap`).

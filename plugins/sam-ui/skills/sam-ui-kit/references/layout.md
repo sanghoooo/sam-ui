@@ -17,15 +17,18 @@ export default function MainLayout({ children }: { children: ReactNode }) {
 
 It lays out the sidebar on the left and the main column; each page renders its own `PageHeader` and
 `<main>`. The sidebar sits in its own `<Suspense>` boundary, because it reads the pathname: with Next.js
-Cache Components on (`cacheComponents: true`, which recent create-next-app templates turn on), a route with
-a dynamic param would otherwise fail the build. Keep that boundary if you change the shell.
+Cache Components on (`cacheComponents: true` with `partialPrefetching: true`, which create-next-app 16.4
+turns on together; set both if you turn it on by hand, or every build warns), a route with a dynamic param
+would otherwise fail the build. Keep that boundary if you change the shell.
 
-Below `lg` the sidebar is a drawer: `SidebarTrigger` (already inside `PageHeader`) opens it, and a backdrop
-click, Escape or following a link closes it. From `lg` up it stays in place, sticky and full height.
-`useSidebar()` (`sidebar-context.tsx`) returns `{ open, setOpen }`.
+Below `lg` the sidebar is a drawer: `SidebarTrigger` (already inside `PageHeader`) opens it and moves focus
+into it, and a backdrop click, Escape or following a link closes it, with focus back where it was. From `lg`
+up it stays in place, sticky and full height. `useSidebar()` (`sidebar-context.tsx`) returns
+`{ open, setOpen }`.
 
-The home page goes in the group too: `app/(main)/page.tsx` redirecting to the menu's home (remove
-`app/page.tsx`), so `/`, the menu's home link and the back button's fallback all land inside the shell.
+The home page goes in the group too: `app/(main)/page.tsx` redirecting to the menu's home (delete
+`app/page.tsx`: Next.js serves it in place of the redirect without a word), so `/`, the menu's home link and
+the back button's fallback all land inside the shell.
 
 ```tsx
 // app/(main)/page.tsx
@@ -74,7 +77,8 @@ type NavHome = { label: ReactNode; href: string };
   export const NAV_HOME: NavHome = { label: createElement(Brand), href: "/home" };
   ```
 - `NAV_GROUPS`: collapsible groups. A group opens while it holds the current page, until the user toggles
-  it. The current link (matched by exact pathname) gets a gray pill, semibold text and a short dark bar on
+  it. The current link (its href equals the pathname, a trailing slash aside, so `trailingSlash: true`
+  works too) gets a gray pill, semibold text and a short dark bar on
   the group's guide line. A `badge` shows a `Badge` after the label. An `icon` sits before the label in a
   24px box, and the group's guide line moves under its center. Give every group one, or none, so the
   labels line up. A lucide icon is drawn at 16px in the muted color; a workspace mark takes the box's
@@ -93,8 +97,10 @@ type NavHome = { label: ReactNode; href: string };
 - `PAGES` lists every linked page with its header title, and `BUILT_PAGES` those with their own route
   folder. The optional placeholder (`templates/placeholder-page.tsx` copied to
   `app/(main)/[...slug]/page.tsx`) serves every other page in `PAGES` with "준비 중인 화면입니다", so the
-  whole menu works before its screens exist. When a screen gets its own folder, add its href to
-  `BUILT_PAGES`.
+  whole menu works before its screens exist. Its headers have no back button (they are menu pages), except
+  `/manual`'s, which is opened from a page's 매뉴얼 button. When a screen gets its own folder, add its href
+  to `BUILT_PAGES`; once every page has one, delete the placeholder, since a Cache Components build rejects
+  its then empty `generateStaticParams`.
 
 ## Workspace logos (`components/layout/workspace-logo.tsx`)
 
@@ -109,12 +115,14 @@ draws lucide's `RadioTower`. The marks are sized so the set reads at one weight 
 17px).
 
 An app served under a `basePath` sets `NEXT_PUBLIC_BASE_PATH` to the same path, because a plain `<img>`
-doesn't get the basePath the way `next/link` does; the logos put it before `/images/…`. Reading the
-basePath from that variable keeps the two in step:
+doesn't get the basePath the way `next/link` does; the logos put it before `/images/…`. Setting both in
+`next.config` keeps them in step and in git (create-next-app's `.gitignore` leaves out `.env*`, so a value
+kept only there is missing from a fresh clone or a CI build):
 
 ```js
-// next.config.mjs, with NEXT_PUBLIC_BASE_PATH=/admin in .env
-export default { basePath: process.env.NEXT_PUBLIC_BASE_PATH };
+// next.config.mjs
+const basePath = "/admin";
+export default { basePath, env: { NEXT_PUBLIC_BASE_PATH: basePath } };
 ```
 
 `WORKSPACES` lists `{ id, name, full, color }`: air ("air"), TDS ("T다이렉트샵") and
@@ -128,7 +136,8 @@ Light is the default. The sidebar's 다크 모드 switch puts `.dark` on `<html>
 layout's `<head>` puts `THEME_SCRIPT` into the server HTML, which restores the choice before the first
 paint, so there is no flash of light. It renders nothing in the browser: a `<script>` React creates there
 never runs, and React warns about it.
-`ThemeToggle({ label = "다크 모드" })` is that switch row; it works outside the sidebar too.
+`ThemeToggle({ label = "다크 모드", className })` is that switch row; it works outside the sidebar too, and
+`className` merges onto the row (another hover fill on a translucent header, say).
 
 A client component that must know the theme subscribes to the class:
 

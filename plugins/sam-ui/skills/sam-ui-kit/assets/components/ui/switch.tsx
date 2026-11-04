@@ -1,9 +1,12 @@
+"use client";
+
 import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
+// onClick is the switch's own (it calls onCheckedChange), so a caller can't replace it.
 type SwitchProps = Omit<
   ComponentProps<"button">,
-  "onChange" | "role" | "type"
+  "onChange" | "onClick" | "role" | "type"
 > & {
   checked: boolean;
   onCheckedChange?: (checked: boolean) => void;

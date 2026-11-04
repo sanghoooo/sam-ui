@@ -10,7 +10,7 @@ lists every month from `max` back to `min`, newest first; ◀ is disabled at `mi
 | Prop | Meaning |
 |---|---|
 | `value` / `onValueChange` | the month as `"YYYY-MM"` |
-| `min`, `max` | `"YYYY-MM"` bounds |
+| `min`, `max` | `"YYYY-MM"` bounds; the select lists no month when either is not in that form |
 | `label` | the visible label, a real `<label>` for the select; default `기준월` |
 | `className` | on the row |
 

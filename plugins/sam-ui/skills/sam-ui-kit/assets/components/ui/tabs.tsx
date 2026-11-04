@@ -32,6 +32,11 @@ export function Tabs<T extends string>({
   className,
 }: TabsProps<T>) {
   const tabs = useRef(new Map<T, HTMLButtonElement>());
+  // The one tab in the tab order: the selected one, or the first enabled one when the selected tab is
+  // disabled (or not among the items), so the tabs can always be reached from the keyboard.
+  const focusable =
+    items.find((item) => item.value === value && !item.disabled)?.value ??
+    items.find((item) => !item.disabled)?.value;
 
   function step(event: KeyboardEvent, from: T) {
     const delta =
@@ -75,7 +80,7 @@ export function Tabs<T extends string>({
               else tabs.current.delete(item.value);
             }}
             role="tab"
-            tabIndex={selected ? 0 : -1}
+            tabIndex={item.value === focusable ? 0 : -1}
             type="button"
           >
             {item.label}

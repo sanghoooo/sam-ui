@@ -272,7 +272,8 @@ const STRENGTH_MAX = 0.55;
 function renderBox(node: TreemapNode) {
   if (node.depth === 0) return <g />;
   const box = node as TreemapNode & Box;
-  const { root } = node;
+  // recharts 3.10 types `root` as optional; without it, no side counts as inner and nothing is inset.
+  const root = node.root ?? node;
   // Inset only the sides that meet another box, so the outer boxes still reach the chart's edges.
   const half = GAP / 2;
   const left = node.x > root.x + 0.5 ? half : 0;

@@ -1,7 +1,8 @@
 /* SAM UI tokens. Import it right after `@import "tailwindcss";` in the global stylesheet:
      @import "tailwindcss";
      @import "../styles/ui-kit.css";
-   This file is the kit's source of the tokens; the sam-ui site imports it as is. */
+   It is a kit file like the components: sam-ui.json tracks it, so a value changed here is a local change
+   that every update reports. */
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -70,9 +71,11 @@
   --primary-foreground: #12151b;
   --ring: #7c93ff;
   /* T world indigo is about 1.8:1 on dark cards, so dark lifts it to a lighter tint of the same hue
-     (about 3.5:1). TDS follows. MVNO's deep gray would sink into dark cards the
-     same way, so dark shows it a step lighter. */
+     (about 3.5:1). TDS follows: it is declared again here because a var() resolves where it is
+     declared, so the :root alias would keep the light indigo wherever .dark is not on <html> itself.
+     MVNO's deep gray would sink into dark cards the same way, so dark shows it a step lighter. */
   --brand-skt: #5456fe;
+  --brand-tds: var(--brand-skt);
   --brand-mvno: #8b95a1;
   --chart-1: #60a5fa;
   --chart-2: #34d399;
@@ -134,11 +137,11 @@
    the title keeps its pace while the page is busy. Reduced motion shows everything at rest. */
 @utility ai-sparkle-glint {
   --ai-glint: var(--foreground);
-  &:where(.dark *) {
+  @variant dark {
     --ai-glint: #fff;
   }
 }
-/* The band element is 3× the icon and centred on it; its light is about 11 of the icon's 24 units wide. In
+/* The band element is 3× the icon and centred on it; its light is about 11.7 of the icon's 24 units wide. In
    its own width, ±22.01% puts the whole band just left of the big star's left tip at the start and just
    right of its right tip at the end; its middle crosses the small star 69% of the way, at 14.29%. */
 @keyframes sam-sparkle-sweep {
