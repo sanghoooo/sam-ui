@@ -26,7 +26,9 @@ In Claude Code:
 /plugin install sam-ui@sam-plugins
 ```
 
-In the Claude app, open **+** beside the prompt box, choose **Add plugins**, find **SAM UI** and add it.
+In the Claude app, open **+** beside the prompt box, choose **Add plugins**, find **SAM UI** and add it. The app
+lists plugins only from marketplaces already added and has no screen for adding one, so if SAM UI isn't
+there, run `claude plugin marketplace add https://github.com/sanghoooo/sam-plugins.git` in a terminal first.
 
 In Codex (the CLI or the ChatGPT desktop app; the IDE extension has no plugins), run these in a terminal, then
 start a new session (a new chat in the desktop app). Running the second one again brings in a newer release.

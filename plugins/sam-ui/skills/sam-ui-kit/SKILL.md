@@ -38,7 +38,9 @@ the kit version and, per kit file, a hash of the kit version the project's copy 
 updates can tell files the project left alone from files it changed. A file that needs a decision is named
 on the command line, as the script prints it: `--take <path>` puts the kit's version in place, `--keep
 <path>` keeps the project's. `lib/nav.ts`, the menu, is a starter: copied once, then the project's own.
-Update and check never write it; update says when the kit changed it.
+Update never overwrites it on its own: it says when the kit changed it (`compare`), puts it back only when
+it is missing (the kit's sidebar imports it), and replaces it only when named with `--take`. Check never
+writes it.
 
 ## Is it installed?
 
@@ -51,14 +53,16 @@ over it unless the user asks.
 ## Setting it up
 
 Requirements: React 19, Tailwind CSS 4 and an `@/*` path alias. The components work in any React app; the
-app shell (`components/layout/*`) needs the Next.js App Router.
+app shell (`components/layout/*`) needs the Next.js App Router, and the placeholder page template Next.js
+15.5 or later (its `PageProps` type is one Next.js generates; see step 6).
 
 1. **Copy the files.** Run `node ${CLAUDE_SKILL_DIR}/scripts/kit.mjs install <src-root>`; the images go to
    the project root's `public/`. An app with a `basePath` also sets `NEXT_PUBLIC_BASE_PATH` to it, or the
    workspace logos miss their images (`${CLAUDE_SKILL_DIR}/references/layout.md`). If any file already
    exists with other content, it writes nothing, lists those as `differs` and exits 1. Decide each with the
    user, then run install again with `--take <path>` (the kit's version replaces the project's) or
-   `--keep <path>` (the project's stays, as a local change).
+   `--keep <path>` (the project's stays, as a local change). A folder where a kit file goes, or a file where
+   one of its folders should be, stops it the same way (`blocked`).
    A differing `lib/utils.ts` that already exports `cn` (shadcn's does) is a `--keep`. Differing components
    mean the project already has a kit with the same file names (shadcn has button, badge, card, select,
    switch, tabs …): stop and ask the user, because the two kits can't share those files. An existing
@@ -102,6 +106,8 @@ app shell (`components/layout/*`) needs the Next.js App Router.
    In `components/layout/theme-toggle.tsx`, read and set the theme through it instead:
    `const { resolvedTheme, setTheme } = useTheme();` then
    `<Switch checked={resolvedTheme === "dark"} onCheckedChange={(on) => setTheme(on ? "dark" : "light")} />`.
+   That edit is a deliberate local change: update reports the file `local`, or `merge` when the kit changes
+   it, and then the two lines go back in before `--keep`.
 5. **App shell (optional).** Wrap the pages in `AppShell` from a route-group layout
    (`app/(main)/layout.tsx`; see `${CLAUDE_SKILL_DIR}/references/layout.md`). Its menu is a starter
    (`lib/nav.ts`: 대시보드 with 현황 › 개요, and only the 다크 모드 switch at the bottom). Ask what the
@@ -110,16 +116,21 @@ app shell (`components/layout/*`) needs the Next.js App Router.
    A group's `icon` (a lucide icon or a `WorkspaceLogo`) goes before its label the same way
    (`${CLAUDE_SKILL_DIR}/references/layout.md`, Menu).
    - **Home page:** the menu's home is `NAV_HOME.href` (`/overview` in the starter). Make `/` redirect there
-     with `app/(main)/page.tsx`
-     (`redirect(NAV_HOME.href)`) and remove `app/page.tsx`. Never keep both: they are the same route and the
-     build fails. The back button falls back to `/`, so `/` must lead into the shell.
+     with `app/(main)/page.tsx` (`redirect(NAV_HOME.href)`) and delete `app/page.tsx`. Both are the route
+     `/`, and Next.js does not report the pair: `app/page.tsx` wins, so `/` keeps showing create-next-app's
+     page and the redirect never runs. The back button falls back to `/`, so `/` must lead into the shell.
    - **Menu pages:** each menu link needs a page. Build the ones the user asks for; for the rest, copy
      `${CLAUDE_SKILL_DIR}/templates/placeholder-page.tsx` to `app/(main)/[...slug]/page.tsx`. It serves
      every link in `PAGES` with its title and "준비 중인 화면입니다". List the pages that have their own
      folder in `BUILT_PAGES`, so the placeholder skips them. Drop menu entries the project will never have.
-6. **Check.** Run the project's lint, type check and build. Open a page in light, then turn on 다크 모드
-   in the sidebar footer and look again. With no browser at hand, at least check the built HTML for the
-   theme script and the kit's markup. Commit the kit's files together with `sam-ui.json`.
+     Once every page in `PAGES` has its own folder, delete the placeholder: its `generateStaticParams` then
+     returns nothing, which a Cache Components build rejects.
+6. **Check.** Run the project's lint, then `next typegen` (or a build) before the type check: `PageProps`
+   and `LayoutProps` are types Next.js generates into `.next/types`, so a type check of a fresh checkout
+   fails on them until then. If a type check ran first with TypeScript 7, delete `tsconfig.tsbuildinfo`,
+   which keeps the old errors. Then build. Open a page in light, then turn on 다크 모드 in the sidebar
+   footer and look again. With no browser at hand, at least check the built HTML for the theme script and
+   the kit's markup. Commit the kit's files together with `sam-ui.json`.
 
 ## Updating the kit
 
@@ -140,17 +151,20 @@ A newer kit arrives with the plugin, so update the plugin first, then the projec
    - `added` (new in the kit, or a missing kit file put back), `updated` (the project had not changed it),
      `removed` (dropped from the kit, unchanged here);
    - `local` (changed here, the kit's version did not change; left alone);
-   - `compare` (a starter the kit changed; the project's is kept), `unused` (a starter the kit dropped,
-     such as 0.2.0's `components/layout/brand.tsx`: the kit's files no longer import it; left alone);
-   - `kept` (named with `--keep`);
+   - `starter` (a starter new in the kit, or a missing `lib/nav.ts` put back), `compare` (a starter the kit
+     changed; the project's is kept), `unused` (a starter the kit dropped, such as 0.2.0's
+     `components/layout/brand.tsx`: the kit's files no longer import it; left alone);
+   - `kept` (named with `--keep`), `replaced` (named with `--take`, or every changed file under `--force`);
    - `merge` (changed here and in the kit), `differs` (new in the kit, but the project has its own file
      there) and `left` (dropped from the kit but changed here): left alone, exit 1, and listed again by every
      update until decided.
 
    It refuses (exit 1, nothing changed) when the project's kit is newer than the plugin's: update the
-   plugin. Under each `merge`, `differs` and `compare` line, `kit:` gives the kit's version of the file.
+   plugin. It also writes nothing when a folder sits where a kit file goes, or a file where one of its
+   folders should be (`blocked`): ask the user to move it, then run update again. Under each `merge`,
+   `differs` and `compare` line, `kit:` gives the kit's version of the file.
 
-   If the report lists `components/charts/*` under `added` (a project that installed 0.6 or earlier),
+   If the report lists `components/charts/*` under `added` (a project that installed 0.5.9 or earlier),
    install `recharts` (3.7 or later) before the next build: the files are copied whether or not the project
    draws charts, and Next type-checks them.
 3. **merge:** compare the project's file with the kit's version (`kit:`), bring the kit's change in
@@ -164,8 +178,10 @@ A newer kit arrives with the plugin, so update the plugin first, then the projec
    brings the kit's change.
    **unused:** tell the user the kit no longer uses it. Delete it, or keep it if the project's own files
    still import it (a project that keeps its brand in a changed sidebar does).
-7. If the root layout inlines `<script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />` (kits
-   before 0.3.3), replace it with `<ThemeScript />` from `@/components/layout/theme-script` (setup step 4).
+7. Two root-layout leftovers of older kits: an inlined `<script dangerouslySetInnerHTML={{ __html:
+   THEME_SCRIPT }} />` (before 0.3.3) is replaced with `<ThemeScript />` from
+   `@/components/layout/theme-script` (setup step 4); `pretendard` imported from `@/lib/fonts` and its
+   `pretendard.variable` on `<html>` (before 0.5.6, when the font moved into `ui-kit.css`) are removed.
 8. Lint, type check and build, look at the screens, and commit the kit's files with `sam-ui.json`.
 
 `update --force` takes the kit's version of every kit file the project changed (`merge` and `local`) and
@@ -174,8 +190,10 @@ with `--keep <path>` stays as it is. Use it only when the user wants every local
 use `--take <path>`.
 
 `node ${CLAUDE_SKILL_DIR}/scripts/kit.mjs check <src-root>` lists kit files that differ from the installed
-version (`changed`, `missing`, and `merge`, `left` or `differs` files still waiting for a decision; exit 1
-when any do) and says when the plugin carries a newer or an older kit. Kit changes belong in the kit
+version (`changed`, `missing` (`lib/nav.ts` included), `blocked`, `behind` (still on an older kit's
+version, or dropped from the kit and unchanged: update brings them along), and `merge`, `left` or
+`differs` files still waiting for a decision; exit 1 when any do) and says when the plugin carries a newer
+or an older kit. Kit changes belong in the kit
 repository (sam-ui), not in a project's copies: a local change has to be merged by hand on every
 update.
 

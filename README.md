@@ -16,7 +16,8 @@ SAM UI 킷과, 그 킷을 다른 프로젝트에 설치하고 쓰게 하는 Clau
 
 ```
 plugins/sam-ui/                   플러그인 sam-ui
-  .claude-plugin/plugin.json      이름 · 버전
+  README.md                       플러그인 디렉터리(Claude 앱)에 보이는 소개 · 설치 안내(영어)
+  .claude-plugin/plugin.json · icon.png  이름 · 버전 · 디렉터리용 아이콘
   .codex-plugin/plugin.json       Codex용 이름 · 버전 · 표시 이름(Codex는 이쪽을 먼저 읽음)
   gemini-extension.json           Gemini CLI 확장용 이름 · 버전
   skills/sam-ui-kit/
@@ -26,7 +27,7 @@ plugins/sam-ui/                   플러그인 sam-ui
     scripts/kit.mjs               프로젝트에 설치 · 업데이트 · 점검 (sam-ui.json에 버전과 파일 해시 기록)
     templates/placeholder-page.tsx 메뉴 링크용 "준비 중" 페이지
 apps/hoo/                         Next.js 사이트: 킷 소개(/), 팔레트(/palette), 차트(/charts)
-.github/workflows/                ci.yml(lint · test · build), pages.yml(사이트를 GitHub Pages에 배포)
+.github/workflows/                ci.yml(Biome check · test · Pages와 같은 정적 빌드), pages.yml(사이트를 GitHub Pages에 배포)
 scripts/release.sh                버전 올리기 · 검사 · 오프라인 설치용 zip
 tests/kit.test.mjs                kit.mjs 시나리오 테스트 (pnpm test)
 docs/offline-install.md           zip에 들어가는 설치 안내
@@ -50,7 +51,7 @@ pnpm build
 1. `assets/`의 파일을 고칩니다. 이 파일들은 다른 프로젝트로 복사되므로 주석에 이 저장소 밖의 경로를 쓰지 않습니다.
 2. 사용법이 바뀌면 `skills/sam-ui-kit/references/`의 해당 문서와 `SKILL.md`를 함께 고칩니다.
 3. 새 컴포넌트나 변형은 팔레트(`apps/hoo/app/palette/palette-demo.tsx`)에, 차트는 `/charts`(`apps/hoo/app/charts/`)에 보이게 합니다. 소개 페이지, 사이트 머리, 팔레트, 차트 페이지 모두 한국어로 씁니다.
-4. `pnpm lint`, `pnpm build`, 라이트 · 다크 화면 확인.
+4. `pnpm check`(lint와 포맷), `pnpm test`, `pnpm build`, 라이트 · 다크 화면 확인.
 
 ## 배포
 
@@ -115,8 +116,10 @@ Gemini에게 "SAM UI 킷 업데이트해줘"라고 합니다. 스킬이 `kit.mjs
   기록하고, 기록하기 전까지는 업데이트할 때마다 다시 알려 줍니다. 한 파일만 킷 버전으로 되돌릴 때는 `--take <path>`를
   씁니다(`--force`는 `--keep`으로 지정하지 않은 로컬 변경 전부를 되돌립니다).
 - 새 킷 파일이 프로젝트의 고유 파일과 이름이 겹치면 `differs`로 알리고 건드리지 않습니다.
-- 시작용 파일(`lib/nav.ts`)은 처음 설치 때만 들어가고 이후에는 프로젝트 것입니다. 킷이 바꾸면 `compare`로,
+- 시작용 파일(`lib/nav.ts`)은 처음 설치 때 들어가고 이후에는 프로젝트 것입니다. 킷이 바꾸면 `compare`로,
   킷에서 빠지면(0.2.0의 `components/layout/brand.tsx`) `unused`로 한 번 알려 주고 파일은 그대로 둡니다.
+  지워졌을 때만 킷의 사이드바가 쓰므로 다시 넣고(`starter`), `--take`로 지정해야 킷 것으로 바꿉니다.
+- 킷 파일 자리에 폴더가, 폴더 자리에 파일이 있으면 아무것도 쓰지 않고 `blocked`로 알려 줍니다.
 - 프로젝트의 킷이 플러그인보다 새 버전이면 update가 거부합니다. 플러그인부터 업데이트합니다.
 - 설치 정보는 프로젝트 루트의 `sam-ui.json`(킷 버전, 파일별 해시)에 있고, `kit.mjs check`는 킷과 달라진 파일을
   보여 줍니다.
