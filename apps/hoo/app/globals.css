@@ -1,8 +1,8 @@
 @import "tailwindcss";
-/* The kit's tokens, straight from its source in the plugin. */
-@import "../../../plugins/sam-ui/skills/sam-ui-kit/assets/styles/ui-kit.css";
+/* The kit's tokens, straight from its source in the package. */
+@import "../../../packages/sam-ui-engine/assets/styles/ui-kit.css";
 /* The kit's components live outside this app, so Tailwind is told to scan them. */
-@source "../../../plugins/sam-ui/skills/sam-ui-kit/assets";
+@source "../../../packages/sam-ui-engine/assets";
 
 /* The site's own links and buttons get the kit controls' focus outline. The kit's components set theirs
    with utilities, which come after this layer and win. */

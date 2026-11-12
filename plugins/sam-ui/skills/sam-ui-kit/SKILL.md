@@ -5,13 +5,13 @@ description: >-
   a white sidebar with collapsible groups, a gray page, white bordered cards, filter toolbars,
   sliding-pill segmented controls, pill tabs, month steppers, switches, light and dark themes, an
   animated AI Insight logo, and charts (trend, column, stacked area, combo, ring, pie, treemap,
-  bar list, sparkline, scatter, flow, lanes). It bundles the sources, the tokens CSS, a Next.js app
-  shell with a starter menu, the air/TDS/MVNO logos and brand colors, and a script that installs,
-  updates and checks the kit in a project. Use it when someone wants this kit or this look in a
-  project: setting it up ("SAM UI 킷 설치해줘", "UI 킷 설치해줘"), bringing in a newer kit
-  ("SAM UI 킷 업데이트해줘"), or building screens with its components once installed (filters, tabs,
-  selects, segmented choices, loading or empty states, dark mode, the sidebar menu, workspace logos
-  or colors, charts), even when they don't name a component.
+  bar list, sparkline, scatter, flow, lanes). It installs the sources, the tokens CSS, a Next.js app
+  shell with a starter menu, and air/TDS/MVNO workspace marks and brand colors into a project with
+  npx from the npm package sam-ui-engine, which also updates and checks them. Use it when
+  someone wants this kit or this look in a project: setting it up ("SAM UI 킷 설치해줘", "UI 킷
+  설치해줘"), bringing in a newer kit ("SAM UI 킷 업데이트해줘"), or building screens with its
+  components once installed (filters, tabs, selects, segmented choices, loading or empty states, dark
+  mode, the sidebar menu, workspace marks or colors, charts), even when they don't name a component.
 ---
 
 # SAM UI
@@ -22,22 +22,28 @@ toolbar of segmented choices and selects, and pill tabs. Light is the default th
 
 `${CLAUDE_SKILL_DIR}` in this file is this skill's folder, the one holding this SKILL.md. Claude Code fills
 it in; where it is still written out (in Codex or Gemini CLI), put that folder's absolute path in its place.
-Run kit.mjs by that absolute path: it runs from the project, where a path relative to the skill does not
-resolve.
 
-The kit's files live in `${CLAUDE_SKILL_DIR}/assets`, mirroring where they go in a project:
+The kit's files come in the npm package `sam-ui-engine`, laid out the way they go into a project:
 `components/ui/*` (the components), `components/charts/*` (the charts), `components/layout/*` (the
-Next.js app shell and the workspace logos), `lib/*` (helpers, the sidebar menu), `styles/ui-kit.css` (the
-tokens, workspace brand colors and chart series colors included) and `public/images/*` (the air/TDS logos).
+Next.js app shell and the workspace marks), `lib/*` (helpers, the sidebar menu) and `styles/ui-kit.css` (the
+tokens, workspace brand colors and chart series colors included).
 
-All file work goes through one script, `${CLAUDE_SKILL_DIR}/scripts/kit.mjs` (Node, no dependencies):
-`install`, `update` and `check`, each given `<src-root>`, the folder the project's `@/` alias points at
-(see `tsconfig.json` `paths`: the project root, or `src/`; in a monorepo, the app's folder such as
-`apps/web`, never the workspace root). It records what it installed in `sam-ui.json` at the project root:
-the kit version and, per kit file, a hash of the kit version the project's copy is based on, so later
-updates can tell files the project left alone from files it changed. A file that needs a decision is named
-on the command line, as the script prints it: `--take <path>` puts the kit's version in place, `--keep
-<path>` keeps the project's. `lib/nav.ts`, the menu, is a starter: copied once, then the project's own.
+All file work goes through the package's `sam-ui-engine` command (Node 18 or later, no dependencies) at the version
+this skill is written for, run from the project: `npx --yes sam-ui-engine@0.6.2 install`, `update` or
+`check`, each given `<src-root>`, the folder the project's `@/` alias points at (see `tsconfig.json` `paths`:
+the project root, or `src/`; in a monorepo, the app's folder such as `apps/web`, never the workspace root).
+npx fetches that exact version from the npm registry once and keeps it in its cache; the command writes only
+inside the project and sends nothing anywhere. Where the registry can't be reached, the offline copy of the
+plugin comes with the package as a file that `npm install -g` puts on PATH: if `sam-ui-engine --version` prints the
+version in the commands here, run `sam-ui-engine <command> <src-root>` in their place. If npx stops with
+`EACCES` under `~/.npm` (an npm cache holding files root owns, left by an old `sudo npm`), add `--cache <a
+writable folder>` after `--yes`, and tell the user the lasting fix, `sudo chown -R $(id -u):$(id -g) ~/.npm`,
+for them to run; don't run sudo yourself.
+
+It records what it installed in `sam-ui.json` at the project root: the kit version and, per kit file, a hash
+of the kit version the project's copy is based on, so later updates can tell files the project left alone
+from files it changed. A file that needs a decision is named on the command line, as the command prints it:
+`--take <path>` puts the kit's version in place, `--keep <path>` keeps the project's. `lib/nav.ts`, the menu, is a starter: copied once, then the project's own.
 Update never overwrites it on its own: it says when the kit changed it (`compare`), puts it back only when
 it is missing (the kit's sidebar imports it), and replaces it only when named with `--take`. Check never
 writes it.
@@ -53,12 +59,10 @@ over it unless the user asks.
 ## Setting it up
 
 Requirements: React 19, Tailwind CSS 4 and an `@/*` path alias. The components work in any React app; the
-app shell (`components/layout/*`) needs the Next.js App Router, and the placeholder page template Next.js
-15.5 or later (its `PageProps` type is one Next.js generates; see step 6).
+app shell (`components/layout/*`) needs the Next.js App Router, and the placeholder page Next.js 15.5 or
+later (its `PageProps` type is one Next.js generates; see step 6).
 
-1. **Copy the files.** Run `node ${CLAUDE_SKILL_DIR}/scripts/kit.mjs install <src-root>`; the images go to
-   the project root's `public/`. An app with a `basePath` also sets `NEXT_PUBLIC_BASE_PATH` to it, or the
-   workspace logos miss their images (`${CLAUDE_SKILL_DIR}/references/layout.md`). If any file already
+1. **Copy the files.** Run `npx --yes sam-ui-engine@0.6.2 install <src-root>`. If any file already
    exists with other content, it writes nothing, lists those as `differs` and exits 1. Decide each with the
    user, then run install again with `--take <path>` (the kit's version replaces the project's) or
    `--keep <path>` (the project's stays, as a local change). A folder where a kit file goes, or a file where
@@ -119,8 +123,9 @@ app shell (`components/layout/*`) needs the Next.js App Router, and the placehol
      with `app/(main)/page.tsx` (`redirect(NAV_HOME.href)`) and delete `app/page.tsx`. Both are the route
      `/`, and Next.js does not report the pair: `app/page.tsx` wins, so `/` keeps showing create-next-app's
      page and the redirect never runs. The back button falls back to `/`, so `/` must lead into the shell.
-   - **Menu pages:** each menu link needs a page. Build the ones the user asks for; for the rest, copy
-     `${CLAUDE_SKILL_DIR}/templates/placeholder-page.tsx` to `app/(main)/[...slug]/page.tsx`. It serves
+   - **Menu pages:** each menu link needs a page. Build the ones the user asks for; for the rest, write the
+     placeholder page from `${CLAUDE_SKILL_DIR}/references/layout.md` (Placeholder page) to
+     `app/(main)/[...slug]/page.tsx`. It serves
      every link in `PAGES` with its title and "준비 중인 화면입니다". List the pages that have their own
      folder in `BUILT_PAGES`, so the placeholder skips them. Drop menu entries the project will never have.
      Once every page in `PAGES` has its own folder, delete the placeholder: its `generateStaticParams` then
@@ -141,13 +146,12 @@ A newer kit arrives with the plugin, so update the plugin first, then the projec
    sam-plugins` and `claude plugin update sam-ui@sam-plugins`, then a restart. In Codex: `codex plugin add
    sam-ui@sam-plugins` in a terminal, which fetches the newest release and replaces the installed one, then a
    new session. In Gemini CLI: `gemini skills install https://github.com/sanghoooo/sam-ui.git --path
-   plugins/sam-ui/skills/sam-ui-kit` in a terminal, then `/skills reload` (or a new session). The paths in
-   this skill still point at the version that was loaded, so invoke the skill again after the update. If you
-   don't, kit.mjs refuses to run while Claude Code, Codex or Gemini CLI has a newer sam-ui than its own, and
-   prints the newer script's command to run instead; decide any `--take`/`--keep` again from that script's
-   output. Codex removes the old version's folder, so there an old path fails with "Cannot find module"
-   instead: read the skill again from its new folder.
-2. **The project.** Run `node ${CLAUDE_SKILL_DIR}/scripts/kit.mjs update <src-root>`. Per file it reports:
+   plugins/sam-ui/skills/sam-ui-kit` in a terminal, then `/skills reload` (or a new session). The commands
+   in this skill name the version that was loaded, so invoke the skill again after the update. If you don't,
+   the command refuses to run while Claude Code, Codex or Gemini CLI has a newer sam-ui plugin than its own
+   version, and prints the newer version's command to run instead; decide any `--take`/`--keep` again from
+   that version's output.
+2. **The project.** Run `npx --yes sam-ui-engine@0.6.2 update <src-root>`. Per file it reports:
    - `added` (new in the kit, or a missing kit file put back), `updated` (the project had not changed it),
      `removed` (dropped from the kit, unchanged here);
    - `local` (changed here, the kit's version did not change; left alone);
@@ -159,7 +163,7 @@ A newer kit arrives with the plugin, so update the plugin first, then the projec
      there) and `left` (dropped from the kit but changed here): left alone, exit 1, and listed again by every
      update until decided.
 
-   It refuses (exit 1, nothing changed) when the project's kit is newer than the plugin's: update the
+   It refuses (exit 1, nothing changed) when the project's kit is newer than the version it runs: update the
    plugin. It also writes nothing when a folder sits where a kit file goes, or a file where one of its
    folders should be (`blocked`): ask the user to move it, then run update again. Under each `merge`,
    `differs` and `compare` line, `kit:` gives the kit's version of the file.
@@ -167,6 +171,11 @@ A newer kit arrives with the plugin, so update the plugin first, then the projec
    If the report lists `components/charts/*` under `added` (a project that installed 0.5.9 or earlier),
    install `recharts` (3.7 or later) before the next build: the files are copied whether or not the project
    draws charts, and Next type-checks them.
+
+   From 0.7.0 the kit comes from the npm package instead of the plugin, and the project's `sam-ui.json`
+   carries over as it is. The kit also carries no brand logos from then: `WorkspaceLogo` draws a glyph for
+   every workspace, and update deletes the air and TDS images (`public/images/workspaces/*.svg`) the project
+   never changed (`removed`). To keep them for the project's own use, name each with `--keep <path>`.
 3. **merge:** compare the project's file with the kit's version (`kit:`), bring the kit's change in
    and show the user, then record it with `update <src-root> --keep <path>`. If the user would rather drop
    the project's change, `--take <path>` takes the kit's version.
@@ -189,13 +198,12 @@ deletes the changed files the kit dropped; it leaves starters and `differs` file
 with `--keep <path>` stays as it is. Use it only when the user wants every local change gone; for one file,
 use `--take <path>`.
 
-`node ${CLAUDE_SKILL_DIR}/scripts/kit.mjs check <src-root>` lists kit files that differ from the installed
-version (`changed`, `missing` (`lib/nav.ts` included), `blocked`, `behind` (still on an older kit's
-version, or dropped from the kit and unchanged: update brings them along), and `merge`, `left` or
-`differs` files still waiting for a decision; exit 1 when any do) and says when the plugin carries a newer
-or an older kit. Kit changes belong in the kit
-repository (sam-ui), not in a project's copies: a local change has to be merged by hand on every
-update.
+`npx --yes sam-ui-engine@0.6.2 check <src-root>` lists kit files that differ from the installed version
+(`changed`, `missing` (`lib/nav.ts` included), `blocked`, `behind` (still on an older kit's version, or
+dropped from the kit and unchanged: update brings them along), and `merge`, `left` or `differs` files still
+waiting for a decision; exit 1 when any do) and says when the version it runs is newer or older than the
+project's kit. Kit changes belong in the kit repository (sam-ui), not in a project's copies: a local change
+has to be merged by hand on every update.
 
 ## Building screens
 
@@ -224,7 +232,7 @@ an example and the pitfalls.
 | Flows between columns (Sankey), two or more stages | `Pathway`, `StagedPathway` (`@/components/charts/pathway`, `staged-pathway`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |
 | Annotation lanes under a trend chart | `ChartLanes` (`@/components/charts/chart-lanes`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |
 | Chart frame, tooltip, legend, series colors, number/date formats (server-safe), zoom slider or brush, pitfalls | `ChartBox`, `ChartTip`, `ChartLegend`, `formatNumber`, `useChartZoom`, `ChartZoomControl`, `ChartBrush` (`@/components/charts/chart-parts`, `chart-format`, `chart-zoom`, `chart-zoom-control`, `chart-brush`) | `${CLAUDE_SKILL_DIR}/references/charts.md` |
-| Page shell, header, menu, theme switch, air/TDS/MVNO logos | `components/layout/*`, `lib/nav.ts` | `${CLAUDE_SKILL_DIR}/references/layout.md` |
+| Page shell, header, menu, theme switch, placeholder page, air/TDS/MVNO marks | `components/layout/*`, `lib/nav.ts` | `${CLAUDE_SKILL_DIR}/references/layout.md` |
 | Colors, workspace brand colors, type sizes, dark mode | `styles/ui-kit.css` | `${CLAUDE_SKILL_DIR}/references/tokens.md` |
 
 Join classes with `cn` from `@/lib/utils` (clsx + tailwind-merge), so a caller's `className` overrides a

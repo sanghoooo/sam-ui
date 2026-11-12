@@ -15,10 +15,8 @@
     "incremental": true,
     "plugins": [{ "name": "next" }],
     "paths": {
-      "@/components/*": [
-        "../../plugins/sam-ui/skills/sam-ui-kit/assets/components/*"
-      ],
-      "@/lib/*": ["../../plugins/sam-ui/skills/sam-ui-kit/assets/lib/*"]
+      "@/components/*": ["../../packages/sam-ui-engine/assets/components/*"],
+      "@/lib/*": ["../../packages/sam-ui-engine/assets/lib/*"]
     }
   },
   "include": [
@@ -27,8 +25,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "../../plugins/sam-ui/skills/sam-ui-kit/assets/**/*.ts",
-    "../../plugins/sam-ui/skills/sam-ui-kit/assets/**/*.tsx"
+    "../../packages/sam-ui-engine/assets/**/*.ts",
+    "../../packages/sam-ui-engine/assets/**/*.tsx"
   ],
   "exclude": ["node_modules"]
 }

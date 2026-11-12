@@ -1,0 +1,31 @@
+{
+  "name": "sam-ui-engine",
+  "version": "0.6.2",
+  "description": "SAM UI, a React + Tailwind CSS 4 dashboard kit, and the sam-ui-engine command that installs, updates and checks it in a project.",
+  "type": "module",
+  "bin": {
+    "sam-ui-engine": "scripts/kit.mjs"
+  },
+  "files": [
+    "assets",
+    "scripts"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "author": "sanghoooo",
+  "license": "MIT",
+  "homepage": "https://sanghoooo.github.io/sam-ui/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sanghoooo/sam-ui.git",
+    "directory": "packages/sam-ui-engine"
+  },
+  "keywords": [
+    "ui",
+    "react",
+    "tailwind",
+    "nextjs",
+    "dashboard"
+  ]
+}

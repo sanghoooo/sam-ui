@@ -1,9 +1,12 @@
 #!/usr/bin/env node
-// SAM UI: copies the kit's files (../assets) into a project and keeps them up to date.
+// SAM UI: copies the kit's files (../assets) into a project and keeps them up to date. It is the
+// sam-ui-engine command of the npm package this folder's package.json names; the sam-ui-kit skill runs it
+// with npx at the skill's version (npx --yes <package>@<version> <command> ...).
 //
-//   node kit.mjs install <src-root> [--take <path>]... [--keep <path>]...
-//   node kit.mjs update  <src-root> [--take <path>]... [--keep <path>]... [--force]
-//   node kit.mjs check   <src-root>
+//   sam-ui-engine install <src-root> [--take <path>]... [--keep <path>]...
+//   sam-ui-engine update  <src-root> [--take <path>]... [--keep <path>]... [--force]
+//   sam-ui-engine check   <src-root>
+//   sam-ui-engine --version
 //
 // <src-root> is the folder the project's "@/" alias points at: the project root, or src/. Files under
 // assets/public go to the project root's public/ instead. The project root (the folder with
@@ -28,19 +31,31 @@ import { fileURLToPath } from "node:url";
 const script = fileURLToPath(import.meta.url);
 const here = path.dirname(script);
 const assets = path.resolve(here, "../assets");
-const pluginRoot = path.resolve(here, "../../..");
+// The package's root: its package.json gives the name and version npx runs it by.
+const kitRoot = path.resolve(here, "..");
 const MANIFEST = "sam-ui.json";
-// Fallback version when only the skill folder is installed (`gemini skills install`); set by scripts/release.sh.
-const VERSION = "0.6.2";
 // Installed once as a starting point, then the project's own. update never overwrites one on its own: it
 // puts a missing one back (`starter`), replaces one only when named with --take, and reports ("compare")
 // the ones the kit changed since the manifest was written. check never writes them.
 const STARTERS = ["lib/nav.ts"];
 
+const kitPackage = readJson(path.join(kitRoot, "package.json"));
+if (!kitPackage?.name || !kitPackage?.version) {
+  console.error(`No name or version in ${path.join(kitRoot, "package.json")}.`);
+  process.exit(2);
+}
+const { name: kitName, version: kitVersion } = kitPackage;
+if (process.argv[2] === "--version") {
+  console.log(kitVersion);
+  process.exit(0);
+}
+// The command that runs a version of this package.
+const npx = (version) => `npx --yes ${kitName}@${version}`;
+
 function usage(problem) {
   if (problem) console.error(problem);
   console.error(
-    "usage: node kit.mjs install|update|check <src-root> [--take <path>]... [--keep <path>]... [--force (update only)]",
+    "usage: sam-ui-engine install|update|check <src-root> [--take <path>]... [--keep <path>]... [--force (update only)], or sam-ui-engine --version",
   );
   process.exit(2);
 }
@@ -104,18 +119,6 @@ if (!projectRoot) {
 const manifestPath = path.join(projectRoot, MANIFEST);
 const srcRel =
   path.relative(projectRoot, srcRoot).split(path.sep).join("/") || ".";
-const pluginManifest = path.join(pluginRoot, ".claude-plugin/plugin.json");
-const kitRoot = fs.existsSync(pluginManifest)
-  ? pluginRoot
-  : path.resolve(here, "..");
-const kitVersion = fs.existsSync(pluginManifest)
-  ? readJson(pluginManifest)?.version
-  : VERSION;
-if (!kitVersion) {
-  console.error(`No version in ${pluginManifest}.`);
-  process.exit(2);
-}
-
 function readJson(file) {
   try {
     return JSON.parse(fs.readFileSync(file, "utf8"));
@@ -124,11 +127,14 @@ function readJson(file) {
   }
 }
 
-function readScriptVersion(file) {
+// The version a sam-ui-kit skill's commands run (<package>@<version>), from its SKILL.md.
+function readSkillVersion(file) {
   try {
-    return fs
-      .readFileSync(file, "utf8")
-      .match(/^const VERSION = "([^"]+)";/m)?.[1];
+    const text = fs.readFileSync(file, "utf8");
+    const at = text.indexOf(`${kitName}@`);
+    if (at < 0) return null;
+    const version = text.slice(at + kitName.length + 1).match(/^\d[\w.+-]*/);
+    return version ? version[0].replace(/\.+$/, "") : null;
   } catch {
     return null;
   }
@@ -237,11 +243,12 @@ function compareVersions(a, b) {
 // those ids stopped there, so they never count. Up to 0.3.5 it was this one, older than any kit reading it.
 const PLUGIN_ID = "sam-ui@sam-plugins";
 
-// The installs of sam-ui that cover this project, as { installPath, version, agent }: Claude Code's (user
+// The installs of the sam-ui plugin that cover this project, as { version, agent }: Claude Code's (user
 // and managed scope cover every project; project and local scope cover their projectPath and the folders
-// below it), Codex's (user-wide, a folder per version in
-// its plugin cache, $CODEX_HOME/plugins/cache/<marketplace>/<plugin>/<version>) and Gemini CLI's (user-wide,
-// under $GEMINI_CLI_HOME/.gemini/skills/sam-ui-kit or .gemini/extensions/sam-ui).
+// below it), Codex's (user-wide, a folder per version in its plugin cache,
+// $CODEX_HOME/plugins/cache/<marketplace>/<plugin>/<version>) and Gemini CLI's (user-wide, under
+// $GEMINI_CLI_HOME/.gemini/skills/sam-ui-kit or .gemini/extensions/sam-ui). An install whose folder is
+// gone doesn't count.
 function installs() {
   const found = [];
   const config =
@@ -261,8 +268,15 @@ function installs() {
     if (id !== PLUGIN_ID) continue;
     // One record per id in the file's first format, a list of them (one per scope) since `version: 2`.
     for (const entry of [entries].flat())
-      if (entry?.installPath && coversProject(entry))
-        found.push({ ...entry, agent: "Claude Code" });
+      if (
+        entry?.version &&
+        entry.installPath &&
+        fs.existsSync(
+          path.join(entry.installPath, ".claude-plugin/plugin.json"),
+        ) &&
+        coversProject(entry)
+      )
+        found.push({ version: entry.version, agent: "Claude Code" });
   }
   const [name, marketplace] = PLUGIN_ID.split("@");
   const cache = path.join(
@@ -276,11 +290,10 @@ function installs() {
     versions = fs.readdirSync(cache);
   } catch {}
   for (const folder of versions) {
-    const installPath = path.join(cache, folder);
     const version = readJson(
-      path.join(installPath, ".claude-plugin/plugin.json"),
+      path.join(cache, folder, ".claude-plugin/plugin.json"),
     )?.version;
-    if (version) found.push({ installPath, version, agent: "Codex" });
+    if (version) found.push({ version, agent: "Codex" });
   }
   const gemini = path.join(
     process.env.GEMINI_CLI_HOME || os.homedir(),
@@ -290,43 +303,22 @@ function installs() {
   const extVersion =
     readJson(path.join(geminiExt, "gemini-extension.json"))?.version ??
     readJson(path.join(geminiExt, ".claude-plugin/plugin.json"))?.version;
-  if (extVersion)
-    found.push({
-      installPath: geminiExt,
-      version: extVersion,
-      agent: "Gemini CLI",
-    });
-  const geminiSkill = path.join(gemini, "skills/sam-ui-kit");
-  const skillVersion = readScriptVersion(
-    path.join(geminiSkill, "scripts/kit.mjs"),
+  if (extVersion) found.push({ version: extVersion, agent: "Gemini CLI" });
+  // `gemini skills install` copies only the skill's folder: its version is the one its commands run.
+  const skillVersion = readSkillVersion(
+    path.join(gemini, "skills/sam-ui-kit/SKILL.md"),
   );
-  if (skillVersion)
-    found.push({
-      installPath: geminiSkill,
-      version: skillVersion,
-      agent: "Gemini CLI",
-    });
+  if (skillVersion) found.push({ version: skillVersion, agent: "Gemini CLI" });
   return found;
 }
 
-// A sam-ui newer than this copy that Claude Code, Codex or Gemini CLI has installed for this project. After a
-// plugin update, a session can still hold the old version's path (Codex deletes the old version's folder).
+// A sam-ui plugin newer than this package that Claude Code, Codex or Gemini CLI has installed for this
+// project. After a plugin update, a session can still run the version its old skill named.
 function newerInstalled() {
   let newest = null;
-  for (const entry of installs()) {
-    // The skill's folder is sam-ui-kit (at installPath directly for `gemini skills install`, or under
-    // skills/); it was ui-kit before, so an install from then has its script there. An install without
-    // the script (gone, or half written) can't be run, so it doesn't count.
-    const script = [
-      path.join(entry.installPath, "scripts/kit.mjs"),
-      ...["sam-ui-kit", "ui-kit"].map((skill) =>
-        path.join(entry.installPath, "skills", skill, "scripts/kit.mjs"),
-      ),
-    ].find((file) => fs.existsSync(file));
-    if (!script) continue;
+  for (const entry of installs())
     if (compareVersions(entry.version, newest?.version ?? kitVersion) > 0)
-      newest = { version: entry.version, agent: entry.agent, script };
-  }
+      newest = entry;
   return newest;
 }
 
@@ -334,7 +326,7 @@ function refuseIfNewerInstalled() {
   const newer = newerInstalled();
   if (!newer) return;
   console.error(
-    `This is sam-ui ${kitVersion} (${kitRoot}), but ${newer.agent} has sam-ui ${newer.version} installed. Run that one, and decide any --take/--keep again from its output (the newer kit may change those files):\n  node ${q(newer.script)} ${command} ${q(srcArg)}`,
+    `This is sam-ui ${kitVersion}, but ${newer.agent} has sam-ui ${newer.version} installed. Read the sam-ui-kit skill again (its commands run ${newer.version}) and decide any --take/--keep again from that version's output (the newer kit may change those files):\n  ${npx(newer.version)} ${command} ${q(srcArg)}`,
   );
   process.exit(1);
 }
@@ -505,8 +497,20 @@ function print(label, rels, note = "") {
 // Where the kit's version of a file is, for files to compare by hand.
 const kitCopy = (rel) => `\n          kit: ${asset(rel)}`;
 
-// The command line to name files on, for the messages.
-const rerun = `node ${q(script)} ${command} ${q(srcArg)}`;
+// The command line to name files on, for the messages, the way this script was started: npx runs it from
+// its cache (a _npx folder), a global install puts it on PATH under the package's bin name, and otherwise it
+// ran by its path.
+const binNames =
+  typeof kitPackage.bin === "string"
+    ? [kitName.split("/").pop()]
+    : Object.keys(kitPackage.bin ?? {});
+const startedAs = path.basename(process.argv[1] ?? "");
+const runner = script.split(path.sep).includes("_npx")
+  ? npx(kitVersion)
+  : binNames.includes(startedAs)
+    ? startedAs
+    : `node ${q(script)}`;
+const rerun = `${runner} ${command} ${q(srcArg)}`;
 
 function install() {
   refuseIfNewerInstalled();
@@ -584,7 +588,7 @@ function update() {
     );
   if (compareVersions(manifest.version, kitVersion) > 0) {
     console.error(
-      `The project has sam-ui ${manifest.version}, newer than this plugin's ${kitVersion}; an older kit would revert its files. Update the plugin first (in Claude Code: /plugin marketplace update sam-plugins, then /reload-plugins; in Codex: codex plugin add sam-ui@sam-plugins, then a new session; in Gemini CLI: gemini skills install https://github.com/sanghoooo/sam-ui.git --path plugins/sam-ui/skills/sam-ui-kit, then /skills reload), then run update with the new version's kit.mjs.`,
+      `The project has sam-ui ${manifest.version}, newer than this sam-ui ${kitVersion}; an older kit would revert its files. Update the sam-ui plugin first (in Claude Code: /plugin marketplace update sam-plugins, then /reload-plugins; in Codex: codex plugin add sam-ui@sam-plugins, then a new session; in Gemini CLI: gemini skills install https://github.com/sanghoooo/sam-ui.git --path plugins/sam-ui/skills/sam-ui-kit, then /skills reload), then read the sam-ui-kit skill again and run update with the version its commands name.`,
     );
     process.exit(1);
   }
@@ -780,7 +784,7 @@ function check() {
       `No ${MANIFEST} in ${projectRoot}: the kit is not installed here.`,
     );
   const order = compareVersions(manifest.version, kitVersion);
-  // When the project is on this plugin's version, check sorts each file the way update would (left,
+  // When the project is on this package's version, check sorts each file the way update would (left,
   // merge, differs, behind); on another version a tracked file is only missing or changed against the
   // hash it was recorded with.
   const sameKit = order === 0;
@@ -845,16 +849,16 @@ function check() {
     );
   if (order < 0)
     console.log(
-      `The project has sam-ui ${manifest.version}; this plugin carries ${kitVersion}: run update to bring it in.`,
+      `The project has sam-ui ${manifest.version}; this is sam-ui ${kitVersion}: run update to bring it in.`,
     );
   if (order > 0)
     console.log(
-      `The project has sam-ui ${manifest.version}, newer than this plugin's ${kitVersion}: update the plugin before running update.`,
+      `The project has sam-ui ${manifest.version}, newer than this sam-ui ${kitVersion}: update the plugin, then run update with the version its skill names.`,
     );
   const newer = newerInstalled();
   if (newer)
     console.log(
-      `${newer.agent} has sam-ui ${newer.version} installed: ${newer.script}`,
+      `${newer.agent} has sam-ui ${newer.version} installed: read the sam-ui-kit skill again and use its commands (${npx(newer.version)} …).`,
     );
   const count = Object.values(out).reduce((sum, rels) => sum + rels.length, 0);
   if (count) {

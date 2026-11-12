@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Releases the sam-ui plugin: sets its version, validates it, and builds dist/sam-ui-<version>.zip for PCs
-# that can't reach GitHub.
+# Releases sam-ui: sets the version of the npm package (packages/sam-ui-engine) and of the plugin, and the npx
+# commands in the docs that run it, validates the plugin, and builds dist/sam-ui-<version>.zip, with the
+# package as a file, for PCs that can't reach GitHub or npm.
 #
 #   pnpm release <version>     e.g. pnpm release 0.2.0
 set -euo pipefail
@@ -25,12 +26,13 @@ for (let i = 0; i < 3; i++) {
   }
 }
 ' "$(node -p 'require("./plugins/sam-ui/.claude-plugin/plugin.json").version')" "$version"
-# Claude Code reads the first, Codex the second (it prefers .codex-plugin), and Gemini CLI the third;
-# kit.mjs also carries VERSION for a standalone `gemini skills install`.
+# Claude Code reads the first, Codex the second (it prefers .codex-plugin), Gemini CLI the third, and npm the
+# package's.
 manifests=(
   plugins/sam-ui/.claude-plugin/plugin.json
   plugins/sam-ui/.codex-plugin/plugin.json
   plugins/sam-ui/gemini-extension.json
+  packages/sam-ui-engine/package.json
 )
 
 for manifest in "${manifests[@]}"; do
@@ -44,18 +46,32 @@ if (!pattern.test(text)) throw new Error(`no "version" in ${file}`);
 fs.writeFileSync(file, text.replace(pattern, `"version": "${version}"`));
 ' "$manifest" "$version"
 done
-node -e '
+# The skill's commands run this exact version of the package (<name>@<version>), and the offline guide names
+# the package's file (<name without @, / as ->-<version>.tgz, as npm pack writes it).
+name=$(node -p 'require("./packages/sam-ui-engine/package.json").name')
+docs=(
+  plugins/sam-ui/skills/sam-ui-kit/SKILL.md
+  plugins/sam-ui/README.md
+  docs/offline-install.md
+)
+for doc in "${docs[@]}"; do
+  node -e '
 const fs = require("fs");
-const [file, version] = process.argv.slice(1);
-const text = fs.readFileSync(file, "utf8");
-const pattern = /^const VERSION = "[^"]*";/m;
-if (!pattern.test(text)) throw new Error(`no VERSION in ${file}`);
-fs.writeFileSync(file, text.replace(pattern, `const VERSION = "${version}";`));
-' plugins/sam-ui/skills/sam-ui-kit/scripts/kit.mjs "$version"
+const [file, name, version] = process.argv.slice(1);
+const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const tgz = name.replace(/^@/, "").replace("/", "-");
+const text = fs
+  .readFileSync(file, "utf8")
+  .replace(new RegExp(`${escape(name)}@\\d[\\w.+-]*\\d`, "g"), `${name}@${version}`)
+  .replace(new RegExp(`${escape(tgz)}-\\d[\\w.+-]*\\d\\.tgz`, "g"), `${tgz}-${version}.tgz`);
+fs.writeFileSync(file, text);
+' "$doc" "$name" "$version"
+done
 echo "sam-ui version: $version"
 
 # The zip is a local sam-plugins marketplace that lists only this plugin by a relative path, so it installs
-# as sam-ui@sam-plugins like the online one.
+# as sam-ui@sam-plugins like the online one, with the package beside it as npm pack writes it (the offline
+# guide installs it with npm install -g).
 root=$(pwd)
 stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT
@@ -76,6 +92,7 @@ cat >"$stage/sam-plugins/.claude-plugin/marketplace.json" <<'EOF'
 }
 EOF
 cp docs/offline-install.md "$stage/sam-plugins/README.md"
+(cd packages/sam-ui-engine && npm pack --silent --pack-destination "$stage/sam-plugins" >/dev/null)
 find "$stage" -name .DS_Store -delete
 
 # claude is often only bundled with the VS Code extension, not on PATH; of several versions, the newest.
@@ -94,4 +111,5 @@ rm -f "dist/sam-ui-$version.zip"
 (cd "$stage" && zip -qr "$root/dist/sam-ui-$version.zip" sam-plugins)
 
 echo "built dist/sam-ui-$version.zip"
-echo "next: commit, tag v$version and merge to the default branch."
+echo "next: commit and tag v$version, publish the package (cd packages/sam-ui-engine && npm publish), then merge to"
+echo "the default branch: the skill's commands run $name@$version from npm, so it must be there first."

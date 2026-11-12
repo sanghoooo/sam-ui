@@ -112,7 +112,8 @@ const STEPS = [
   },
 ];
 
-// kit.mjs's own wording, in the order it prints the labels (the kit: lines and closing hints left out).
+// The sam-ui-engine command's own wording, in the order it prints the labels (the kit: lines and closing hints left
+// out).
 const UPDATE_LOG = [
   ["added", "components/ui/switch.tsx", ""],
   ["updated", "components/ui/tabs.tsx", ""],
@@ -299,7 +300,9 @@ export default function IntroPage() {
                 “SAM UI 킷 업데이트해줘”
               </div>
               <div className="overflow-x-auto p-4 font-mono text-[12px] leading-relaxed">
-                <p className="text-muted-foreground">$ node kit.mjs update .</p>
+                <p className="text-muted-foreground">
+                  $ npx sam-ui-engine update .
+                </p>
                 {UPDATE_LOG.map(([label, file, note]) => (
                   <p className="whitespace-nowrap" key={file}>
                     <span className="inline-block w-20 font-semibold">

@@ -22,11 +22,7 @@ SOFTWARE.
 
 ---
 
-The MIT License above covers this repository's code and documentation. It does not cover:
-
-- The air and T logos in plugins/sam-ui/skills/sam-ui-kit/assets/public/images/workspaces/. They are
-  trademarks of their respective owners, included only to identify those services; no right to use
-  them is granted.
+The MIT License above covers this repository's code and documentation.
 
 The kit loads the Pretendard font from jsDelivr; it is not part of this repository and is licensed
 under the SIL Open Font License 1.1.

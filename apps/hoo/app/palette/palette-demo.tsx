@@ -88,7 +88,7 @@ const BUTTON_VARIANTS: ButtonVariant[] = [
 
 const SECTIONS = [
   { id: "insight", title: "AI Insight" },
-  { id: "workspace", title: "워크스페이스 로고 · 색" },
+  { id: "workspace", title: "워크스페이스 마크 · 색" },
   { id: "colors", title: "색" },
   { id: "font", title: "글꼴" },
   { id: "type", title: "글자 크기" },
@@ -169,7 +169,7 @@ export function PaletteDemo() {
       </Section>
 
       <Section
-        description="@/components/layout/workspace-logo. 워크스페이스마다의 마크와 브랜드 색입니다. air와 TDS는 테마마다 SVG를 불러오고(basePath 아래에서는 앞에 NEXT_PUBLIC_BASE_PATH를 붙입니다), MVNO는 기지국 아이콘을 그립니다. 색은 bg-brand-air처럼 쓰고, 옅은 채움은 /14로 씁니다."
+        description="@/components/layout/workspace-logo. 워크스페이스마다의 마크와 브랜드 색입니다. 킷에는 브랜드 로고가 없어, 마크는 air가 바람, TDS가 매장, MVNO가 기지국 아이콘입니다. 색은 bg-brand-air처럼 쓰고, 옅은 채움은 /14로 씁니다."
         id="workspace"
       >
         <ul className="grid gap-3 lg:grid-cols-3">

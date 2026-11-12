@@ -444,7 +444,7 @@ that leaves 0 blank), `seriesColor(i)` and the `ChartSeries` type.
 
 ## Updating
 
-The charts are kit files, so `kit.mjs update` brings new versions. A project that installed 0.6 or earlier
+The charts are kit files, so the kit's `update` brings new versions. A project that installed 0.6 or earlier
 sees `components/charts/*` under `added`: install `recharts` (3.7 or later) before the next build, since Next
 type-checks the copied files whether or not a screen draws a chart yet. A design system that keeps its own
 tokens must add `--chart-1` … `--chart-5` (and the `--color-chart-N` mappings in `@theme inline`).

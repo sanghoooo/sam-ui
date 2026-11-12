@@ -1,5 +1,5 @@
-// Scenario tests for plugins/sam-ui/skills/sam-ui-kit/scripts/kit.mjs (install, update, check) against fake
-// kit versions and fake projects in a temp folder. Run with `pnpm test`.
+// Scenario tests for packages/sam-ui-engine/scripts/kit.mjs (install, update, check) against fake kit versions and
+// fake projects in a temp folder. Run with `pnpm test`.
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -8,11 +8,15 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const KIT = fileURLToPath(
-  new URL(
-    "../plugins/sam-ui/skills/sam-ui-kit/scripts/kit.mjs",
-    import.meta.url,
-  ),
+  new URL("../packages/sam-ui-engine/scripts/kit.mjs", import.meta.url),
 );
+// The package's name, which the commands kit.mjs prints run it by (npx --yes <name>@<version>).
+const KIT_NAME = JSON.parse(
+  fs.readFileSync(
+    new URL("../packages/sam-ui-engine/package.json", import.meta.url),
+    "utf8",
+  ),
+).name;
 const root = fs.mkdtempSync(
   path.join(process.env.TMPDIR || os.tmpdir(), "kit-test-"),
 );
@@ -40,22 +44,36 @@ const read = (f) => (fs.existsSync(f) ? fs.readFileSync(f, "utf8") : null);
 const hash = (s) => createHash("sha256").update(s).digest("hex");
 const manifestOf = (dir) => JSON.parse(read(`${dir}/sam-ui.json`));
 
-function plugin(name, version, files, { skill = "sam-ui-kit" } = {}) {
+// A copy of the package at a version, with these files as its assets; returns its kit.mjs.
+function kit(name, version, files) {
   const dir = path.join(root, name);
+  fs.mkdirSync(path.join(dir, "scripts"), { recursive: true });
+  fs.writeFileSync(
+    path.join(dir, "package.json"),
+    JSON.stringify({ name: KIT_NAME, version }),
+  );
+  fs.copyFileSync(KIT, path.join(dir, "scripts/kit.mjs"));
+  for (const [rel, content] of Object.entries(files)) {
+    const f = path.join(dir, "assets", rel);
+    fs.mkdirSync(path.dirname(f), { recursive: true });
+    fs.writeFileSync(f, content);
+  }
+  return path.join(dir, "scripts/kit.mjs");
+}
+
+// An installed sam-ui plugin at a version: its manifest, and a skill whose commands run that version.
+function installedPlugin(dir, version) {
   fs.mkdirSync(path.join(dir, ".claude-plugin"), { recursive: true });
   fs.writeFileSync(
     path.join(dir, ".claude-plugin/plugin.json"),
     JSON.stringify({ name: "sam-ui", version }),
   );
-  const skillDir = path.join(dir, "skills", skill);
-  fs.mkdirSync(path.join(skillDir, "scripts"), { recursive: true });
-  fs.copyFileSync(KIT, path.join(skillDir, "scripts/kit.mjs"));
-  for (const [rel, content] of Object.entries(files)) {
-    const f = path.join(skillDir, "assets", rel);
-    fs.mkdirSync(path.dirname(f), { recursive: true });
-    fs.writeFileSync(f, content);
-  }
-  return path.join(skillDir, "scripts/kit.mjs");
+  fs.mkdirSync(path.join(dir, "skills/sam-ui-kit"), { recursive: true });
+  fs.writeFileSync(
+    path.join(dir, "skills/sam-ui-kit/SKILL.md"),
+    `Run \`npx --yes ${KIT_NAME}@${version} install <src-root>\`.\n`,
+  );
+  return dir;
 }
 
 function project(name, { src = false } = {}) {
@@ -79,7 +97,7 @@ function run(kit, ...args) {
   return { code: r.status, out: `${r.stdout}${r.stderr}` };
 }
 
-const v1 = plugin("kit-v1", "0.1.0", {
+const v1 = kit("kit-v1", "0.1.0", {
   "components/ui/a.tsx": "a1",
   "components/ui/b.tsx": "b1",
   "components/ui/c.tsx": "c1",
@@ -89,7 +107,7 @@ const v1 = plugin("kit-v1", "0.1.0", {
   "public/images/x.svg": "x1",
   "styles/ui-kit.css": "css1",
 });
-const v2 = plugin("kit-v2", "0.2.0", {
+const v2 = kit("kit-v2", "0.2.0", {
   "components/ui/a.tsx": "a2",
   "components/ui/b.tsx": "b2",
   "components/ui/e.tsx": "e1",
@@ -396,7 +414,7 @@ console.log("15. check notices a newer plugin");
 const u = project("old");
 run(v1, "install", u);
 r = run(v2, "check", u);
-ok(/this plugin carries 0.2.0/.test(r.out), `newer plugin noticed\n${r.out}`);
+ok(/this is sam-ui 0.2.0/.test(r.out), `newer kit noticed\n${r.out}`);
 
 console.log("16. update reports the starters the kit changed, once");
 const w = project("starters");
@@ -423,15 +441,15 @@ ok(
 );
 
 console.log("17. a 0.2.0 manifest, which listed the starters without hashes");
-const k020 = plugin("kit-020", "0.2.0", {
+const k020 = kit("kit-020", "0.2.0", {
   "lib/nav.ts": "nav-020",
   "components/ui/a.tsx": "a1",
 });
-const k021 = plugin("kit-021", "0.2.1", {
+const k021 = kit("kit-021", "0.2.1", {
   "lib/nav.ts": "nav-020",
   "components/ui/a.tsx": "a2",
 });
-const k022 = plugin("kit-022", "0.2.2", {
+const k022 = kit("kit-022", "0.2.2", {
   "lib/nav.ts": "nav-022",
   "components/ui/a.tsx": "a2",
 });
@@ -486,25 +504,25 @@ run(v2, "install", y);
 r = run(v1, "update", y);
 ok(
   r.code === 1 &&
-    /newer than this plugin's 0.1.0/.test(r.out) &&
+    /newer than this sam-ui 0.1.0/.test(r.out) &&
     read(`${y}/components/ui/a.tsx`) === "a2" &&
     manifestOf(y).version === "0.2.0",
   `downgrade refused\n${r.out}`,
 );
 r = run(v1, "check", y);
 ok(
-  /update the plugin before running update/.test(r.out) &&
+  /update the plugin, then run update/.test(r.out) &&
     !/run update to bring it in/.test(r.out),
   `check says to update the plugin\n${r.out}`,
 );
 
 console.log("19. line endings");
-const e1 = plugin("kit-eol-1", "1.0.0", {
+const e1 = kit("kit-eol-1", "1.0.0", {
   "components/ui/t.tsx": "one\ntwo\n",
   "public/images/i.svg": "<svg>\r\n</svg>\r\n",
   "public/images/b.ico": "\0\r\n",
 });
-const e2 = plugin("kit-eol-2", "1.0.1", {
+const e2 = kit("kit-eol-2", "1.0.1", {
   "components/ui/t.tsx": "one\ntwo\nthree\n",
   "public/images/i.svg": "<svg>\r\n</svg>\r\n",
   "public/images/b.ico": "\0\r\n",
@@ -586,58 +604,44 @@ ok(
 );
 
 console.log("22. a newer sam-ui installed in Claude Code");
-fs.mkdirSync(`${config}/plugins`);
-fs.writeFileSync(
-  `${config}/plugins/installed_plugins.json`,
-  JSON.stringify({
-    version: 2,
-    plugins: {
-      "sam-ui@sam-plugins": [
-        {
-          scope: "user",
-          installPath: path.join(root, "kit-v2"),
-          version: "0.2.0",
-        },
-      ],
-    },
-  }),
-);
+const claudeV2 = installedPlugin(path.join(root, "claude-v2"), "0.2.0");
+const claudeInstalls = (installPath, version) => {
+  fs.mkdirSync(`${config}/plugins`, { recursive: true });
+  fs.writeFileSync(
+    `${config}/plugins/installed_plugins.json`,
+    JSON.stringify({
+      version: 2,
+      plugins: {
+        "sam-ui@sam-plugins": [{ scope: "user", installPath, version }],
+      },
+    }),
+  );
+};
+claudeInstalls(claudeV2, "0.2.0");
 const o = project("stale-session");
 r = run(v1, "install", o);
 ok(
   r.code === 1 &&
     /Claude Code has sam-ui 0.2.0 installed/.test(r.out) &&
-    r.out.includes(
-      path.join(root, "kit-v2/skills/sam-ui-kit/scripts/kit.mjs"),
-    ) &&
+    r.out.trim().split("\n").pop().trim() ===
+      `npx --yes ${KIT_NAME}@0.2.0 install ${o}` &&
     !fs.existsSync(`${o}/sam-ui.json`),
-  `stale script refused\n${r.out}`,
+  `a stale version refused, with the newer version's command\n${r.out}`,
 );
 r = run(v2, "install", o);
 ok(r.code === 0, `the newest version runs\n${r.out}`);
 r = run(v1, "check", o);
-ok(/Claude Code has sam-ui 0.2.0 installed/.test(r.out), "check notes it too");
-// A newer install from before the skill's folder was renamed keeps its script in skills/ui-kit.
-plugin("kit-legacy", "0.3.0", {}, { skill: "ui-kit" });
-fs.writeFileSync(
-  `${config}/plugins/installed_plugins.json`,
-  JSON.stringify({
-    version: 2,
-    plugins: {
-      "sam-ui@sam-plugins": [
-        {
-          scope: "user",
-          installPath: path.join(root, "kit-legacy"),
-          version: "0.3.0",
-        },
-      ],
-    },
-  }),
-);
-r = run(v1, "check", o);
 ok(
-  r.out.includes(path.join(root, "kit-legacy/skills/ui-kit/scripts/kit.mjs")),
-  `an install with the old skill folder is pointed at its script\n${r.out}`,
+  /Claude Code has sam-ui 0.2.0 installed/.test(r.out) &&
+    r.out.includes(`npx --yes ${KIT_NAME}@0.2.0`),
+  `check notes it too\n${r.out}`,
+);
+// An install whose folder is gone doesn't count.
+claudeInstalls(path.join(root, "claude-gone"), "0.3.0");
+r = run(v2, "check", o);
+ok(
+  r.code === 0 && !/Claude Code has/.test(r.out),
+  `an install whose folder is gone is ignored\n${r.out}`,
 );
 fs.rmSync(`${config}/plugins`, { recursive: true });
 
@@ -832,7 +836,7 @@ ok(
 );
 
 console.log("30. 0.2.0 byte hashes of CRLF checkouts");
-const e3 = plugin("kit-eol-3", "1.0.2", {
+const e3 = kit("kit-eol-3", "1.0.2", {
   "components/ui/t.tsx": "one\ntwo\n",
   "public/images/i.svg": "<svg>\r\n</svg>\r\n",
   "public/images/b.ico": "\0\r\n",
@@ -863,7 +867,7 @@ const installed = (entry) =>
       plugins: {
         "sam-ui@sam-plugins": [
           {
-            installPath: path.join(root, "kit-v2"),
+            installPath: claudeV2,
             version: "0.2.0",
             ...entry,
           },
@@ -881,8 +885,7 @@ const lastLine = r.out.trim().split("\n").pop().trim();
 ok(
   r.code === 1 &&
     /Claude Code has sam-ui 0.2.0 installed/.test(r.out) &&
-    lastLine ===
-      `node ${path.join(root, "kit-v2/skills/sam-ui-kit/scripts/kit.mjs")} update ${sc}`,
+    lastLine === `npx --yes ${KIT_NAME}@0.2.0 update ${sc}`,
   `an ancestor folder's install counts; the command to run has no --keep\n${r.out}`,
 );
 installed({ scope: "user", version: "0.0.1" });
@@ -890,9 +893,7 @@ r = run(v1, "update", sc);
 ok(r.code === 0, `an older install does not refuse\n${r.out}`);
 // The plugin was sam-ui-kit@sam-ui in 0.4 and sam-ui@hoo-plugins in 0.5.0 and 0.5.1; those ids stopped
 // there, so they never count.
-const oldEntry = [
-  { scope: "user", installPath: path.join(root, "kit-v2"), version: "0.2.0" },
-];
+const oldEntry = [{ scope: "user", installPath: claudeV2, version: "0.2.0" }];
 fs.writeFileSync(
   `${config}/plugins/installed_plugins.json`,
   JSON.stringify({
@@ -943,88 +944,66 @@ const cx = project("codex");
 run(v1, "install", cx);
 // Codex keeps each installed version whole under $CODEX_HOME/plugins/cache/<marketplace>/<plugin>/<version>.
 const codexCache = `${codexHome}/plugins/cache/sam-plugins/sam-ui`;
-fs.cpSync(path.join(root, "kit-v2"), `${codexCache}/0.2.0`, {
-  recursive: true,
-});
+installedPlugin(`${codexCache}/0.2.0`, "0.2.0");
 r = run(v1, "update", cx);
 ok(
   r.code === 1 &&
     /but Codex has sam-ui 0.2.0 installed/.test(r.out) &&
     r.out.trim().split("\n").pop().trim() ===
-      `node ${codexCache}/0.2.0/skills/sam-ui-kit/scripts/kit.mjs update ${cx}`,
-  `refused, with the Codex install's command\n${r.out}`,
+      `npx --yes ${KIT_NAME}@0.2.0 update ${cx}`,
+  `refused, with the newer version's command\n${r.out}`,
 );
 r = run(v1, "check", cx);
 ok(
   r.out.includes(
-    `Codex has sam-ui 0.2.0 installed: ${codexCache}/0.2.0/skills/sam-ui-kit/scripts/kit.mjs`,
+    `Codex has sam-ui 0.2.0 installed: read the sam-ui-kit skill again and use its commands (npx --yes ${KIT_NAME}@0.2.0`,
   ),
   `check names the Codex install\n${r.out}`,
 );
 fs.rmSync(`${codexCache}/0.2.0`, { recursive: true });
-fs.cpSync(path.join(root, "kit-v1"), `${codexCache}/0.1.0`, {
-  recursive: true,
-});
+installedPlugin(`${codexCache}/0.1.0`, "0.1.0");
 r = run(v1, "update", cx);
 ok(r.code === 0, `the same version in Codex does not refuse\n${r.out}`);
 fs.rmSync(`${codexHome}/plugins`, { recursive: true });
 
-console.log(
-  "34. the Codex and Gemini manifests and kit.mjs carry the Claude manifest's version",
-);
-const manifestVersion = (rel) =>
-  JSON.parse(
-    read(fileURLToPath(new URL(`../plugins/sam-ui/${rel}`, import.meta.url))),
-  ).version;
-const claudeVer = manifestVersion(".claude-plugin/plugin.json");
-const codexVer = manifestVersion(".codex-plugin/plugin.json");
-const geminiVer = manifestVersion("gemini-extension.json");
-const scriptVer = read(KIT).match(/^const VERSION = "([^"]+)";/m)?.[1];
-ok(
-  codexVer === claudeVer && geminiVer === claudeVer && scriptVer === claudeVer,
-  `.codex-plugin ${codexVer}, gemini-extension.json ${geminiVer}, kit.mjs ${scriptVer} vs .claude-plugin ${claudeVer}: pnpm release sets all`,
-);
-
 console.log("35. a newer sam-ui installed in Gemini CLI (skill or extension)");
 const gm = project("gemini");
 run(v1, "install", gm);
-// `gemini skills install --path plugins/sam-ui/skills/sam-ui-kit` copies only the skill folder, with no
-// .claude-plugin/plugin.json above it; kit.mjs uses its own VERSION constant.
+// `gemini skills install --path plugins/sam-ui/skills/sam-ui-kit` copies only the skill folder: its version
+// is the one its commands run.
 const geminiSkill = `${geminiHome}/.gemini/skills/sam-ui-kit`;
-fs.cpSync(path.join(root, "kit-v2/skills/sam-ui-kit"), geminiSkill, {
-  recursive: true,
-});
-fs.writeFileSync(
-  `${geminiSkill}/scripts/kit.mjs`,
-  read(`${geminiSkill}/scripts/kit.mjs`).replace(
-    /^const VERSION = "[^"]*";/m,
-    'const VERSION = "0.2.0";',
+fs.cpSync(
+  path.join(
+    installedPlugin(path.join(root, "gemini-v2"), "0.2.0"),
+    "skills/sam-ui-kit",
   ),
+  geminiSkill,
+  { recursive: true },
 );
 r = run(v1, "update", gm);
 ok(
   r.code === 1 &&
     /but Gemini CLI has sam-ui 0.2.0 installed/.test(r.out) &&
     r.out.trim().split("\n").pop().trim() ===
-      `node ${geminiSkill}/scripts/kit.mjs update ${gm}`,
-  `refused, with the Gemini CLI skill install's command\n${r.out}`,
+      `npx --yes ${KIT_NAME}@0.2.0 update ${gm}`,
+  `refused, with the Gemini CLI skill's version\n${r.out}`,
 );
-r = run(`${geminiSkill}/scripts/kit.mjs`, "update", gm);
+r = run(v2, "update", gm);
 ok(
   r.code === 0 && manifestOf(gm).version === "0.2.0",
-  `a standalone skill install updates the project using VERSION\n${r.out}`,
+  `the skill's version updates the project\n${r.out}`,
 );
 fs.rmSync(geminiSkill, { recursive: true });
 const geminiExt = `${geminiHome}/.gemini/extensions/sam-ui`;
-fs.cpSync(path.join(root, "kit-v2"), geminiExt, { recursive: true });
+fs.mkdirSync(geminiExt, { recursive: true });
 fs.writeFileSync(
   `${geminiExt}/gemini-extension.json`,
-  JSON.stringify({ name: "sam-ui", version: "0.2.0" }),
+  JSON.stringify({ name: "sam-ui", version: "0.3.0" }),
 );
-r = run(v1, "check", gm);
+r = run(v2, "check", gm);
 ok(
   r.out.includes(
-    `Gemini CLI has sam-ui 0.2.0 installed: ${geminiExt}/skills/sam-ui-kit/scripts/kit.mjs`,
+    `Gemini CLI has sam-ui 0.3.0 installed: read the sam-ui-kit skill again and use its commands (npx --yes ${KIT_NAME}@0.3.0`,
   ),
   `check names the Gemini CLI extension install\n${r.out}`,
 );
@@ -1154,7 +1133,7 @@ const shared = path.join(root, "shared-utils.ts");
 fs.writeFileSync(shared, "u1");
 fs.rmSync(`${sl}/lib/utils.ts`);
 fs.symlinkSync(shared, `${sl}/lib/utils.ts`);
-const v3 = plugin("kit-v3", "0.3.0", {
+const v3 = kit("kit-v3", "0.3.0", {
   "components/ui/a.tsx": "a2",
   "lib/nav.ts": "nav2",
   "lib/utils.ts": "u3",
@@ -1179,7 +1158,7 @@ ok(
 );
 
 console.log("44. a prerelease comes before its release");
-const rc = plugin("kit-rc", "0.2.0-rc.1", { "components/ui/a.tsx": "a-rc" });
+const rc = kit("kit-rc", "0.2.0-rc.1", { "components/ui/a.tsx": "a-rc" });
 const pr = project("prerelease");
 run(rc, "install", pr);
 r = run(v2, "update", pr);
@@ -1189,7 +1168,7 @@ ok(
 );
 r = run(rc, "update", pr);
 ok(
-  r.code === 1 && /newer than this plugin's 0.2.0-rc.1/.test(r.out),
+  r.code === 1 && /newer than this sam-ui 0.2.0-rc.1/.test(r.out),
   `0.2.0-rc.1 does not downgrade 0.2.0\n${r.out}`,
 );
 

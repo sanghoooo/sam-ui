@@ -1,40 +1,45 @@
 # sam-ui — SAM UI 킷
 
-SAM UI 킷과, 그 킷을 다른 프로젝트에 설치하고 쓰게 하는 Claude Code / Codex / Gemini CLI 플러그인 `sam-ui`를 관리하는 저장소입니다.
+SAM UI 킷(npm 패키지 `sam-ui-engine`)과, 그 킷을 다른 프로젝트에 설치하고 쓰게 하는 Claude Code / Codex / Gemini CLI
+플러그인 `sam-ui`를 관리하는 저장소입니다.
 플러그인은 마켓플레이스 [sam-plugins](https://github.com/sanghoooo/sam-plugins)에 등록돼 있고, Codex도 Claude Code 형식의
 마켓플레이스와 플러그인을 읽으므로 같은 마켓플레이스로 Codex에도 설치됩니다. Gemini CLI에는 `gemini skills install`로
 설치됩니다.
 
 - **킷:** 사이드바 레이아웃(시작용 메뉴), 필터 툴바, SegmentedControl(움직이는 선택 표시), Tabs,
   MonthStepper, Select, Switch, StatePanel, AI Insight 로고, 차트(추이 · 막대 · 누적 영역 · 복합 · 비중 · 막대 목록 ·
-  스파크라인 · 산점도 · 흐름 · 레인), air · TDS · MVNO 로고와 브랜드 색, 라이트(기본) · 다크 토큰. React 19 +
-  Tailwind CSS 4, 차트는 recharts, 레이아웃은 Next.js App Router.
+  스파크라인 · 산점도 · 흐름 · 레인), air · TDS · MVNO 마크(아이콘, 브랜드 로고 없음)와 브랜드 색, 라이트(기본) ·
+  다크 토큰. React 19 + Tailwind CSS 4, 차트는 recharts, 레이아웃은 Next.js App Router. 킷 파일과 설치 명령
+  `sam-ui-engine`은 같은 이름의 npm 패키지로 배포합니다.
 - **플러그인:** 설치하면 `sam-ui:sam-ui-kit` 스킬이 생기고, 어떤 프로젝트에서든 "SAM UI 킷 설치해줘"라고 하면
-  Claude, Codex 또는 Gemini가 킷을 복사 · 설정하고 이후 화면도 이 킷으로 만듭니다.
+  Claude, Codex 또는 Gemini가 `npx`로 그 패키지를 실행해 킷을 복사 · 설정하고 이후 화면도 이 킷으로 만듭니다.
+  플러그인에는 코드가 없습니다(Markdown, JSON, 아이콘만). 플러그인 디렉터리가 인증되지 않은 조직에서는 그런 파일만
+  받기 때문입니다.
 
 ## 구성
 
 ```
-plugins/sam-ui/                   플러그인 sam-ui
-  README.md                       플러그인 디렉터리(Claude 앱)에 보이는 소개 · 설치 안내(영어)
+packages/sam-ui-engine/           npm 패키지 sam-ui-engine
+  assets/                         킷 원본 (components, lib, styles/ui-kit.css)
+  scripts/kit.mjs                 sam-ui-engine 명령: 프로젝트에 설치 · 업데이트 · 점검 (sam-ui.json에 버전과 파일 해시 기록)
+plugins/sam-ui/                   플러그인 sam-ui (코드 없음: Markdown · JSON · 아이콘)
+  README.md                       플러그인 디렉터리(Claude 앱)에 보이는 소개 · 설치 안내 · 실행하는 명령(영어)
   .claude-plugin/plugin.json · icon.png  이름 · 버전 · 디렉터리용 아이콘
   .codex-plugin/plugin.json       Codex용 이름 · 버전 · 표시 이름(Codex는 이쪽을 먼저 읽음)
   gemini-extension.json           Gemini CLI 확장용 이름 · 버전
   skills/sam-ui-kit/
-    SKILL.md                      설치 순서 · 화면 만드는 법 · 스타일 규칙
-    references/                   컴포넌트별 사용법, 차트, 토큰, 레이아웃
-    assets/                       킷 원본 (components, lib, styles/ui-kit.css, public/images)
-    scripts/kit.mjs               프로젝트에 설치 · 업데이트 · 점검 (sam-ui.json에 버전과 파일 해시 기록)
-    templates/placeholder-page.tsx 메뉴 링크용 "준비 중" 페이지
+    SKILL.md                      설치 순서(npx 명령) · 화면 만드는 법 · 스타일 규칙
+    references/                   컴포넌트별 사용법, 차트, 토큰, 레이아웃("준비 중" 페이지 포함)
 apps/hoo/                         Next.js 사이트: 킷 소개(/), 팔레트(/palette), 차트(/charts)
 .github/workflows/                ci.yml(Biome check · test · Pages와 같은 정적 빌드), pages.yml(사이트를 GitHub Pages에 배포)
-scripts/release.sh                버전 올리기 · 검사 · 오프라인 설치용 zip
+scripts/release.sh                버전 올리기 · 검사 · 오프라인 설치용 zip(패키지 파일 포함)
 tests/kit.test.mjs                kit.mjs 시나리오 테스트 (pnpm test)
+tests/plugin.test.mjs             플러그인 파일 형식 · 줄 길이 · 버전 일치 검사 (pnpm test)
 docs/offline-install.md           zip에 들어가는 설치 안내
 ```
 
-킷 원본은 `plugins/sam-ui/skills/sam-ui-kit/assets/` 한 곳입니다. 사이트(`apps/hoo`)는 경로 별칭(`@/components/*`,
-`@/lib/*`)과 `@source`로 그 파일을 직접 읽으므로 복사본이 없습니다.
+킷 원본은 `packages/sam-ui-engine/assets/` 한 곳입니다. 사이트(`apps/hoo`)는 경로 별칭(`@/components/*`, `@/lib/*`)과
+`@source`로 그 파일을 직접 읽으므로 복사본이 없습니다.
 
 ## 개발
 
@@ -42,24 +47,27 @@ docs/offline-install.md           zip에 들어가는 설치 안내
 pnpm install
 pnpm dev        # http://localhost:3102 (/ 소개, /palette 팔레트, /charts 차트)
 pnpm lint
-pnpm test       # kit.mjs 시나리오 테스트
+pnpm test       # kit.mjs 시나리오 테스트, 플러그인 파일 검사
 pnpm build
 ```
 
 킷을 고칠 때:
 
-1. `assets/`의 파일을 고칩니다. 이 파일들은 다른 프로젝트로 복사되므로 주석에 이 저장소 밖의 경로를 쓰지 않습니다.
-2. 사용법이 바뀌면 `skills/sam-ui-kit/references/`의 해당 문서와 `SKILL.md`를 함께 고칩니다.
+1. `packages/sam-ui-engine/assets/`의 파일을 고칩니다. 이 파일들은 다른 프로젝트로 복사되므로 주석에 이 저장소 밖의 경로를
+   쓰지 않습니다.
+2. 사용법이 바뀌면 `plugins/sam-ui/skills/sam-ui-kit/references/`의 해당 문서와 `SKILL.md`를 함께 고칩니다. 플러그인
+   폴더에는 코드 파일을 두지 않습니다.
 3. 새 컴포넌트나 변형은 팔레트(`apps/hoo/app/palette/palette-demo.tsx`)에, 차트는 `/charts`(`apps/hoo/app/charts/`)에 보이게 합니다. 소개 페이지, 사이트 머리, 팔레트, 차트 페이지 모두 한국어로 씁니다.
 4. `pnpm check`(lint와 포맷), `pnpm test`, `pnpm build`, 라이트 · 다크 화면 확인.
 
 ## 배포
 
 ```sh
-pnpm release 0.2.0   # 매니페스트들과 kit.mjs의 version 변경 → plugin validate → dist/sam-ui-0.2.0.zip
+pnpm release 0.2.0   # 패키지 · 매니페스트들 · 문서의 npx 명령 버전 변경 → plugin validate → dist/sam-ui-0.2.0.zip
 ```
 
-그다음 커밋하고 `v0.2.0` 태그와 함께 기본 브랜치에 push합니다. sam-plugins는 이 저장소 기본 브랜치의
+그다음 커밋하고 `v0.2.0` 태그를 단 뒤, 패키지를 npm에 올리고(`cd packages/sam-ui-engine && npm publish`, npm 로그인 필요)
+기본 브랜치에 push합니다. 스킬의 명령은 그 버전을 npm에서 받아 실행하므로 npm에 먼저 올려야 합니다. sam-plugins는 이 저장소 기본 브랜치의
 `plugins/sam-ui`를 가리키므로(`git-subdir`) 릴리스할 때 고치지 않습니다. 설치한 사람은 Claude Code에서
 `/plugin marketplace update sam-plugins` 후 `/reload-plugins`로 받습니다(터미널에서는 `claude plugin marketplace
 update sam-plugins`, `claude plugin update sam-ui@sam-plugins` 후 다시 시작), Codex에서는 터미널에서 `codex plugin add
@@ -96,7 +104,8 @@ Gemini CLI에서는 터미널에서 아래 명령을 실행한 뒤 새 세션을
 gemini skills install https://github.com/sanghoooo/sam-ui.git --path plugins/sam-ui/skills/sam-ui-kit
 ```
 
-GitHub에 접근할 수 없는 PC는 `pnpm release`가 만든 zip을 풀어 로컬 경로로 추가합니다(`docs/offline-install.md`).
+GitHub이나 npm에 접근할 수 없는 PC는 `pnpm release`가 만든 zip을 풀어, 들어 있는 패키지 파일을 `npm install -g`로
+설치하고 플러그인을 로컬 경로로 추가합니다(`docs/offline-install.md`).
 
 이전 이름(0.3.5까지 `sam-ui@sam-plugins`, 0.4의 `sam-ui-kit@sam-ui`, 0.5.0 · 0.5.1의 `sam-ui@hoo-plugins`)으로
 설치했다면 먼저 `claude plugin marketplace remove hoo-plugins`(또는 `sam-ui`, `sam-plugins`)로 이전 마켓플레이스와 그
@@ -108,8 +117,9 @@ GitHub에 접근할 수 없는 PC는 `pnpm release`가 만든 zip을 풀어 로�
 킷을 배포하면 각 프로젝트는 플러그인을 업데이트한 뒤(Claude Code: `/plugin marketplace update sam-plugins`,
 `/reload-plugins`, Codex: `codex plugin add sam-ui@sam-plugins` 후 새 세션, Gemini CLI: `gemini skills install
 https://github.com/sanghoooo/sam-ui.git --path plugins/sam-ui/skills/sam-ui-kit` 후 `/skills reload`) Claude, Codex 또는
-Gemini에게 "SAM UI 킷 업데이트해줘"라고 합니다. 스킬이 `kit.mjs update`로
-처리합니다.
+Gemini에게 "SAM UI 킷 업데이트해줘"라고 합니다. 스킬이 새 버전의 `npx sam-ui-engine@<버전> update`로
+처리합니다. 0.7.0부터 킷에는 브랜드 로고가 없어, 프로젝트가 손대지 않은 air · TDS 로고 이미지는 업데이트 때
+지워집니다(계속 쓰려면 `--keep <path>`).
 
 - 프로젝트가 손대지 않은 킷 파일은 새 버전으로 바뀌고, 킷에서 빠진 파일은 지워집니다.
 - 프로젝트에서도 바뀐 파일은 덮어쓰지 않고 `merge`로 알려 줍니다. Claude가 킷의 변경을 합친 뒤 `--keep <path>`로
@@ -120,14 +130,12 @@ Gemini에게 "SAM UI 킷 업데이트해줘"라고 합니다. 스킬이 `kit.mjs
   킷에서 빠지면(0.2.0의 `components/layout/brand.tsx`) `unused`로 한 번 알려 주고 파일은 그대로 둡니다.
   지워졌을 때만 킷의 사이드바가 쓰므로 다시 넣고(`starter`), `--take`로 지정해야 킷 것으로 바꿉니다.
 - 킷 파일 자리에 폴더가, 폴더 자리에 파일이 있으면 아무것도 쓰지 않고 `blocked`로 알려 줍니다.
-- 프로젝트의 킷이 플러그인보다 새 버전이면 update가 거부합니다. 플러그인부터 업데이트합니다.
-- 설치 정보는 프로젝트 루트의 `sam-ui.json`(킷 버전, 파일별 해시)에 있고, `kit.mjs check`는 킷과 달라진 파일을
-  보여 줍니다.
+- 프로젝트의 킷이 실행한 버전보다 새 버전이면 update가 거부합니다. 플러그인부터 업데이트합니다.
+- 설치 정보는 프로젝트 루트의 `sam-ui.json`(킷 버전, 파일별 해시)에 있고, `check`는 킷과 달라진 파일을 보여 줍니다.
 
 킷 수정은 이 저장소에서만 합니다. 프로젝트의 사본을 고치면 업데이트 때마다 손으로 합쳐야 합니다.
 
 ## 라이선스
 
-코드와 문서는 MIT 라이선스입니다(`LICENSE`). air · T 로고(`assets/public/images/workspaces/`)는 각 소유자의
-상표라 이 라이선스에 포함되지 않습니다. Pretendard 폰트는 킷에 들어 있지 않고 jsDelivr에서 받아 오며, SIL Open
-Font License 1.1을 따릅니다.
+코드와 문서는 MIT 라이선스입니다(`LICENSE`). 킷에는 브랜드 로고가 없습니다. Pretendard 폰트는 킷에 들어 있지 않고
+jsDelivr에서 받아 오며, SIL Open Font License 1.1을 따릅니다.
