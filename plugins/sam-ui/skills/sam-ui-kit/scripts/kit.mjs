@@ -31,7 +31,7 @@ const assets = path.resolve(here, "../assets");
 const pluginRoot = path.resolve(here, "../../..");
 const MANIFEST = "sam-ui.json";
 // Fallback version when only the skill folder is installed (`gemini skills install`); set by scripts/release.sh.
-const VERSION = "0.6.1";
+const VERSION = "0.6.2";
 // Installed once as a starting point, then the project's own. update never overwrites one on its own: it
 // puts a missing one back (`starter`), replaces one only when named with --take, and reports ("compare")
 // the ones the kit changed since the manifest was written. check never writes them.
