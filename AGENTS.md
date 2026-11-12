@@ -21,4 +21,7 @@
   static export under `/sam-ui` (`PAGES=1`, `NEXT_PUBLIC_BASE_PATH`), so the site uses nothing that needs a server, and a
   kit file that links to `public/` by a plain URL prefixes it with `NEXT_PUBLIC_BASE_PATH`.
 - Release with `pnpm release <version>`; a plugin change reaches installs only when the version goes up.
+- The plugin directory publishes a version only once its scan confirms it read every file in `plugins/sam-ui` whole, so
+  text files there keep their lines under 1,000 characters and embed no base64 data (a raster image goes in as a PNG
+  file, not inside an SVG); `tests/plugin.test.mjs` (part of `pnpm test`) checks it.
 - Consult the Next.js docs in `node_modules/next/dist/docs/` before changing Next.js APIs or configuration.
