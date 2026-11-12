@@ -1,6 +1,6 @@
 {
   "name": "sam-ui-engine",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "description": "SAM UI, a React + Tailwind CSS 4 dashboard kit, and the sam-ui-engine command that installs, updates and checks it in a project.",
   "type": "module",
   "bin": {

@@ -29,7 +29,7 @@ Next.js app shell and the workspace marks), `lib/*` (helpers, the sidebar menu) 
 tokens, workspace brand colors and chart series colors included).
 
 All file work goes through the package's `sam-ui-engine` command (Node 18 or later, no dependencies) at the version
-this skill is written for, run from the project: `npx --yes sam-ui-engine@0.6.2 install`, `update` or
+this skill is written for, run from the project: `npx --yes sam-ui-engine@0.7.0 install`, `update` or
 `check`, each given `<src-root>`, the folder the project's `@/` alias points at (see `tsconfig.json` `paths`:
 the project root, or `src/`; in a monorepo, the app's folder such as `apps/web`, never the workspace root).
 npx fetches that exact version from the npm registry once and keeps it in its cache; the command writes only
@@ -62,7 +62,7 @@ Requirements: React 19, Tailwind CSS 4 and an `@/*` path alias. The components w
 app shell (`components/layout/*`) needs the Next.js App Router, and the placeholder page Next.js 15.5 or
 later (its `PageProps` type is one Next.js generates; see step 6).
 
-1. **Copy the files.** Run `npx --yes sam-ui-engine@0.6.2 install <src-root>`. If any file already
+1. **Copy the files.** Run `npx --yes sam-ui-engine@0.7.0 install <src-root>`. If any file already
    exists with other content, it writes nothing, lists those as `differs` and exits 1. Decide each with the
    user, then run install again with `--take <path>` (the kit's version replaces the project's) or
    `--keep <path>` (the project's stays, as a local change). A folder where a kit file goes, or a file where
@@ -151,7 +151,7 @@ A newer kit arrives with the plugin, so update the plugin first, then the projec
    the command refuses to run while Claude Code, Codex or Gemini CLI has a newer sam-ui plugin than its own
    version, and prints the newer version's command to run instead; decide any `--take`/`--keep` again from
    that version's output.
-2. **The project.** Run `npx --yes sam-ui-engine@0.6.2 update <src-root>`. Per file it reports:
+2. **The project.** Run `npx --yes sam-ui-engine@0.7.0 update <src-root>`. Per file it reports:
    - `added` (new in the kit, or a missing kit file put back), `updated` (the project had not changed it),
      `removed` (dropped from the kit, unchanged here);
    - `local` (changed here, the kit's version did not change; left alone);
@@ -198,7 +198,7 @@ deletes the changed files the kit dropped; it leaves starters and `differs` file
 with `--keep <path>` stays as it is. Use it only when the user wants every local change gone; for one file,
 use `--take <path>`.
 
-`npx --yes sam-ui-engine@0.6.2 check <src-root>` lists kit files that differ from the installed version
+`npx --yes sam-ui-engine@0.7.0 check <src-root>` lists kit files that differ from the installed version
 (`changed`, `missing` (`lib/nav.ts` included), `blocked`, `behind` (still on an older kit's version, or
 dropped from the kit and unchanged: update brings them along), and `merge`, `left` or `differs` files still
 waiting for a decision; exit 1 when any do) and says when the version it runs is newer or older than the

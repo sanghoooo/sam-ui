@@ -2,7 +2,7 @@
 
 SAM UI 킷(사이드바 레이아웃, 필터 툴바, 세그먼트 · 탭 · 월 선택 · 스위치, 차트, 라이트/다크 토큰, air · TDS · MVNO
 마크와 브랜드 색)을 프로젝트에 설치하고 그 킷으로 화면을 만드는 Claude Code / Codex / Gemini CLI 플러그인입니다.
-네트워크 없이 이 폴더에서 바로 설치합니다. 킷 파일은 이 폴더의 패키지 파일 `sam-ui-engine-0.6.2.tgz`에
+네트워크 없이 이 폴더에서 바로 설치합니다. 킷 파일은 이 폴더의 패키지 파일 `sam-ui-engine-0.7.0.tgz`에
 들어 있고, 스킬은 그 패키지의 `sam-ui-engine` 명령으로 킷을 설치 · 업데이트합니다.
 
 ## 설치
@@ -11,7 +11,7 @@ SAM UI 킷(사이드바 레이아웃, 필터 툴바, 세그먼트 · 탭 · 월 
 2. 터미널에서 패키지를 설치합니다(Node 18 이상). `sam-ui-engine` 명령이 생기고, `sam-ui-engine --version`이 버전을 보여 줍니다.
 
    ```
-   npm install -g ~/sam-plugins/sam-ui-engine-0.6.2.tgz
+   npm install -g ~/sam-plugins/sam-ui-engine-0.7.0.tgz
    ```
 3. Claude Code에서:
 
@@ -46,7 +46,7 @@ SAM UI 킷(사이드바 레이아웃, 필터 툴바, 세그먼트 · 탭 · 월 
 
 새 버전 zip을 받으면 기존 `sam-plugins` 폴더를 지우고(또는 이름을 바꾸고) 같은 자리에 새로 풉니다. 그 위에
 덮어쓰면 새 버전에서 빠진 파일이 남습니다. 그다음 터미널에서 새 패키지를 설치하고(`npm install -g
-~/sam-plugins/sam-ui-engine-0.6.2.tgz`), Claude Code에서:
+~/sam-plugins/sam-ui-engine-0.7.0.tgz`), Claude Code에서:
 
 ```
 /plugin marketplace update sam-plugins

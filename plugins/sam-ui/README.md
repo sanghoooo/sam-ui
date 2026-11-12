@@ -64,7 +64,7 @@ To install, update or check the kit, the skill runs one command in the project, 
 permission prompt:
 
 ```
-npx --yes sam-ui-engine@0.6.2 install <src-root>
+npx --yes sam-ui-engine@0.7.0 install <src-root>
 ```
 
 (`update` and `check` the same way.) npx downloads that exact version of the package from the npm registry
